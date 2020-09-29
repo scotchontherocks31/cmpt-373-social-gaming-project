@@ -1,5 +1,5 @@
 
-# Single Threaded Web Socket Networking
+# Social Gaming
 
 This repository contains an example library for single threaded client/server
 programs based on web sockets using boost beast. Multiple clients and the server
