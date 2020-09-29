@@ -8,15 +8,15 @@ struct MessageResult {
 };
 
 struct Room {
-	int id;
-	std::string roomName;
-	std::vector<User*> participants;
-	// etc...
+  int id;
+  std::string roomName;
+  std::vector<User *> participants;
+  // etc...
 };
 
 struct User {
-	Connection connection;
-	std::string name;
-	Room* room;
-	// etc...
+  Connection connection;
+  std::string name;
+  Room *room;
+  // etc...
 };
