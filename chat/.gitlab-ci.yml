@@ -1,0 +1,9 @@
+image: "ubuntu:latest"
+
+before_script:
+    - sudo apt-get update && sudo apt-get install -y clang-format cmake
+    - mkdir build && cmake --build ./build .
+
+lint:
+    script:
+        - find . -path ./build -prune -false -o -type f \( -name *.cpp -o -name *.h \) | xargs clang-format -style=llvm -dry-run
