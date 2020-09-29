@@ -7,11 +7,11 @@
 
 
 #include "Server.h"
+#include "chatserver.h"
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <string>
 #include <unistd.h>
 #include <vector>
 
@@ -37,12 +37,6 @@ onDisconnect(Connection c) {
   auto eraseBegin = std::remove(std::begin(clients), std::end(clients), c);
   clients.erase(eraseBegin, std::end(clients));
 }
-
-
-struct MessageResult {
-  std::string result;
-  bool shouldShutdown;
-};
 
 
 MessageResult
