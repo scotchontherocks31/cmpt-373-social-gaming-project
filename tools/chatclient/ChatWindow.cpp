@@ -5,14 +5,12 @@
 // for details.
 /////////////////////////////////////////////////////////////////////////////
 
-
 #include "ChatWindow.h"
 
 #include <cassert>
 
 #include <form.h>
 #include <ncurses.h>
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Hidden ChatWindow implementation
@@ -22,10 +20,10 @@ class ChatWindowImpl {
 public:
   ChatWindowImpl(std::function<void(std::string)> onTextEntry, int updateDelay);
   ~ChatWindowImpl();
-  ChatWindowImpl(ChatWindowImpl&) = delete;
-  ChatWindowImpl(ChatWindowImpl&&) = delete;
-  ChatWindowImpl& operator=(ChatWindowImpl&) = delete;
-  ChatWindowImpl& operator=(ChatWindowImpl&&) = delete;
+  ChatWindowImpl(ChatWindowImpl &) = delete;
+  ChatWindowImpl(ChatWindowImpl &&) = delete;
+  ChatWindowImpl &operator=(ChatWindowImpl &) = delete;
+  ChatWindowImpl &operator=(ChatWindowImpl &&) = delete;
 
   void resizeOnShapeChange();
 
@@ -37,29 +35,28 @@ public:
 
   void refreshWindow();
 
-  void displayText(const std::string& text);
+  void displayText(const std::string &text);
 
 private:
   std::function<void(std::string)> onTextEntry;
 
-  int parentX   = 0;
-  int parentY   = 0;
+  int parentX = 0;
+  int parentY = 0;
   int entrySize = 3;
 
-  WINDOW *view     = nullptr;
-  WINDOW *entry    = nullptr;
+  WINDOW *view = nullptr;
+  WINDOW *entry = nullptr;
   WINDOW *entrySub = nullptr;
 
-  FIELD *fields[2]  = { nullptr, nullptr };
+  FIELD *fields[2] = {nullptr, nullptr};
   FIELD *entryField = nullptr;
 
   FORM *entryForm = nullptr;
 };
 
-
 ChatWindowImpl::ChatWindowImpl(std::function<void(std::string)> onTextEntry,
                                int updateDelay)
-  : onTextEntry{std::move(onTextEntry)} {
+    : onTextEntry{std::move(onTextEntry)} {
   initscr();
   noecho();
   halfdelay(updateDelay);
@@ -72,7 +69,7 @@ ChatWindowImpl::ChatWindowImpl(std::function<void(std::string)> onTextEntry,
   entry = newwin(entrySize, parentX, parentY - entrySize, 0);
   wborder(entry, ' ', ' ', '-', ' ', '+', '+', ' ', ' ');
   entrySub = derwin(entry, entrySize - 1, parentX, 1, 0);
-  
+
   entryField = new_field(entrySize - 1, parentX, 0, 0, 0, 0);
   assert(entryField && "Error creating entry field.");
   set_field_buffer(entryField, 0, "");
@@ -89,7 +86,6 @@ ChatWindowImpl::ChatWindowImpl(std::function<void(std::string)> onTextEntry,
   wrefresh(entry);
 }
 
-
 ChatWindowImpl::~ChatWindowImpl() {
   unpost_form(entryForm);
   free_form(entryForm);
@@ -99,9 +95,7 @@ ChatWindowImpl::~ChatWindowImpl() {
   endwin();
 }
 
-
-void
-ChatWindowImpl::resizeOnShapeChange() {
+void ChatWindowImpl::resizeOnShapeChange() {
   int newX, newY;
   getmaxyx(stdscr, newY, newX);
 
@@ -118,91 +112,72 @@ ChatWindowImpl::resizeOnShapeChange() {
   }
 }
 
-
-void
-ChatWindowImpl::processInput(int key) {
-  switch(key) {
-    case KEY_ENTER:
-    case '\n':
-      // Requesting validation synchs the seen field & the buffer.
-      form_driver(entryForm, REQ_VALIDATION);
-      onTextEntry(getFieldString());
-      move(1, 1);
-      set_field_buffer(entryField, 0, "");
-      refresh();
-      pos_form_cursor(entryForm);
-      break;
-    case KEY_BACKSPACE:
-    case 127: //ASCII delete
-      form_driver(entryForm, REQ_DEL_PREV);
-      break;
-    case KEY_DC:
-      form_driver(entryForm, REQ_DEL_CHAR);
-      break;
-    case ERR:
-      // swallow
-      break;
-    default:
-      form_driver(entryForm, key);
-      break;
+void ChatWindowImpl::processInput(int key) {
+  switch (key) {
+  case KEY_ENTER:
+  case '\n':
+    // Requesting validation synchs the seen field & the buffer.
+    form_driver(entryForm, REQ_VALIDATION);
+    onTextEntry(getFieldString());
+    move(1, 1);
+    set_field_buffer(entryField, 0, "");
+    refresh();
+    pos_form_cursor(entryForm);
+    break;
+  case KEY_BACKSPACE:
+  case 127: // ASCII delete
+    form_driver(entryForm, REQ_DEL_PREV);
+    break;
+  case KEY_DC:
+    form_driver(entryForm, REQ_DEL_CHAR);
+    break;
+  case ERR:
+    // swallow
+    break;
+  default:
+    form_driver(entryForm, key);
+    break;
   }
 }
 
-
-void
-ChatWindowImpl::refreshWindow() {
+void ChatWindowImpl::refreshWindow() {
   wrefresh(view);
   wrefresh(entry);
 }
 
-
-void
-ChatWindowImpl::displayText(const std::string& text) {
+void ChatWindowImpl::displayText(const std::string &text) {
   // This variadic function is part of the curses interface.
   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-vararg)
   wprintw(view, "%s", text.c_str());
 }
 
-
-size_t
-ChatWindowImpl::getFieldSize() const {
+size_t ChatWindowImpl::getFieldSize() const {
   size_t x, y;
   getyx(entrySub, y, x);
   return y * parentX + x;
 }
 
-
-std::string
-ChatWindowImpl::getFieldString() const {
+std::string ChatWindowImpl::getFieldString() const {
   return std::string{field_buffer(entryField, 0), getFieldSize()};
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // ChatWindow API
 ////////////////////////////////////////////////////////////////////////////////
 
-
 ChatWindow::ChatWindow(std::function<void(std::string)> onTextEntry,
                        int updateDelay)
-  : impl{std::make_unique<ChatWindowImpl>(std::move(onTextEntry), updateDelay)}
-    { }
-
+    : impl{std::make_unique<ChatWindowImpl>(std::move(onTextEntry),
+                                            updateDelay)} {}
 
 ChatWindow::~ChatWindow() = default;
 
-
-void
-ChatWindow::update() {
+void ChatWindow::update() {
   impl->resizeOnShapeChange();
   impl->processInput(getch());
   impl->refreshWindow();
 }
 
-
-void
-ChatWindow::displayText(const std::string& text) {
+void ChatWindow::displayText(const std::string &text) {
   impl->displayText(text);
 }
-
-
