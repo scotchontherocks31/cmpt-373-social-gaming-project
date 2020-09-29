@@ -5,16 +5,13 @@
 // for details.
 /////////////////////////////////////////////////////////////////////////////
 
-
 #include <iostream>
 #include <unistd.h>
 
 #include "ChatWindow.h"
 #include "Client.h"
 
-
-int
-main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   if (argc < 3) {
     return 1;
   }
@@ -22,8 +19,8 @@ main(int argc, char* argv[]) {
   networking::Client client{argv[1], argv[2]}; // 4000 , webhtml passed
 
   bool done = false;
-  
-  auto onTextEntry = [&done, &client] (std::string text) {
+
+  auto onTextEntry = [&done, &client](std::string text) {
     if ("exit" == text || "quit" == text) {
       done = true;
     } else {
@@ -36,16 +33,16 @@ main(int argc, char* argv[]) {
   while (!done && !client.isDisconnected()) {
     try {
       client.update();
-    } catch (std::exception& e) {
+    } catch (std::exception &e) {
       chatWindow.displayText("Exception from Client update:");
       chatWindow.displayText(e.what());
-      
+
       done = true;
     }
 
     auto response = client.receive();
     if (!response.empty()) {
-      
+
       chatWindow.displayText(response);
     }
     chatWindow.update();
@@ -53,4 +50,3 @@ main(int argc, char* argv[]) {
 
   return 0;
 }
-
