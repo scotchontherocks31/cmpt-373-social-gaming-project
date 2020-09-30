@@ -34,7 +34,7 @@ private:
 class RoomManager {
 public:
   RoomManager();
-  Room& createRoom(std::string name = "");
+  Room &createRoom(std::string name = "");
   void removeRoom(int id);
   bool putUserToRoom(User &user, int roomNumber);
   void removeUserFromRoom(User &user);

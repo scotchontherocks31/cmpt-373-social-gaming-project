@@ -7,17 +7,18 @@ RoomManager::RoomManager() {
   ++roomCounter;
 }
 
-Room& RoomManager::createRoom(std::string name){
+Room &RoomManager::createRoom(std::string name) {
   if (name == "")
-    name =  "Room" + roomCounter;
+    name = "Room" + roomCounter;
   rooms.insert({roomCounter, Room{roomCounter, name}});
   return rooms.at(roomCounter++);
 }
 
-void RoomManager::removeRoom(int id){
+void RoomManager::removeRoom(int id) {
   // Should not remove global room
-  if (!rooms.count(id) || id == 0) return;
-  auto& room = rooms.at(id);
+  if (!rooms.count(id) || id == 0)
+    return;
+  auto &room = rooms.at(id);
   while (!room.participants.empty()) {
     auto it = room.participants.begin();
     putUserToRoom(**it, 0); // Put user to global room
@@ -28,7 +29,8 @@ void RoomManager::removeRoom(int id){
 /// Put user in specified room, switch room if needed.
 /// Return true if successfully put user in or user already in the room.
 bool RoomManager::putUserToRoom(User &user, int roomNumber) {
-  if (!rooms.count(roomNumber)) return false;
+  if (!rooms.count(roomNumber))
+    return false;
   auto &room = rooms.at(roomNumber);
 
   // Check if user already in target room
@@ -46,7 +48,6 @@ bool RoomManager::putUserToRoom(User &user, int roomNumber) {
     userRoomMapping[user.connection.id] = roomNumber;
   }
   return result;
-
 }
 
 /// Remove user from any room.
