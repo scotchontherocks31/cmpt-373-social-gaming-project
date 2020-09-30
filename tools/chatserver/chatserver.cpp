@@ -1,60 +1,8 @@
-/////////////////////////////////////////////////////////////////////////////
-//                         Single Threaded Networking
-//
-// This file is distributed under the MIT License. See the LICENSE file
-// for details.
-/////////////////////////////////////////////////////////////////////////////
-
-#include "chatserver.h"
-#include "Server.h"
+#include "GameServer.h"
 
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <unistd.h>
-#include <vector>
-
-using networking::Connection;
-using networking::Message;
-using networking::Server;
-
-std::vector<Connection> clients;
-
-void onConnect(Connection c) {
-  std::cout << "New connection found: " << c.id << "\n";
-  clients.push_back(c);
-}
-
-void onDisconnect(Connection c) {
-  std::cout << "Connection lost: " << c.id << "\n";
-  auto eraseBegin = std::remove(std::begin(clients), std::end(clients), c);
-  clients.erase(eraseBegin, std::end(clients));
-}
-
-MessageResult processMessages(Server &server,
-                              const std::deque<Message> &incoming) {
-  std::ostringstream result;
-  bool quit = false;
-  for (auto &message : incoming) {
-    if (message.text == "quit") {
-      server.disconnect(message.connection);
-    } else if (message.text == "shutdown") {
-      std::cout << "Shutting down.\n";
-      quit = true;
-    } else {
-      result << message.connection.id << "> " << message.text << "\n";
-    }
-  }
-  return MessageResult{result.str(), quit};
-}
-
-std::deque<Message> buildOutgoing(const std::string &log) {
-  std::deque<Message> outgoing;
-  for (auto client : clients) {
-    outgoing.push_back({client, log});
-  }
-  return outgoing;
-}
 
 std::string getHTTPMessage(const char *htmlLocation) {
   if (access(htmlLocation, R_OK) != -1) {
@@ -76,29 +24,8 @@ int main(int argc, char *argv[]) {
   }
 
   unsigned short port = std::stoi(argv[1]);
-  Server server{port, getHTTPMessage(argv[2]), onConnect, onDisconnect};
-
-  while (true) {
-    bool errorWhileUpdating = false;
-    try {
-      server.update();
-    } catch (std::exception &e) {
-      std::cerr << "Exception from Server update:\n"
-                << " " << e.what() << "\n\n";
-      errorWhileUpdating = true;
-    }
-
-    auto incoming = server.receive();
-    auto [log, shouldQuit] = processMessages(server, incoming);
-    auto outgoing = buildOutgoing(log);
-    server.send(outgoing);
-
-    if (shouldQuit || errorWhileUpdating) {
-      break;
-    }
-
-    sleep(1);
-  }
+  GameServer server{port, getHTTPMessage(argv[2])};
+  server.startRunningLoop();
 
   return 0;
 }

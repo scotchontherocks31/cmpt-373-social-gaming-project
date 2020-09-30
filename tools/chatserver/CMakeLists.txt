@@ -1,6 +1,6 @@
 
 add_executable(chatserver
-  chatserver.cpp
+  chatserver.cpp GameServer.cpp Room.cpp
 )
 
 set_target_properties(chatserver
