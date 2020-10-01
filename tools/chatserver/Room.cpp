@@ -1,6 +1,7 @@
 #include "Room.h"
-
+#include <iostream>
 Room::Room(int id, std::string roomName) : roomName(roomName), id(id) {}
+
 
 RoomManager::RoomManager() {
   rooms.insert({roomCounter, Room{roomCounter, "Global"}});
@@ -21,7 +22,7 @@ void RoomManager::removeRoom(int id) {
   auto &room = rooms.at(id);
   while (!room.participants.empty()) {
     auto it = room.participants.begin();
-    putUserToRoom(it->second, 0); // Put user to global room
+    putUserToRoom(**it, 0); // Put user to global room
   }
   rooms.erase(id);
 }
@@ -34,26 +35,28 @@ bool RoomManager::putUserToRoom(User &user, int roomNumber) {
   auto &room = rooms.at(roomNumber);
 
   // Check if user already in target room
-  if (room.participants.count(user.getId())) {
+  if (room.participants.count(&user)) {
     return true;
   }
 
   // Check if user is in any other room
-  if (userRoomMapping.count(user.getId())) {
+  if (userRoomMapping.count(user.connection.id)) {
     removeUserFromRoom(user);
   }
 
-  room.participants.insert({user.getId(), user});
-  userRoomMapping.insert({user.getId(), roomNumber});
-  return true;
+  auto [_, result] = room.participants.insert(&user);
+  if (result) {
+    userRoomMapping[user.connection.id] = roomNumber;
+  }
+  return result;
 }
 
 /// Remove user from any room.
 void RoomManager::removeUserFromRoom(User &user) {
-  auto userId = user.getId();
+  auto userId = user.connection.id;
   if (userRoomMapping.count(userId)) {
-    auto roomNumber = userRoomMapping.at(userId);
-    rooms.at(roomNumber).participants.erase(userId);
+    int roomNumber = userRoomMapping.at(userId);
+    rooms.at(roomNumber).participants.erase(&user);
     userRoomMapping.erase(userId);
   }
 }
@@ -61,5 +64,28 @@ void RoomManager::removeUserFromRoom(User &user) {
 /// Get room that user is currently in.
 /// Throw std::out_of_range if user is not in any room.
 Room &RoomManager::getRoomFromUser(const User &user) {
-  return rooms.at(userRoomMapping.at(user.getId()));
+  return rooms.at(userRoomMapping.at(user.connection.id));
 }
+
+void RoomManager::listRooms(){
+
+  for (std::pair<int, Room> r : rooms) {
+    std::cout << r.first << ".Room " << r.second.roomName << " members:"<<std::endl;
+    r.second.listMembers();
+  }
+
+}
+
+void Room::listMembers(){
+  
+  for (const auto& p: participants) {
+     std::cout << p->connection.id << std::endl;
+  }
+
+}
+
+
+
+
+
+
