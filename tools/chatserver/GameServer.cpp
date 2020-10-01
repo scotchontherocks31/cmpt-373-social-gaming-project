@@ -15,9 +15,8 @@ GameServer::GameServer(unsigned short port, std::string httpMessage)
 
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";
-  auto user = User{c, std::to_string(c.id)};
-  users[c.id] = user;
-  roomManager.putUserToRoom(user, 0);
+  users[c.id] = User{c, std::to_string(c.id)};
+  roomManager.putUserToRoom(users[c.id], 0);
 }
 
 void GameServer::onDisconnect(Connection c) {
@@ -62,7 +61,7 @@ MessageResult GameServer::processMessages(Server &server,
     etc. We should have a method that abstract Connection away and just give us
     a User.
     */
-    auto user = getUser(message.connection);
+    auto& user = getUser(message.connection);
 
     // Check if message is a command (e.g. /create)
     if (message.text[0] == '/') {
@@ -103,7 +102,7 @@ MessageResult GameServer::processMessages(Server &server,
       // }
     } else {
       // If not a command then just output a message
-      log << user.connection.id << "> " << message.text << "\n";
+      log << user.name << "> " << message.text << "\n";
     }
     outMessages.push_back(DecoratedMessage{user, log.str()});
   }
