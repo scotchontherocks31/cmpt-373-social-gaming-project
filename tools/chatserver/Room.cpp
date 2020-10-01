@@ -21,7 +21,7 @@ void RoomManager::removeRoom(int id) {
   auto &room = rooms.at(id);
   while (!room.participants.empty()) {
     auto it = room.participants.begin();
-    putUserToRoom(**it, 0); // Put user to global room
+    putUserToRoom(it->second, 0); // Put user to global room
   }
   rooms.erase(id);
 }
@@ -34,28 +34,26 @@ bool RoomManager::putUserToRoom(User &user, int roomNumber) {
   auto &room = rooms.at(roomNumber);
 
   // Check if user already in target room
-  if (room.participants.count(&user)) {
+  if (room.participants.count(user.getId())) {
     return true;
   }
 
   // Check if user is in any other room
-  if (userRoomMapping.count(user.connection.id)) {
+  if (userRoomMapping.count(user.getId())) {
     removeUserFromRoom(user);
   }
 
-  auto [_, result] = room.participants.insert(&user);
-  if (result) {
-    userRoomMapping[user.connection.id] = roomNumber;
-  }
-  return result;
+  room.participants.insert({user.getId(), user});
+  userRoomMapping.insert({user.getId(), roomNumber});
+  return true;
 }
 
 /// Remove user from any room.
 void RoomManager::removeUserFromRoom(User &user) {
-  auto userId = user.connection.id;
+  auto userId = user.getId();
   if (userRoomMapping.count(userId)) {
     auto roomNumber = userRoomMapping.at(userId);
-    rooms.at(roomNumber).participants.erase(&user);
+    rooms.at(roomNumber).participants.erase(userId);
     userRoomMapping.erase(userId);
   }
 }
@@ -63,5 +61,5 @@ void RoomManager::removeUserFromRoom(User &user) {
 /// Get room that user is currently in.
 /// Throw std::out_of_range if user is not in any room.
 Room &RoomManager::getRoomFromUser(const User &user) {
-  return rooms.at(userRoomMapping.at(user.connection.id));
+  return rooms.at(userRoomMapping.at(user.getId()));
 }

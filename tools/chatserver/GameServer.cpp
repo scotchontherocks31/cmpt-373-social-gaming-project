@@ -61,7 +61,7 @@ MessageResult GameServer::processMessages(Server &server,
     etc. We should have a method that abstract Connection away and just give us
     a User.
     */
-    auto& user = getUser(message.connection);
+    auto &user = getUser(message.connection);
 
     // Check if message is a command (e.g. /create)
     if (message.text[0] == '/') {
@@ -114,8 +114,8 @@ GameServer::buildOutgoing(const std::vector<DecoratedMessage> &messages) {
   std::deque<Message> outgoing;
   for (auto &message : messages) {
     auto room = roomManager.getRoomFromUser(message.user);
-    for (auto client : room.getParticipants()) {
-      outgoing.push_back({client->connection, message.text});
+    for (auto &&[_, user] : room.getParticipants()) {
+      outgoing.push_back({user.get().connection, message.text});
     }
   }
   return outgoing;

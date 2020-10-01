@@ -1,19 +1,21 @@
 #pragma once
 
 #include "Server.h"
+#include <functional>
 #include <map>
 #include <string>
 #include <unordered_set>
 
-using networking::Connection;
+typedef uintptr_t userid;
 
 struct User {
-  Connection connection;
+  networking::Connection connection;
   std::string name;
   // etc...
   bool operator==(const User &other) const {
     return connection == other.connection;
   }
+  userid getId() const { return connection.id; }
 };
 
 class Room {
@@ -21,13 +23,14 @@ public:
   std::string roomName;
   Room(int id, std::string roomName);
   int getId() { return id; }
-  const std::unordered_set<User *> &getParticipants() const {
+  const std::map<userid, std::reference_wrapper<User>> &
+  getParticipants() const {
     return participants;
   }
 
 private:
   int id;
-  std::unordered_set<User *> participants;
+  std::map<userid, std::reference_wrapper<User>> participants;
   friend class RoomManager;
 };
 
@@ -43,5 +46,5 @@ public:
 private:
   int roomCounter = 0;
   std::map<int, Room> rooms;
-  std::map<uintptr_t, int> userRoomMapping;
+  std::map<userid, int> userRoomMapping;
 };
