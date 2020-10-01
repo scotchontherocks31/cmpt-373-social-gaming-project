@@ -49,10 +49,28 @@ void GameServer::startRunningLoop() {
   }
 }
 
+// take owner command from client and return command split into tokens
+std::vector<std::string> GameServer::getCommand(const std::string& message){
+  std::vector<std::string> tokens;
+
+  // remove \ from start of string
+  std::string new_message = message.substr(1,message.size()-1);
+
+  // string split source: http://www.martinbroadhurst.com/how-to-split-a-string-in-c.html
+  std::stringstream ss(new_message);
+  std::string token;
+  while (std::getline(ss, token, ' ')) {
+      tokens.push_back(token);
+  }
+  std::cout << message << std::endl;
+  return tokens;
+}
+
 MessageResult GameServer::processMessages(Server &server,
                                           const std::deque<Message> &incoming) {
   std::vector<DecoratedMessage> outMessages;
   bool quit = false;
+  
   for (auto &message : incoming) {
     std::ostringstream log;
     /*
@@ -66,40 +84,54 @@ MessageResult GameServer::processMessages(Server &server,
     // Check if message is a command (e.g. /create)
     if (message.text[0] == '/') {
       // // Parse the the command and get the tokens (e.g. /create Room1 RPS ->
-      // ["create", "Room1", "RPS"])) std::vector tokens =
-      // getCommand(message.text);
+      // ["create", "Room1", "RPS"])) 
+      std::vector tokens = getCommand(message.text);
+      /*
+      std::cout<<"checking tokens:\n";
+      
+      for(int i=0; i < tokens.size(); i++){
+        
+        std::cout << tokens[i] << std::endl;
+      }
+      */
+         
+    // // // // // _GLIBCXX_HAVE_LOG10Lm
 
-      // if (tokens[0] == "quit") {
-      // 	// Disconnect from server
-      // 	server.disconnect(user.connection);
-      // }
-      // if (tokens[0] == "shutdown") {
-      // 	// Shut down the server
-      // 	std::cout << "Shutting down.\n";
-      // 	quit = true;
-      // }
-      // if (tokens[0] == "create") {
-      // 	// Create an empty room
-      // 	createRoom(user, tokens, log);
-      // }
-      // if (tokens[0] == "join") {
-      // 	joinRoom(user, tokens, log);
-      // }
-      // if (tokens[0] == "leave") {
-      // 	leaveRoom(user, tokens, log);
-      // }
-      // if (tokens[0] == "start") {
-      // 	// Start the game
-      // 	startGame(user, tokens, log);
-      // }
-      // if (tokens[0] == "end") {
-      // 	// End the game early
-      // 	endGame(user, tokens, log)
-      // }
-      // if (tokens[0] == "info") {
-      // 	// Print info about the room and game
-      // 	getInfo(user, tokens, log)
-      // }
+    // // // // // alksdjf
+    // // // // //   laskd 
+
+
+       if (tokens[0] == "quit") {
+       	// Disconnect from server
+       	server.disconnect(user.connection);
+       }
+       if (tokens[0] == "shutdown") {
+       	// Shut down the server
+       	std::cout << "Shutting down.\n";
+       	quit = true;
+       }
+       if (tokens[0] == "create") {
+       	// Create an empty room
+       	//createRoom(user, tokens, log);
+       }
+       if (tokens[0] == "join") {
+       	//joinRoom(user, tokens, log);
+       }
+       if (tokens[0] == "leave") {
+       	//leaveRoom(user, tokens, log);
+       }
+       if (tokens[0] == "start") {
+       	// Start the game
+       	//startGame(user, tokens, log);
+       }
+       if (tokens[0] == "end") {
+       	// End the game early
+       	//endGame(user, tokens, log)
+       }
+       if (tokens[0] == "info") {
+       	// Print info about the room and game
+       	//getInfo(user, tokens, log)
+       }
     } else {
       // If not a command then just output a message
       log << user.name << "> " << message.text << "\n";
