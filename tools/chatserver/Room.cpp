@@ -1,5 +1,5 @@
 #include "Room.h"
-
+#include <iostream>
 Room::Room(int id, std::string roomName) : roomName(roomName), id(id) {}
 
 RoomManager::RoomManager() {
@@ -52,7 +52,7 @@ bool RoomManager::putUserToRoom(User &user, int roomNumber) {
 void RoomManager::removeUserFromRoom(User &user) {
   auto userId = user.getId();
   if (userRoomMapping.count(userId)) {
-    auto roomNumber = userRoomMapping.at(userId);
+    int roomNumber = userRoomMapping.at(userId);
     rooms.at(roomNumber).participants.erase(userId);
     userRoomMapping.erase(userId);
   }
@@ -62,4 +62,21 @@ void RoomManager::removeUserFromRoom(User &user) {
 /// Throw std::out_of_range if user is not in any room.
 Room &RoomManager::getRoomFromUser(const User &user) {
   return rooms.at(userRoomMapping.at(user.getId()));
+}
+
+void RoomManager::listRooms(){
+
+  for (std::pair<int, Room> r : rooms) {
+    std::cout << r.first << ".Room " << r.second.roomName << " members:"<<std::endl;
+    r.second.listParticipants();
+  }
+
+}
+
+void Room::listParticipants(){
+  
+  for (std::pair<userid, std::reference_wrapper<User>> p: participants) {
+     std::cout << p.second.get().getId() << std::endl;
+  }
+
 }

@@ -15,6 +15,8 @@ public:
   getParticipants() const {
     return participants;
   }
+  void listParticipants();
+  
 
 private:
   int id;
@@ -30,6 +32,7 @@ public:
   bool putUserToRoom(User &user, int roomNumber);
   void removeUserFromRoom(User &user);
   Room &getRoomFromUser(const User &user);
+  void listRooms();
 
 private:
   int roomCounter = 0;
