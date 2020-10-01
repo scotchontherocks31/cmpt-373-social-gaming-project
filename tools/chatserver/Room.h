@@ -1,22 +1,10 @@
 #pragma once
 
-#include "Server.h"
+#include "User.h"
 #include <functional>
 #include <map>
 #include <string>
 #include <unordered_set>
-
-typedef uintptr_t userid;
-
-struct User {
-  networking::Connection connection;
-  std::string name;
-  // etc...
-  bool operator==(const User &other) const {
-    return connection == other.connection;
-  }
-  userid getId() const { return connection.id; }
-};
 
 class Room {
 public:
