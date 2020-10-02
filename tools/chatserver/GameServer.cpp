@@ -49,10 +49,28 @@ void GameServer::startRunningLoop() {
   }
 }
 
+// take owner command from client and return command split into tokens
+std::vector<std::string> GameServer::getCommand(const std::string& message){
+  std::vector<std::string> tokens;
+
+  // remove \ from start of string
+  std::string new_message = message.substr(1,message.size()-1);
+
+  // string split source: http://www.martinbroadhurst.com/how-to-split-a-string-in-c.html
+  std::stringstream ss(new_message);
+  std::string token;
+  while (std::getline(ss, token, ' ')) {
+      tokens.push_back(token);
+  }
+  std::cout << message << std::endl;
+  return tokens;
+}
+
 MessageResult GameServer::processMessages(Server &server,
                                           const std::deque<Message> &incoming) {
   std::vector<DecoratedMessage> outMessages;
   bool quit = false;
+  
   for (auto &message : incoming) {
     std::ostringstream log;
     /*
@@ -77,7 +95,7 @@ MessageResult GameServer::processMessages(Server &server,
     if (tokens[0].at(0) == '/') {
       // // Parse the the command and get the tokens (e.g. /create Room1 RPS ->
       // ["create", "Room1", "RPS"])) std::vector tokens =
-      // getCommand(message.text);
+      getCommand(message.text);
 
       if (tokens[0] == "/quit") {
         // Disconnect from server
