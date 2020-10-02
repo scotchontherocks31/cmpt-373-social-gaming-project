@@ -11,7 +11,7 @@ typedef size_t roomid;
 class Room {
 public:
   Room(std::string roomName);
-  const std::string& getName() const { return name; }
+  const std::string &getName() const { return name; }
   const std::map<userid, std::reference_wrapper<User>> &
   getParticipants() const {
     return participants;
@@ -29,9 +29,9 @@ private:
 class RoomManager {
 public:
   RoomManager();
-  bool createRoom(const std::string& name = "");
-  void removeRoom(const std::string& name);
-  bool putUserToRoom(User &user, const std::string& roomName);
+  bool createRoom(const std::string &name = "");
+  void removeRoom(const std::string &name);
+  bool putUserToRoom(User &user, const std::string &roomName);
   void removeUserFromRoom(User &user);
   Room &getRoomFromUser(const User &user);
   void listRooms();

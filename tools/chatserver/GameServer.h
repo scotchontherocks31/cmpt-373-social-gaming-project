@@ -36,5 +36,5 @@ private:
   std::deque<Message> buildOutgoing(const std::vector<DecoratedMessage> &log);
   User &getUser(Connection connection) { return users.at(connection.id); }
 
-  std::vector<std::string> getCommand(const std::string& message);
+  std::vector<std::string> getCommand(const std::string &message);
 };
