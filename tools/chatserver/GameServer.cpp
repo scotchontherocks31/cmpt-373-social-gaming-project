@@ -83,23 +83,8 @@ MessageResult GameServer::processMessages(Server &server,
 
     // Check if message is a command (e.g. /create)
     if (message.text[0] == '/') {
-      // // Parse the the command and get the tokens (e.g. /create Room1 RPS ->
-      // ["create", "Room1", "RPS"])) 
+ 
       std::vector tokens = getCommand(message.text);
-      /*
-      std::cout<<"checking tokens:\n";
-      
-      for(int i=0; i < tokens.size(); i++){
-        
-        std::cout << tokens[i] << std::endl;
-      }
-      */
-         
-    // // // // // _GLIBCXX_HAVE_LOG10Lm
-
-    // // // // // alksdjf
-    // // // // //   laskd 
-
 
        if (tokens[0] == "quit") {
        	// Disconnect from server
