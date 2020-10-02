@@ -16,7 +16,6 @@ public:
     return participants;
   }
   void listParticipants();
-  
 
 private:
   int id;

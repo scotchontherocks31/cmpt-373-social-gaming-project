@@ -62,17 +62,16 @@ MessageResult GameServer::processMessages(Server &server,
     a User.
     */
 
-    //Put it in helper class----------------
-    std::vector <std::string> tokens; 
-    std::stringstream check1(message.text); 
-    std::string intermediate; 
-    while(getline(check1, intermediate, ' ')) 
-    { 
-      tokens.push_back(intermediate); 
-    } 
+    // Put it in helper class----------------
+    std::vector<std::string> tokens;
+    std::stringstream check1(message.text);
+    std::string intermediate;
+    while (getline(check1, intermediate, ' ')) {
+      tokens.push_back(intermediate);
+    }
     //--------------------------------------
 
-    auto& user = getUser(message.connection);
+    auto &user = getUser(message.connection);
 
     // Check if message is a command (e.g. /create)
     if (tokens[0].at(0) == '/') {
@@ -81,30 +80,29 @@ MessageResult GameServer::processMessages(Server &server,
       // getCommand(message.text);
 
       if (tokens[0] == "/quit") {
-      // Disconnect from server
-        
+        // Disconnect from server
+        server.disconnect(user.connection);
       }
 
       if (tokens[0] == "/shutdown") {
-      // Shut down the server
+        // Shut down the server
         std::cout << "Shutting down.\n";
         quit = true;
       }
 
       if (tokens[0] == "/create") {
         // Create an empty room
-        if(tokens.size() == 2){
-        roomManager.createRoom(tokens[1]);
-        }
-        else{
+        if (tokens.size() == 2) {
+          roomManager.createRoom(tokens[1]);
+        } else {
           roomManager.createRoom("");
         }
       }
 
       if (tokens[0] == "/join") {
         // Create an empty room
-        if(tokens.size() == 2){
-        roomManager.putUserToRoom(user, std::stoi(tokens[1]));
+        if (tokens.size() == 2) {
+          roomManager.putUserToRoom(user, std::stoi(tokens[1]));
         }
       }
 
@@ -112,7 +110,7 @@ MessageResult GameServer::processMessages(Server &server,
         roomManager.removeUserFromRoom(user);
       }
 
-      if(tokens[0] == "/list"){
+      if (tokens[0] == "/list") {
         roomManager.listRooms();
       }
       // if (tokens[0] == "start") {

@@ -64,19 +64,16 @@ Room &RoomManager::getRoomFromUser(const User &user) {
   return rooms.at(userRoomMapping.at(user.getId()));
 }
 
-void RoomManager::listRooms(){
-
+void RoomManager::listRooms() {
   for (std::pair<int, Room> r : rooms) {
-    std::cout << r.first << ".Room " << r.second.roomName << " members:"<<std::endl;
+    std::cout << r.first << ".Room " << r.second.roomName
+              << " members:" << std::endl;
     r.second.listParticipants();
   }
-
 }
 
-void Room::listParticipants(){
-  
-  for (std::pair<userid, std::reference_wrapper<User>> p: participants) {
-     std::cout << p.second.get().getId() << std::endl;
+void Room::listParticipants() {
+  for (std::pair<userid, std::reference_wrapper<User>> p : participants) {
+    std::cout << p.second.get().getId() << std::endl;
   }
-
 }
