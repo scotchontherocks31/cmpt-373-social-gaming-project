@@ -1,37 +1,70 @@
 #include "Room.h"
+#include <boost/algorithm/string.hpp>
+#include <cctype>
 #include <iostream>
-Room::Room(int id, std::string roomName) : roomName(roomName), id(id) {}
 
-RoomManager::RoomManager() {
-  rooms.insert({roomCounter, Room{roomCounter, "Global"}});
+/// Returns normalized string (e.g. "This is a string" -> "this-is-a-string")
+std::string getNormalizedString(const std::string &str) {
+  std::string result = str;
+  std::transform(str.begin(), str.end(), result.begin(), [](char c) {
+    c = std::tolower(c);
+    return c == ' ' ? '-' : c;
+  });
+  return result;
+}
+
+roomid getIdFromName(const std::string &name) {
+  return std::hash<std::string>()(getNormalizedString(name));
+}
+
+Room::Room(std::string roomName)
+    : name(std::move(roomName)), id(getIdFromName(name)) {}
+
+Room::Room(roomid id, std::string roomName)
+    : name(std::move(roomName)), id(id) {}
+
+RoomManager::RoomManager() : GLOBAL_ROOM_HASH(getIdFromName(GLOBAL_ROOM_NAME)) {
+  rooms.insert({GLOBAL_ROOM_HASH, Room{GLOBAL_ROOM_HASH, GLOBAL_ROOM_NAME}});
+}
+
+bool RoomManager::createRoom(const std::string &name) {
+  auto roomName = boost::algorithm::trim_copy(name);
+  roomName = roomName == "" ? "Room " + std::to_string(roomCounter) : roomName;
+  auto roomId = getIdFromName(roomName);
+  if (rooms.count(roomId)) {
+    return false;
+  }
+  auto room = Room{roomName};
+  rooms.insert({room.id, room});
   ++roomCounter;
+  return true;
 }
 
-Room &RoomManager::createRoom(std::string name) {
-  if (name == "")
-    name = "Room" + roomCounter;
-  rooms.insert({roomCounter, Room{roomCounter, name}});
-  return rooms.at(roomCounter++);
-}
-
-void RoomManager::removeRoom(int id) {
-  // Should not remove global room
-  if (!rooms.count(id) || id == 0)
+void RoomManager::removeRoom(const std::string &name) {
+  auto roomName = boost::algorithm::trim_copy(name);
+  if (roomName == "")
     return;
-  auto &room = rooms.at(id);
+  auto roomId = getIdFromName(roomName);
+  // Should not remove global room
+  if (!rooms.count(roomId) || roomId == GLOBAL_ROOM_HASH)
+    return;
+  auto &room = rooms.at(roomId);
   while (!room.participants.empty()) {
     auto it = room.participants.begin();
-    putUserToRoom(it->second, 0); // Put user to global room
+    putUserToRoom(it->second, GLOBAL_ROOM_NAME); // Put user to global room
   }
-  rooms.erase(id);
+  rooms.erase(roomId);
 }
 
 /// Put user in specified room, switch room if needed.
 /// Return true if successfully put user in or user already in the room.
-bool RoomManager::putUserToRoom(User &user, int roomNumber) {
-  if (!rooms.count(roomNumber))
+bool RoomManager::putUserToRoom(User &user, const std::string &roomName) {
+  if (roomName == "")
     return false;
-  auto &room = rooms.at(roomNumber);
+  auto roomId = getIdFromName(roomName);
+  if (!rooms.count(roomId))
+    return false;
+  auto &room = rooms.at(roomId);
 
   // Check if user already in target room
   if (room.participants.count(user.getId())) {
@@ -44,7 +77,7 @@ bool RoomManager::putUserToRoom(User &user, int roomNumber) {
   }
 
   room.participants.insert({user.getId(), user});
-  userRoomMapping.insert({user.getId(), roomNumber});
+  userRoomMapping.insert({user.getId(), roomId});
   return true;
 }
 
@@ -52,8 +85,8 @@ bool RoomManager::putUserToRoom(User &user, int roomNumber) {
 void RoomManager::removeUserFromRoom(User &user) {
   auto userId = user.getId();
   if (userRoomMapping.count(userId)) {
-    int roomNumber = userRoomMapping.at(userId);
-    rooms.at(roomNumber).participants.erase(userId);
+    auto roomId = userRoomMapping.at(userId);
+    rooms.at(roomId).participants.erase(userId);
     userRoomMapping.erase(userId);
   }
 }
@@ -66,7 +99,7 @@ Room &RoomManager::getRoomFromUser(const User &user) {
 
 void RoomManager::listRooms() {
   for (std::pair<int, Room> r : rooms) {
-    std::cout << r.first << ".Room " << r.second.roomName
+    std::cout << r.first << ".Room " << r.second.getName()
               << " members:" << std::endl;
     r.second.listParticipants();
   }

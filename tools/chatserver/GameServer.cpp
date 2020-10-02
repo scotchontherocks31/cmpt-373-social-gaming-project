@@ -16,7 +16,7 @@ GameServer::GameServer(unsigned short port, std::string httpMessage)
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";
   users[c.id] = User{c, std::to_string(c.id)};
-  roomManager.putUserToRoom(users[c.id], 0);
+  roomManager.putUserToRoom(users[c.id], RoomManager::GLOBAL_ROOM_NAME);
 }
 
 void GameServer::onDisconnect(Connection c) {
@@ -103,7 +103,7 @@ MessageResult GameServer::processMessages(Server &server,
       if (tokens[0] == "join") {
         // Create an empty room
         if (tokens.size() == 2) {
-          roomManager.putUserToRoom(user, std::stoi(tokens[1]));
+          roomManager.putUserToRoom(user, tokens[1]);
         }
       }
 

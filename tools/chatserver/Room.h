@@ -6,11 +6,12 @@
 #include <string>
 #include <unordered_set>
 
+typedef size_t roomid;
+
 class Room {
 public:
-  std::string roomName;
-  Room(int id, std::string roomName);
-  int getId() { return id; }
+  Room(std::string roomName);
+  const std::string& getName() const { return name; }
   const std::map<userid, std::reference_wrapper<User>> &
   getParticipants() const {
     return participants;
@@ -18,23 +19,27 @@ public:
   void listParticipants();
 
 private:
-  int id;
+  std::string name;
+  roomid id;
   std::map<userid, std::reference_wrapper<User>> participants;
+  Room(roomid id, std::string roomName);
   friend class RoomManager;
 };
 
 class RoomManager {
 public:
   RoomManager();
-  Room &createRoom(std::string name = "");
-  void removeRoom(int id);
-  bool putUserToRoom(User &user, int roomNumber);
+  bool createRoom(const std::string& name = "");
+  void removeRoom(const std::string& name);
+  bool putUserToRoom(User &user, const std::string& roomName);
   void removeUserFromRoom(User &user);
   Room &getRoomFromUser(const User &user);
   void listRooms();
+  inline static const std::string GLOBAL_ROOM_NAME = "Global";
 
 private:
-  int roomCounter = 0;
-  std::map<int, Room> rooms;
-  std::map<userid, int> userRoomMapping;
+  const roomid GLOBAL_ROOM_HASH;
+  int roomCounter = 1;
+  std::map<roomid, Room> rooms;
+  std::map<userid, roomid> userRoomMapping;
 };
