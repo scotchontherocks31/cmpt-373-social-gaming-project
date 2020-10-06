@@ -6,7 +6,7 @@
 #include <string>
 #include <unordered_set>
 
-typedef size_t roomid;
+using roomid = size_t;
 
 class Room {
 public:
@@ -16,6 +16,9 @@ public:
   getParticipants() const {
     return participants;
   }
+  User &getParticipant(userid userId) const {
+    return participants.at(userId).get();
+  };
   void listParticipants();
 
 private:

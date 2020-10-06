@@ -2,7 +2,7 @@
 
 #include "Server.h"
 
-typedef uintptr_t userid;
+using userid = uintptr_t;
 
 struct User {
   networking::Connection connection;
