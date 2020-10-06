@@ -22,13 +22,13 @@ struct MessageResult {
 class GameServer {
 public:
   GameServer(unsigned short port, std::string httpMessage);
-  User &getUser(uintptr_t id) { return users.at(id); }
+  User &getUser(userid id) { return users.at(id); }
   void startRunningLoop();
 
 private:
   Server server;
   RoomManager roomManager;
-  std::map<uintptr_t, User> users;
+  std::map<userid, User> users;
   void onConnect(Connection c);
   void onDisconnect(Connection c);
   MessageResult processMessages(Server &server,
