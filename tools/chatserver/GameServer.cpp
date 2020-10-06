@@ -37,9 +37,9 @@ void GameServer::startRunningLoop() {
     }
 
     auto incoming = server.receive();
-    auto [log, shouldQuit] = processMessages(server, incoming);
-    auto outgoing = buildOutgoing(log);
-    server.send(outgoing);
+    auto [output, shouldQuit] = processMessages(server, incoming);
+    buildOutgoing(output);
+    flush();
 
     if (shouldQuit || errorWhileUpdating) {
       break;
@@ -72,7 +72,7 @@ MessageResult GameServer::processMessages(Server &server,
   bool quit = false;
 
   for (auto &message : incoming) {
-    std::ostringstream log;
+    std::ostringstream output;
     auto &user = getUser(message.connection);
 
     // Check if message is a command (e.g. /create)
@@ -117,33 +117,47 @@ MessageResult GameServer::processMessages(Server &server,
       }
       // if (tokens[0] == "start") {
       // 	// Start the game
-      // 	startGame(user, tokens, log);
+      // 	startGame(user, tokens, output);
       // }
       // if (tokens[0] == "end") {
       // 	// End the game early
-      // 	endGame(user, tokens, log)
+      // 	endGame(user, tokens, output)
       // }
       // if (tokens[0] == "info") {
       // 	// Print info about the room and game
-      // 	getInfo(user, tokens, log)
+      // 	getInfo(user, tokens, output)
       // }
     } else {
       // If not a command then just output a message
-      log << user.name << "> " << message.text << "\n";
+      output << user.name << "> " << message.text << "\n";
     }
-    outMessages.push_back(DecoratedMessage{user, log.str()});
+    outMessages.push_back(DecoratedMessage{user, output.str()});
   }
   return MessageResult{outMessages, quit};
 }
 
-std::deque<Message>
-GameServer::buildOutgoing(const std::vector<DecoratedMessage> &messages) {
-  std::deque<Message> outgoing;
+void GameServer::buildOutgoing(const std::vector<DecoratedMessage> &messages) {
   for (auto &message : messages) {
     auto room = roomManager.getRoomFromUser(message.user);
     for (auto &&[_, user] : room.getParticipants()) {
-      outgoing.push_back({user.get().connection, message.text});
+      outboundMessages.push_back({user.get().connection, message.text});
     }
   }
-  return outgoing;
+}
+
+void GameServer::flush() {
+  if (outboundMessages.size()) {
+    server.send(outboundMessages);
+    outboundMessages.clear();
+  }
+}
+
+void GameServer::sendMessageToUser(const User &user, std::string message) {
+  outboundMessages.push_back({user.connection, std::move(message)});
+}
+
+void GameServer::sendMessageToRoom(const Room &room, std::string message) {
+  for (auto &&[_, user] : room.getParticipants()) {
+    outboundMessages.push_back({user.get().connection, std::move(message)});
+  }
 }

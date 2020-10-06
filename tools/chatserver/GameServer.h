@@ -22,6 +22,8 @@ struct MessageResult {
 class GameServer {
 public:
   GameServer(unsigned short port, std::string httpMessage);
+  void sendMessageToUser(const User &user, std::string message);
+  void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
   void startRunningLoop();
 
@@ -29,12 +31,13 @@ private:
   Server server;
   RoomManager roomManager;
   std::map<userid, User> users;
+  std::deque<Message> outboundMessages;
   void onConnect(Connection c);
   void onDisconnect(Connection c);
   MessageResult processMessages(Server &server,
                                 const std::deque<Message> &incoming);
-  std::deque<Message> buildOutgoing(const std::vector<DecoratedMessage> &log);
+  void buildOutgoing(const std::vector<DecoratedMessage> &log);
   User &getUser(Connection connection) { return users.at(connection.id); }
-
+  void flush();
   std::vector<std::string> getCommand(const std::string &message);
 };
