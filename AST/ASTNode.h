@@ -8,20 +8,18 @@ namespace AST {
 
 class ASTNode {
     public:
-        int numChildren() const {
-            return numChildren;
-        }
+        //int numChildren() const;
         // check mutability
-        const std::vector<const ASTNode*> getChildren() const;
-        const ASTNode& getParent() const;
-        void setParent(ASTNode& parent);
-        void accept(ASTVisitor& visitor);
-        void setType(Type&);
-        Type& getType() const;
-        // Binding says variable available here scope (compile time)
-        const Binding& getBinding() const;
-        void setBinding(Binding&);
-        virtual ~ASTNode();
+        // const std::vector<const ASTNode*> getChildren() const;
+        // const ASTNode& getParent() const;
+        // void setParent(ASTNode& parent);
+        // void accept(ASTVisitor& visitor);
+        // void setType(Type&);
+        // Type& getType() const;
+        // // Binding says variable available here scope (compile time)
+        // const Binding& getBinding() const;
+        //void setBinding(Binding&);
+        //virtual ~ASTNode();
     private:
         std::vector<std::unique_ptr<ASTNode>> children;
         ASTNode* parent;

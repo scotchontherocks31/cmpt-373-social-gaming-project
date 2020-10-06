@@ -4,7 +4,9 @@
 #include "ASTNode.h"
 #include <string>
 
-class ASTGlobalOutNode : ASTNode {
+using namespace AST;
+
+class ASTGlobalOutNode : public ASTNode {
     public:
         ASTGlobalOutNode(const std::string&);
         const std::string& getMessage() const;
