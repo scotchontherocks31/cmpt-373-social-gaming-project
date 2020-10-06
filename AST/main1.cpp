@@ -55,15 +55,14 @@ int main()
    enviro.setBinding(globalOut,dsl);
 
 
+    ASTVisitor* vist = new Interpreter{enviro}; 
+ 
+
    // put enviroment inside of visitor
-   auto interp = Interpreter();
-
-   interp.setEnvironment(enviro);
-   //interp.environment = enviro;
+   //ASTVisitor* interp = &Interpreter(enviro);
 
 
-   // use visitor to get
-   
+    vist->visitEnter(globalOut);
 
 
 

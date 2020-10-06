@@ -6,15 +6,16 @@
 using namespace AST;
 using namespace std;
 
-//Car& Car::operator=(const Car &other) { }
+/*
 Environment& Environment::operator=(Environment other)
 {
     std::cout << "copy assignment of Enviroment\n";
     std::swap(bindings, other.bindings);
-    std::swap(child), other.child);
+    //std::swap(child), other.child);
     //std::swap(parent), other.parent);
     return *this;
 }
+*/
 
 
 
@@ -32,5 +33,12 @@ void Environment::setBinding(ASTNode& node, DSLValue val){
     //bindings[ASTNode&]= DSLValue;
     return;
 }
+
+DSLValue& Environment::getValue(ASTNode& node){
+    DSLValue& value = bindings[&node];
+    return value;
+
+}
+
 
 

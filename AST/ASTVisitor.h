@@ -1,9 +1,8 @@
 #ifndef AST_VISITOR_H
 #define AST_VISITOR_H
-#include <stdlib.h>
+
 #include <string>
 #include <unordered_map>
-
 #include "ASTNode.h"
 #include "ASTGlobalOutNode.h"
 namespace AST {
@@ -19,7 +18,7 @@ class DSLValue{
     public:
         void iamDSL();
         void setString(std::string dslString);
-    
+        std::string getString();
     private:
         std::string dslString;
 };
@@ -27,9 +26,11 @@ class DSLValue{
 class Environment {
     public:
 
-     
+        //Environment& Environment::operator=(Environment other);
         void iam();
-    //     const DSLValue& getValue(ASTNode&) const;
+
+        // use const?
+        DSLValue& getValue(ASTNode&) ;
     //     void removeBinding(ASTNode&);
     //     bool constains(ASTNode&);
          void setBinding(ASTNode&, DSLValue);
@@ -49,8 +50,8 @@ class ASTVisitor {
            
 //         virtual void visitLeave(ForEachNode&);
 //         virtual void visitEnter(ForEachNode&);
-         virtual void visitLeave(ASTGlobalOutNode&);
-         virtual void visitEnter(ASTGlobalOutNode&);
+         //virtual void visitLeave(ASTGlobalOutNode&);
+           virtual void visitEnter(ASTGlobalOutNode&);
 //         virtual void visitLeave(ListNode&);
 //         virtual void visitEnter(ListNode&);
 //         virtual void visitLeave(ElementNode&);
@@ -65,12 +66,13 @@ class ASTVisitor {
 
 class Interpreter : public ASTVisitor {
     public:
-    
-        void setEnvironment(Environment&);
+       
+        Interpreter(Environment &enviro );
+        //void setEnvironment(Environment&);
 //         virtual void visitLeave(ForEachNode&) override;
 //         virtual void visitEnter(ForEachNode& node) override;
-        virtual void visitLeave(ASTGlobalOutNode&) override;
-        virtual void visitEnter(ASTGlobalOutNode&) override;
+        //virtual void visitLeave(ASTGlobalOutNode&) override;
+           void visitEnter(ASTGlobalOutNode&) override;
 //         virtual void visitLeave(ListNode&) override;
 //         virtual void visitEnter(ListNode&) override;
 //         virtual void visitLeave(ElementNode&) override;
@@ -81,7 +83,7 @@ class Interpreter : public ASTVisitor {
 //         virtual void visitEnter(FormatNode&) override;
         
     private:
-           Environment environment; 
+           Environment &environment; 
 //         Communication &communication;
 };
 
