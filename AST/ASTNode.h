@@ -28,10 +28,6 @@ class ASTNode {
         void setParent(ASTNode* parent) {
             parent = parent;
         }
-        template <typename T>
-        void appendChild(T&& child) {
-            children.push_back(std::forward<T>(child));
-        }
         void accept(ASTVisitor& visitor) {
             acceptHelper(visitor);
         }
@@ -43,6 +39,9 @@ class ASTNode {
         std::vector<std::unique_ptr<ASTNode>> children;
         ASTNode* parent;
         int numChildren;
+        void appendChild(std::unique_ptr<ASTNode> &&child) {
+            children.push_back(std::move(child));
+        }
     private:
         virtual void acceptHelper(ASTVisitor& visitor) = 0;
         virtual void acceptForChildrenHelper(ASTVisitor& visitor) = 0;
@@ -51,7 +50,7 @@ class ASTNode {
 
 class FormatNode : public ASTNode {
     public:
-        FormatNode(std::string &&format) : format{std::move(format)} {}
+        FormatNode(std::string format): format{std::move(format)} {}
         const std::string& getFormat() {
             return format;
         }
@@ -61,8 +60,12 @@ class FormatNode : public ASTNode {
         std::string format;
 };
 
+
 class GlobalMessage : public ASTNode {
     public:
+        GlobalMessage(std::unique_ptr<FormatNode> &&formatNode) {
+            appendChild(std::move(formatNode));
+        }
         const FormatNode& getFormateNode() const {
             return *static_cast<FormatNode*>(children[0].get());
         }
