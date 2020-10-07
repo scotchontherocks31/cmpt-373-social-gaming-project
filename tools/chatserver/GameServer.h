@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Room.h"
+#include "RoomManager.h"
+#include "GameManager.h"
 #include <deque>
 #include <map>
 #include <string>
@@ -19,17 +20,21 @@ struct MessageResult {
   bool shouldShutdown;
 };
 
+class GameManager;
+
 class GameServer {
 public:
   GameServer(unsigned short port, std::string httpMessage);
   void sendMessageToUser(const User &user, std::string message);
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
+  RoomManager &getRoomManager() { return roomManager; }
   void startRunningLoop();
 
 private:
   Server server;
   RoomManager roomManager;
+  GameManager gameManager;
   std::map<userid, User> users;
   std::deque<Message> outboundMessages;
   void onConnect(Connection c);
