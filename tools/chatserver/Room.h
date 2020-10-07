@@ -12,6 +12,7 @@ class RoomManager;
 
 class Room {
 public:
+  roomid getId() const { return id; }
   const std::string &getName() const { return name; }
   const std::map<userid, std::reference_wrapper<User>> &
   getParticipants() const {
