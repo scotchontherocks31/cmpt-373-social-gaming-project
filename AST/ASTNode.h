@@ -74,6 +74,22 @@ class GlobalMessage : public ASTNode {
         virtual void acceptForChildrenHelper(ASTVisitor& visitor) override;
 };
 
+class AST {
+    public:
+        AST(std::unique_ptr<ASTNode> &&root) : root{std::move(root)} {}
+        const ASTNode& getParent() const {
+            return *root;
+        }
+        void setRoot(std::unique_ptr<ASTNode>&& root) {
+            root.swap(this->root);
+        }
+        void accept(ASTVisitor& visitor) {
+            root->accept(visitor);
+        }
+    private:
+        std::unique_ptr<ASTNode> root;
+};
+
 
 }
 
