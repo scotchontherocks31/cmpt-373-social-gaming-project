@@ -10,7 +10,6 @@ using roomid = size_t;
 
 class Room {
 public:
-  Room(std::string roomName);
   const std::string &getName() const { return name; }
   const std::map<userid, std::reference_wrapper<User>> &
   getParticipants() const {

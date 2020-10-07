@@ -17,9 +17,6 @@ roomid getIdFromName(const std::string &name) {
   return std::hash<std::string>()(getNormalizedString(name));
 }
 
-Room::Room(std::string roomName)
-    : name(std::move(roomName)), id(getIdFromName(name)) {}
-
 Room::Room(roomid id, std::string roomName)
     : name(std::move(roomName)), id(id) {}
 
@@ -34,7 +31,7 @@ bool RoomManager::createRoom(const std::string &name) {
   if (rooms.count(roomId)) {
     return false;
   }
-  auto room = Room{roomName};
+  auto room = Room{roomId, roomName};
   rooms.insert({room.id, room});
   ++roomCounter;
   return true;
