@@ -119,9 +119,11 @@ class Environment {
 class ASTVisitor {
     public:
         void visit(GlobalMessage& node) { visitHelper(node); }
+        void visit(FormatNode& node) { visitHelper(node); }
         virtual ~ASTVisitor() = default;
     private:
         virtual void visitHelper(GlobalMessage&) = 0;
+        virtual void visitHelper(FormatNode&) = 0;
 };
 
 
@@ -136,24 +138,34 @@ class Interpreter : public ASTVisitor {
             node.acceptForChildren(*this); 
             visitLeave(node);
         }
+        virtual void visitHelper(FormatNode& node) { 
+            visitEnter(node);
+            node.acceptForChildren(*this); 
+            visitLeave(node);
+        }
         void visitEnter(GlobalMessage& node) {
           
+            
+            
+        };
+        void visitLeave(GlobalMessage& node) {
             auto generalMessage = std::string{"Welcome all to game called: "};
 
-            /*
-            std::vector<ASTNode const*> formatChildVector = node.getChildren();
-            const ASTNode* formatChild = formatChildVector.front();
-
-            auto formatMessage = formatChild->getFormat();
-            */
+            //auto formatMessage = node.getFormatNode();
+            
             auto gameNameDSL = environment.getValue("Game Name");
             auto gameName = gameNameDSL.get<std::string>();
 
             auto finalMessage = generalMessage + gameName;
             communication.sendGlobalMessage(finalMessage);
+        };
+
+        void visitEnter(FormatNode& node) {   
             
         };
-        void visitLeave(GlobalMessage& node) {};
+        void visitLeave(FormatNode& node) {
+           
+        };
     private:
         Environment environment;
         Communication &communication;

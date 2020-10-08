@@ -68,7 +68,7 @@ class GlobalMessage : public ASTNode {
         GlobalMessage(std::unique_ptr<FormatNode> &&formatNode) {
             appendChild(std::move(formatNode));
         }
-        const FormatNode& getFormateNode() const {
+        const FormatNode& getFormatNode() const {
             return *static_cast<FormatNode*>(children[0].get());
         }
     private:
