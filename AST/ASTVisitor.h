@@ -119,7 +119,7 @@ class Environment {
 class ASTVisitor {
     public:
         void visit(GlobalMessage& node) { visitHelper(node); }
-        virtual ~ASTVisitor() = 0;
+        virtual ~ASTVisitor() = default;
     private:
         virtual void visitHelper(GlobalMessage&) = 0;
 };
