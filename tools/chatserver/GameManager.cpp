@@ -1,10 +1,15 @@
 #include "GameManager.h"
+#include "GameServer.h"
 
 GameManager::GameManager(GameServer &server) : server{server} {}
 
-GameHandler &GameManager::createGame(const Room &room) {
+// If game is already existed for the room, replace with new one.
+GameHandler &GameManager::createGame(Room &room) {
   auto roomId = room.getId();
-  games.insert_or_assign(room.getId(), GameHandler{room, server});
+  if (games.count(roomId)){
+    games.erase(roomId);
+  }
+  games.insert({roomId, GameHandler{room, server}});
   return games.at(roomId);
 }
 

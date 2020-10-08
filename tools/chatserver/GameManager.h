@@ -1,14 +1,13 @@
 #pragma once
 
 #include "GameHandler.h"
-#include "GameServer.h"
 
 struct DecoratedMessage;
 
 class GameManager {
 public:
   GameManager(GameServer &server);
-  GameHandler &createGame(const Room &room);
+  GameHandler &createGame(Room &room);
   void dispatch(const DecoratedMessage &message);
 
 private:
