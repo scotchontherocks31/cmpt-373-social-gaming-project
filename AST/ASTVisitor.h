@@ -20,28 +20,22 @@ class DSLValue;
 using List = std::vector<DSLValue>;
 using Map = std::map<std::string, DSLValue>;
 
-class None{
-    public:
-        explicit None() {}
-};
-
 template <typename T>
 concept DSLType = std::is_convertible<T, bool>::value ||
                   std::is_convertible<T, std::string>::value ||
                   std::is_convertible<T, int>::value ||
                   std::is_convertible<T, double>::value ||
                   std::is_convertible<T, List>::value ||
-                  std::is_convertible<T, Map>::value ||
-                  std::is_convertible<T, None>::value;
+                  std::is_convertible<T, Map>::value;
 
 class DSLValue {
     private:
-        using InternalType = std::variant<None, bool, std::string, int, double, List, Map>;
+        using InternalType = std::variant<std::monostate, bool, std::string, int, double, List, Map>;
         InternalType value;
     public:
         template <DSLType T>
-        DSLValue(T&& value) : value{std::forward<T>(value)} {}
-        DSLValue() : value{None{}} {}
+        DSLValue(T&& value) noexcept : value{std::forward<T>(value)} {}
+        DSLValue() noexcept = default;
         DSLValue(const DSLValue &other) noexcept {
             this->value = other.value;
         }
