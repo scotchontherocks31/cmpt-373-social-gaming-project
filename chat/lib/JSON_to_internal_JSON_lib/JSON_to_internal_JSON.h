@@ -4,7 +4,7 @@
 
 using json = nlohman::json;
 //the class is suposed to take a JSON file and
-//output a python like dict of correpsponding strings
+//output an object of json library
 //not sure it is correct tho
 
 class JSON_to_internal_JSON {
