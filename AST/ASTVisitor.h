@@ -40,7 +40,7 @@ class DSLValue {
         InternalType value;
     public:
         template <DSLType T>
-        explicit DSLValue(T&& value) : value{std::forward<T>(value)} {}
+        DSLValue(T&& value) : value{std::forward<T>(value)} {}
         DSLValue() : value{None{}} {}
         DSLValue(const DSLValue &other) noexcept {
             this->value = other.value;
