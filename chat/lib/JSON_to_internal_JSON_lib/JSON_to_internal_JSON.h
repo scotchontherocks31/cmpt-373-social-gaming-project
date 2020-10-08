@@ -1,6 +1,7 @@
 //include files
 #include <string>
 #include <vector>
+#include <fstream> // TODO remove when files are replaced with server
 #include <nlohmann/json.hpp>
 
 using json = nlohman::json;
