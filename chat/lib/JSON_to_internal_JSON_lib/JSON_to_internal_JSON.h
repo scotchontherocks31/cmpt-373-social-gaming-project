@@ -1,5 +1,6 @@
 //include files
-#include <string.h>
+#include <string>
+#include <vector>
 #include <nlohmann/json.hpp>
 
 using json = nlohman::json;
@@ -8,10 +9,9 @@ using json = nlohman::json;
 //not sure it is correct tho
 
 class JSON_to_internal_JSON {
+private:
+    json data;
 public:
-    class JSON_dict_node {
-    public:
-        String first;
-        String second;
-    };
+    std::string getJson(std::string file_name);
+    json processJson(std::string file_name);
 };
