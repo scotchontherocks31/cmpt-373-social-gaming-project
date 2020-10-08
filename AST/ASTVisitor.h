@@ -127,6 +127,7 @@ class ASTVisitor {
 
 class Interpreter : public ASTVisitor {
     public:
+    
         Interpreter(Environment&& env, Communication &communication) : 
             environment{std::move(env)}, communication{communication} {}
     private:

@@ -30,27 +30,35 @@ int main()
     DSLValue c{a};
     std::string &f = c.get<std::string>();
     */
-    // create dsl
-    DSLValue dsl{std::string{"Welcome All"}};
+    // create dsl, any variable, ex. Name of game
+    DSLValue dsl{std::string{"Greeting Game"}};
     
-
-
     // create enviroment
     //Environment enviro{NULL};
-    auto enviro = std::make_unique<Environment>(nullptr);
+    auto enviro = Environment{nullptr};
     //std::unique_ptr<Environment> enviro{};
 
     //insert DSL
-    //enviro->setBinding(std::string{"welcome"},dsl );
+    enviro.setBinding(std::string{"Game Name"},dsl );
 
     // create communication obj
     Communication comm{};
 
 
     // create interpreter with enviroment and communication
-    Interpreter interp = Interpreter{std::make_unique<Environment>(nullptr),comm};
+    Interpreter interp = Interpreter{std::move(enviro),comm};
     // call visitEnter
 
+    // create temp global message node
+    //FormatNode mat_sim = FormatNode{std::string{"Welcome All "}};
+
+    //std::unique_ptr<FormatNode> mat = std::make_unique<FormatNode>(std::string{"Welcome All "});
+    GlobalMessage mess = GlobalMessage{std::make_unique<FormatNode>(std::string{"Welcome All "}};
+
+
+
+    
+    //interp.visitHelper();
         // use enviroment to get DSL value
         // use communication to send dsl value
 

@@ -70,8 +70,8 @@ class GlobalMessage : public ASTNode {
             return *static_cast<FormatNode*>(children[0].get());
         }
     private:
-        virtual void acceptHelper(ASTVisitor& visitor) override;
-        virtual void acceptForChildrenHelper(ASTVisitor& visitor) override;
+        //virtual void acceptHelper(ASTVisitor& visitor) override;
+        //virtual void acceptForChildrenHelper(ASTVisitor& visitor) override;
 };
 
 class AST {
