@@ -19,7 +19,7 @@ void GameManager::dispatch(const DecoratedMessage &message) {
   if (!games.count(roomId))
     throw "Game does not exist. Cannot dispatch message to game.";
   auto &game = games.at(roomId);
-  // TODO: Dispatch the message to the game.
+  game.queueMessage(message);
 }
 
 

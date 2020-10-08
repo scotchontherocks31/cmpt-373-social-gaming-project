@@ -47,11 +47,11 @@ public:
 private:
   Room &room;
   GameServer &server;
-  int playerCounter = 0;
   std::vector<Player> players;
   std::map<int, userid> playerIdMapping;
   std::map<userid, int> reversePlayerIdMapping;
   std::list<PlayerMessage> inboundMessageQueue;
   GameHandler(Room &room, GameServer &server);
+  void queueMessage(const DecoratedMessage &message);
   friend class GameManager;
 };

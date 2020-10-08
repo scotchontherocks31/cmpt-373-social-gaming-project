@@ -6,10 +6,10 @@
 GameHandler::GameHandler(Room &room, GameServer &server)
     : room{room}, server{server} {
   for (auto &pair : room.getParticipants()) {
-    players.push_back({playerCounter, pair.second.get().name});
-    playerIdMapping.insert({playerCounter, pair.first});
-    reversePlayerIdMapping.insert({pair.first, playerCounter});
-    ++playerCounter;
+    auto counter = players.size();
+    players.push_back({counter, pair.second.get().name});
+    playerIdMapping.insert({counter, pair.first});
+    reversePlayerIdMapping.insert({pair.first, counter});
   }
 }
 
@@ -51,4 +51,10 @@ std::vector<PlayerMessage> GameHandler::receiveFromAllPlayers() {
     messages.push_back(receiveFromPlayer(player));
   }
   return messages;
+}
+
+void GameHandler::queueMessage(const DecoratedMessage &message) {
+  auto playerId = reversePlayerIdMapping.at(message.user.getId());
+  auto& player = players.at(playerId);
+  inboundMessageQueue.push_back({player, message.text});
 }
