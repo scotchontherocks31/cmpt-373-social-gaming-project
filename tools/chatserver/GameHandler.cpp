@@ -6,7 +6,7 @@
 GameHandler::GameHandler(Room &room, GameServer &server)
     : room{room}, server{server} {
   for (auto &pair : room.getParticipants()) {
-    auto counter = players.size();
+    int counter = players.size();
     players.push_back({counter, pair.second.get().name});
     playerIdMapping.insert({counter, pair.first});
     reversePlayerIdMapping.insert({pair.first, counter});

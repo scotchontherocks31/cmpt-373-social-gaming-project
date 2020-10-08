@@ -7,6 +7,7 @@
 
 class GameServer;
 class GameManager;
+struct DecoratedMessage;
 
 /* 
 TODO: Consider making message context aware so that a random message
