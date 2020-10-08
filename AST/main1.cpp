@@ -50,10 +50,11 @@ int main()
     // call visitEnter
 
     // create temp global message node
-    //FormatNode mat_sim = FormatNode{std::string{"Welcome All "}};
 
-    //std::unique_ptr<FormatNode> mat = std::make_unique<FormatNode>(std::string{"Welcome All "});
-    GlobalMessage mess = GlobalMessage{std::make_unique<FormatNode>(std::string{"Welcome All "}};
+   //std::unique_ptr<FormatNode> mat = std::make_unique<FormatNode>(std::string{"Welcome All "});
+   //GlobalMessage message = GlobalMessage{std::move(mat)};
+   
+   GlobalMessage mess = GlobalMessage{std::make_unique<FormatNode>(std::string{"Welcome All "})};
 
 
 
