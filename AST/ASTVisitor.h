@@ -20,7 +20,10 @@ class DSLValue;
 using List = std::vector<DSLValue>;
 using Map = std::map<std::string, DSLValue>;
 
-class None{};
+class None{
+    public:
+        explicit None() {}
+};
 
 template <typename T>
 concept DSLType = std::is_convertible<T, bool>::value ||
