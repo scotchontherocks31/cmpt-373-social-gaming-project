@@ -136,7 +136,23 @@ class Interpreter : public ASTVisitor {
             node.acceptForChildren(*this); 
             visitLeave(node);
         }
-        void visitEnter(GlobalMessage& node) {};
+        void visitEnter(GlobalMessage& node) {
+          
+            auto generalMessage = std::string{"Welcome all to game called: "};
+
+            /*
+            std::vector<ASTNode const*> formatChildVector = node.getChildren();
+            const ASTNode* formatChild = formatChildVector.front();
+
+            auto formatMessage = formatChild->getFormat();
+            */
+            auto gameNameDSL = environment.getValue("Game Name");
+            auto gameName = gameNameDSL.get<std::string>();
+
+            auto finalMessage = generalMessage + gameName;
+            communication.sendGlobalMessage(finalMessage);
+            
+        };
         void visitLeave(GlobalMessage& node) {};
     private:
         Environment environment;

@@ -1,5 +1,7 @@
 
 
+
+FLOW
 /ast accepts vistitor
 
     auto rootAST = AST{};
@@ -20,3 +22,83 @@
         }
 
     void accept(ASTVisitor& visitor);
+
+
+
+
+    // EXAMPLE OF USING DSL
+    /*
+    DSLValue b = List{"me", List{1, 2, 3}, 7.1, 1, Map{{"hello", 2}}};
+    b = Map{{"hello", 2}, {"nomore", 3}};
+    
+    DSLValue a{std::string{"bla"}}, b{2};
+    a = 2;
+    a = "123";
+    a = std::string("blabli");
+    a = std::vector<DSLValue>{std::string("bla"), 2.3, 2};
+    List p = a.get<List>();
+    DSLValue c{a};
+    std::string &f = c.get<std::string>();
+    */
+
+
+QUESTIONS
+- when to use ASTGlobalOutNode?
+
+- Where do the global variables go?
+
+- Is visitEnter(GlobalMessage& node) function responsible to get the format node child from global node 
+and send message?
+
+- If so it wont let me call getFormat()
+std::vector<ASTNode const*> formatChildVector = node.getChildren();
+const ASTNode* formatChild = formatChildVector.front();
+
+auto formatMessage = formatChild->getFormat();
+
+error:
+`In member function 'void AST::Interpreter::visitEnter(AST::GlobalMessage&)':
+ASTVisitor.h:148:47: error: 'const class AST::ASTNode' has no member named 'getFormat'
+  148 |             auto formatMessage = formatChild->getFormat();`
+
+
+
+In terms of MVP
+- When do we instantiate formatnode
+- what do we put inside of format node
+
+
+--------------
+
+Next component I think I should do is:
+
+1. get input from one user
+2. send it back
+
+// We dont need DSL or Enviroment for this^^?
+
+
+Then 
+1. Get input from all users
+2. send back to all users
+
+// We dont need DSL or Enviroment for this^^?
+
+
+Then
+1. For every round
+2. get input from all users
+3. send back
+// In this case the local variable will be round
+// so we will have one enviroment on the stack
+// keeping track of round?
+
+
+
+
+
+
+
+
+
+
