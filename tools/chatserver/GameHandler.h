@@ -32,11 +32,11 @@ public:
   /// Send output message to all players in the room
   void sendToAllPlayers(std::string message);
 
-  /// Block until recieve message from a specific player
-  PlayerMessage recieveFromPlayer(const Player &player);
+  /// Block until receive message from a specific player
+  PlayerMessage receiveFromPlayer(const Player &player);
 
-  /// Block until recieve message from all players in the room
-  std::vector<PlayerMessage> recieveFromAllPlayers();
+  /// Block until receive message from all players in the room
+  std::vector<PlayerMessage> receiveFromAllPlayers();
 
   /// Get info about players in the room
   const std::vector<Player> &getPlayers() const { return players; }

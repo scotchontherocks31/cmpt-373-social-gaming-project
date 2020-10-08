@@ -23,7 +23,7 @@ void GameHandler::sendToAllPlayers(std::string message) {
   server.sendMessageToRoom(room, std::move(message));
 }
 
-PlayerMessage GameHandler::recieveFromPlayer(const Player &player) {
+PlayerMessage GameHandler::receiveFromPlayer(const Player &player) {
   auto beginIt = inboundMessageQueue.begin();
   auto endIt = inboundMessageQueue.end();
   auto it = beginIt;
@@ -45,10 +45,10 @@ PlayerMessage GameHandler::recieveFromPlayer(const Player &player) {
   return message;
 }
 
-std::vector<PlayerMessage> GameHandler::recieveFromAllPlayers() {
+std::vector<PlayerMessage> GameHandler::receiveFromAllPlayers() {
   std::vector<PlayerMessage> messages;
   for (auto &&player : players) {
-    messages.push_back(recieveFromPlayer(player));
+    messages.push_back(receiveFromPlayer(player));
   }
   return messages;
 }
