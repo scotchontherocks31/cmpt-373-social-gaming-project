@@ -1,2 +1,22 @@
 
 
+/ast accepts vistitor
+
+    auto rootAST = AST{};
+
+    auto interpVisitor = Interpreter{}
+
+    rootAST.accept(interpVisitor)
+
+    // -- INSIDE OF ASTNode accept function --
+        void accept(ASTVisitor& visitor){
+            auto children = this. getChildren();
+            for child in children:
+                visitor.visitEnter(child)
+                visitor.visitLeave(child)
+
+
+
+        }
+
+    void accept(ASTVisitor& visitor);
