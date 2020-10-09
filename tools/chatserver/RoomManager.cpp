@@ -98,9 +98,3 @@ void RoomManager::listRooms() {
     r.second.listParticipants();
   }
 }
-
-void Room::listParticipants() {
-  for (std::pair<userid, std::reference_wrapper<User>> p : participants) {
-    std::cout << p.second.get().getId() << std::endl;
-  }
-}
