@@ -34,11 +34,12 @@ int main()
 
     // create temp global message node
    
-   GlobalMessage mess = GlobalMessage{std::make_unique<FormatNode>(std::string{"Welcome All "})};
-   std::unique_ptr<GlobalMessage> messRoot =std::make_unique<GlobalMessage>(std::make_unique<FormatNode>(std::string{"Welcome All "})); //std::make_unique<GlobalMessage>{nullptr};
+   //GlobalMessage mess = GlobalMessage{std::make_unique<FormatNode>(std::string{"Welcome All "})};
+   std::unique_ptr<GlobalMessage> mess =std::make_unique<GlobalMessage>(std::make_unique<FormatNode>(std::string{"Welcome All "}));
    
+   auto root = AST::AST(std::move(mess));
    
-   mess.accept(interp);
+   root.accept(interp);
    
 
     
