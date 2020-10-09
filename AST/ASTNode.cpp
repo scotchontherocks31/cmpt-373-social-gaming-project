@@ -10,4 +10,15 @@ namespace AST {
             child->accept(visitor);
         }
     }
+
+    void FormatNode::acceptHelper(ASTVisitor& visitor) {
+        visitor.visit(*this);
+    }
+    void FormatNode::acceptForChildrenHelper(ASTVisitor& visitor) {
+        for (auto& child : children) {
+            child->accept(visitor);
+        }
+    }
+
+    
 }

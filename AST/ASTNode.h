@@ -53,12 +53,12 @@ class ASTNode {
 class FormatNode : public ASTNode {
     public:
         FormatNode(std::string format): format{std::move(format)} {}
-        const std::string& getFormat() {
+        const std::string& getFormat() const {
             return format;
         }
     private:
-        virtual void acceptHelper(ASTVisitor& visitor) override {}
-        virtual void acceptForChildrenHelper(ASTVisitor& visitor) override {}
+        virtual void acceptHelper(ASTVisitor& visitor) override ;
+        virtual void acceptForChildrenHelper(ASTVisitor& visitor) override ;
         std::string format;
 };
 

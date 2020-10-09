@@ -149,14 +149,14 @@ class Interpreter : public ASTVisitor {
             
         };
         void visitLeave(GlobalMessage& node) {
-            auto generalMessage = std::string{"Welcome all to game called: "};
+            //auto generalMessage = std::string{"Welcome all to game called: "};
 
-            //auto formatMessage = node.getFormatNode();
-            
+            const auto& formatMessageNode = node.getFormatNode();
+            auto formatMessage = formatMessageNode.getFormat();
             auto gameNameDSL = environment.getValue("Game Name");
             auto gameName = gameNameDSL.get<std::string>();
 
-            auto finalMessage = generalMessage + gameName;
+            auto finalMessage = formatMessage + gameName;
             communication.sendGlobalMessage(finalMessage);
         };
 
