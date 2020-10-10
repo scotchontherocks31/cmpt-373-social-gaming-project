@@ -2,7 +2,7 @@ image: "zouzias/boost:latest"
 
 before_script:
     - apt-get update && apt-get install -y clang-format cmake
-    - mkdir build && cmake -B ./build
+    - mkdir build && cmake --build ./build
 
 lint:
     script:
