@@ -1,4 +1,4 @@
-image: "gcc:latest"
+image: "zouzias/boost:latest"
 
 before_script:
     - apt-get update && apt-get install -y clang-format cmake
