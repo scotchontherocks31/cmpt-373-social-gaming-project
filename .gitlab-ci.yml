@@ -2,7 +2,7 @@ image: "zouzias/boost:latest"
 
 before_script:
     - apt-get update && apt-get install -y clang-format cmake
-    - mkdir build && cmake --build ./build
+    - mkdir build && cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -H. -B./build -G "Unix Makefiles"
 
 lint:
     script:
