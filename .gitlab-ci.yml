@@ -1,7 +1,7 @@
 image: "ubuntu:latest"
 
 before_script:
-    - apt-get update && apt-get install -y clang-format cmake
+    - apt-get update && apt-get install -y clang-format cmake build-essential
     - mkdir build && cmake -B ./build
 
 lint:
