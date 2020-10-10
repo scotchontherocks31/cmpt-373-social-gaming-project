@@ -1,8 +1,8 @@
-image: "zouzias/boost:latest"
+image: "gcc:latest"
 
 before_script:
-    - add-apt-repository 'deb http://archive.ubuntu.com/ubuntu/ focal main'
     - apt-get update && apt-get install -y clang-format cmake
+    - wget https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.bz2 && tar --bzip2 -xf ./boost_1_73_0.tar.bz2 && cd boost_1_73_0 && ./bootstrap.sh && ./b2 install && cd ..
     - mkdir build && cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -H. -B./build -G "Unix Makefiles"
 
 lint:
