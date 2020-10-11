@@ -28,7 +28,6 @@ public:
   void sendMessageToUser(const User &user, std::string message);
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
-  RoomManager &getRoomManager() { return roomManager; }
   void startRunningLoop();
 
 private:

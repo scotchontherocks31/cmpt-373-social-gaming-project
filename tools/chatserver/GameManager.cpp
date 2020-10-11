@@ -1,7 +1,8 @@
 #include "GameManager.h"
 #include "GameServer.h"
 
-GameManager::GameManager(GameServer &server) : server{server} {}
+GameManager::GameManager(GameServer &server, RoomManager &roomManager)
+    : server{server}, roomManager{roomManager} {}
 
 // If game is already existed for the room, replace with new one.
 GameHandler &GameManager::createGame(Room &room) {
@@ -14,7 +15,7 @@ GameHandler &GameManager::createGame(Room &room) {
 }
 
 void GameManager::dispatch(const DecoratedMessage &message) {
-  auto &room = server.getRoomManager().getRoomFromUser(message.user);
+  auto &room = roomManager.getRoomFromUser(message.user);
   auto roomId = room.getId();
   if (!games.count(roomId))
     throw "Game does not exist. Cannot dispatch message to game.";
