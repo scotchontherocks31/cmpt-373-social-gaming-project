@@ -27,7 +27,7 @@ void GameManager::dispatch(const DecoratedMessage &message) {
 void GameManager::cleanEmptyGames() {
   auto iter = games.begin();
   while (iter != games.end()) {
-    if (iter->second.room.getParticipants().empty()) {
+    if (iter->second.isGameUnused()) {
       iter = games.erase(iter);
     } else {
       ++iter;

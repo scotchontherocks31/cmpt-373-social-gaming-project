@@ -1,15 +1,15 @@
 #pragma once
 
 #include "Room.h"
+#include <list>
 #include <map>
 #include <string>
-#include <list>
 
 class GameServer;
 class GameManager;
 struct DecoratedMessage;
 
-/* 
+/*
 TODO: Consider making message context aware so that a random message
 from player doesn't get mixed with an actual response.
 */
@@ -26,6 +26,8 @@ struct PlayerMessage {
 
 class GameHandler {
 public:
+  GameHandler(Room &room, GameServer &server);
+  void queueMessage(const DecoratedMessage &message);
 
   /// Send ouput message to a player
   void sendToPlayer(const Player &player, std::string message);
@@ -42,6 +44,10 @@ public:
   /// Get info about players in the room
   const std::vector<Player> &getPlayers() const { return players; }
 
+  bool isGameUnused() const {
+    return room.getParticipants().empty();
+  }
+
   /// Invoked when number of players changed
   // void onPlayersChanged();
 
@@ -52,7 +58,5 @@ private:
   std::map<int, userid> playerIdMapping;
   std::map<userid, int> reversePlayerIdMapping;
   std::list<PlayerMessage> inboundMessageQueue;
-  GameHandler(Room &room, GameServer &server);
-  void queueMessage(const DecoratedMessage &message);
-  friend class GameManager;
+  // std::list<InputRequest> inputRequestQueue;
 };
