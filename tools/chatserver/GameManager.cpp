@@ -17,8 +17,9 @@ GameHandler &GameManager::createGame(Room &room) {
 void GameManager::dispatch(const DecoratedMessage &message) {
   auto &room = roomManager.getRoomFromUser(message.user);
   auto roomId = room.getId();
-  if (!games.count(roomId))
-    throw "Game does not exist. Cannot dispatch message to game.";
+  if (!games.count(roomId)) {
+    return; // Game does not exist. Exit.
+  }
   auto &game = games.at(roomId);
   game.queueMessage(message);
 }
