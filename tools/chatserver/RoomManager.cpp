@@ -98,3 +98,7 @@ void RoomManager::listRooms() {
     r.second.listParticipants();
   }
 }
+
+void RoomManager::configureRoom(User &user){
+    //To implement: Read and parse JSON for room setting
+}

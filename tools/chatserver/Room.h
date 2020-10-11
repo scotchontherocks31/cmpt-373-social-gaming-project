@@ -22,8 +22,14 @@ public:
     return participants.at(userId).get();
   };
   void listParticipants();
+  int getCurrentSize(){ return participants.size(); }
+  int getCapacity(){ return capacity; }
+  void setCapacity(int newCapacity);
+  void setName(std::string newName);
 
 private:
+  userid hostid;
+  int capacity;
   std::string name;
   roomid id;
   std::map<userid, std::reference_wrapper<User>> participants;
