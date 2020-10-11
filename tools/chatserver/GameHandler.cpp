@@ -25,10 +25,11 @@ PlayerMessage GameHandler::receiveFromPlayer(const Player &player) {
   auto beginIt = inboundMessageQueue.begin();
   auto endIt = inboundMessageQueue.end();
   auto it = beginIt;
+  auto checkPlayerId = [&player](PlayerMessage &message) {
+    return player.id == message.player.id;
+  };
   while (true) {
-    it = std::find_if(beginIt, endIt, [&player](PlayerMessage &message) {
-      return player.id == message.player.id;
-    });
+    it = std::find_if(beginIt, endIt, checkPlayerId);
     if (it == inboundMessageQueue.end()) {
       // TODO: figure out how to yield when no message is available
       beginIt = inboundMessageQueue.begin();
