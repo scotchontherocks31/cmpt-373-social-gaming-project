@@ -7,10 +7,7 @@ GameManager::GameManager(GameServer &server, RoomManager &roomManager)
 // If game is already existed for the room, replace with new one.
 GameHandler &GameManager::createGame(Room &room) {
   auto roomId = room.getId();
-  if (games.count(roomId)) {
-    games.erase(roomId);
-  }
-  games.insert({roomId, GameHandler{room, server}});
+  games[roomId] = GameHandler{room, server};
   return games.at(roomId);
 }
 

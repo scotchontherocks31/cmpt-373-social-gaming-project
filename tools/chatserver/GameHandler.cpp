@@ -2,7 +2,7 @@
 #include "GameServer.h"
 
 GameHandler::GameHandler(Room &room, GameServer &server)
-    : room{room}, server{server} {
+    : room{&room}, server{&server} {
   for (auto &pair : room.getParticipants()) {
     int counter = players.size();
     players.push_back({counter, pair.second.get().name});
@@ -13,12 +13,12 @@ GameHandler::GameHandler(Room &room, GameServer &server)
 
 void GameHandler::sendToPlayer(const Player &player, std::string message) {
   auto userId = playerIdMapping.at(player.id);
-  auto &user = room.getParticipant(userId);
-  server.sendMessageToUser(user, std::move(message));
+  auto &user = room->getParticipant(userId);
+  server->sendMessageToUser(user, std::move(message));
 }
 
 void GameHandler::sendToAllPlayers(std::string message) {
-  server.sendMessageToRoom(room, std::move(message));
+  server->sendMessageToRoom(*room, std::move(message));
 }
 
 PlayerMessage GameHandler::receiveFromPlayer(const Player &player) {
