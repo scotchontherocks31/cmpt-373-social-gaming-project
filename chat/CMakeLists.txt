@@ -19,3 +19,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 add_subdirectory(lib)
 add_subdirectory(tools)
 
+set(header_files
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/json.hpp
+)
+add_library(json INTERFACE)
+target_sources(json INTERFACE "$<BUILD_INTERFACE:${header_files}>")
+target_include_directories(json INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>)

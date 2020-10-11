@@ -18,6 +18,8 @@ target_include_directories(networking
 target_link_libraries(networking
   PRIVATE
     ${Boost_LIBRARIES}
+  PUBLIC
+    json
 )
 
 set_target_properties(networking
