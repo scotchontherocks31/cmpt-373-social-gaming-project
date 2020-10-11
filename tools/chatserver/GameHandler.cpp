@@ -1,7 +1,5 @@
 #include "GameHandler.h"
 #include "GameServer.h"
-#include <chrono>
-#include <thread>
 
 GameHandler::GameHandler(Room &room, GameServer &server)
     : room{room}, server{server} {
@@ -32,7 +30,7 @@ PlayerMessage GameHandler::receiveFromPlayer(const Player &player) {
       return player.id == message.player.id;
     });
     if (it == inboundMessageQueue.end()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      // TODO: figure out how to yield when no message is available
       beginIt = inboundMessageQueue.begin();
       endIt = inboundMessageQueue.end();
     } else {
