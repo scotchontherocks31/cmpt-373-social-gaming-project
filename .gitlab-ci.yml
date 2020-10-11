@@ -6,4 +6,5 @@ before_script:
 
 lint:
     script:
-        - find . -path ./build -prune -false -o -type f \( -name *.cpp -o -name *.h \) | xargs clang-format -style=llvm -dry-run
+        - find . -path ./build -prune -false -o -type f \( -name *.cpp -o -name *.h \) | xargs clang-format -style=llvm -dry-run -Werror
+ 
