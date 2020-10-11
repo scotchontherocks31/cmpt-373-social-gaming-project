@@ -6,7 +6,7 @@ GameManager::GameManager(GameServer &server) : server{server} {}
 // If game is already existed for the room, replace with new one.
 GameHandler &GameManager::createGame(Room &room) {
   auto roomId = room.getId();
-  if (games.count(roomId)){
+  if (games.count(roomId)) {
     games.erase(roomId);
   }
   games.insert({roomId, GameHandler{room, server}});
@@ -21,7 +21,6 @@ void GameManager::dispatch(const DecoratedMessage &message) {
   auto &game = games.at(roomId);
   game.queueMessage(message);
 }
-
 
 // TODO: Call this method somewhere to clean empty games if needed.
 void GameManager::cleanEmptyGames() {

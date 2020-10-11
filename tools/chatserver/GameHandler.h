@@ -44,9 +44,7 @@ public:
   /// Get info about players in the room
   const std::vector<Player> &getPlayers() const { return players; }
 
-  bool isGameUnused() const {
-    return room.getParticipants().empty();
-  }
+  bool isGameUnused() const { return room.getParticipants().empty(); }
 
   /// Invoked when number of players changed
   // void onPlayersChanged();

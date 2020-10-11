@@ -55,6 +55,6 @@ std::vector<PlayerMessage> GameHandler::receiveFromAllPlayers() {
 
 void GameHandler::queueMessage(const DecoratedMessage &message) {
   auto playerId = reversePlayerIdMapping.at(message.user.getId());
-  auto& player = players.at(playerId);
+  auto &player = players.at(playerId);
   inboundMessageQueue.push_back({player, message.text});
 }
