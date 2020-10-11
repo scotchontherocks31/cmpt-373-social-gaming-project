@@ -7,7 +7,8 @@
 using json = nlohman::json;
 //the class is suposed to take a JSON file and
 //output an object of json library
-//not sure it is correct tho
+
+//later the file should be replaced by a server
 
 class JSON_to_internal_JSON {
 private:
