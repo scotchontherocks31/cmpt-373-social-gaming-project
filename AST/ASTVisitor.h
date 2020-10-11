@@ -132,9 +132,10 @@ private:
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
     auto &&formatMessage = formatMessageNode.getFormat();
-    auto &&gameNameDSL = environment.getValue("Game Name");
+    const std::string GAME_NAME = "Game Name";
+    auto &&gameNameDSL = environment.getValue(GAME_NAME);
     auto &&gameName = gameNameDSL.get<std::string>();
-    auto finalMessage = formatMessage.append() + gameName;
+    auto finalMessage = formatMessage + gameName;
     communication.sendGlobalMessage(finalMessage);
   };
 
