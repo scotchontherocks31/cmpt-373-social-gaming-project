@@ -11,7 +11,7 @@ public:
   void removeUserFromRoom(User &user);
   Room &getRoomFromUser(const User &user);
   void listRooms();
-  inline static const std::string GLOBAL_ROOM_NAME = "Global";
+  static constexpr auto GLOBAL_ROOM_NAME = "Global";
 
 private:
   const roomid GLOBAL_ROOM_HASH;

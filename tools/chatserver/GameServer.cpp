@@ -140,8 +140,8 @@ MessageResult GameServer::processMessages(Server &server,
 void GameServer::buildOutgoing(const std::vector<DecoratedMessage> &messages) {
   for (auto &message : messages) {
     auto room = roomManager.getRoomFromUser(message.user);
-    for (auto &&[_, user] : room.getParticipants()) {
-      outboundMessages.push_back({user.get().connection, message.text});
+    for (auto &&[_, user] : room.getMembers()) {
+      outboundMessages.push_back({user->connection, message.text});
     }
   }
 }
@@ -158,7 +158,7 @@ void GameServer::sendMessageToUser(const User &user, std::string message) {
 }
 
 void GameServer::sendMessageToRoom(const Room &room, std::string message) {
-  for (auto &&[_, user] : room.getParticipants()) {
-    outboundMessages.push_back({user.get().connection, std::move(message)});
+  for (auto &&[_, user] : room.getMembers()) {
+    outboundMessages.push_back({user->connection, std::move(message)});
   }
 }

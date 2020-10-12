@@ -29,7 +29,7 @@ bool RoomManager::createRoom(const std::string &name) {
     return false;
   }
   auto room = Room{roomId, roomName};
-  rooms.insert({room.id, room});
+  rooms.insert({room.getId(), room});
   ++roomCounter;
   return true;
 }
@@ -43,9 +43,9 @@ void RoomManager::removeRoom(const std::string &name) {
   if (!rooms.count(roomId) || roomId == GLOBAL_ROOM_HASH)
     return;
   auto &room = rooms.at(roomId);
-  while (!room.participants.empty()) {
-    auto it = room.participants.begin();
-    putUserToRoom(it->second, GLOBAL_ROOM_NAME); // Put user to global room
+  while (!room.getMembers().empty()) {
+    auto it = room.getMembers().begin();
+    putUserToRoom(*it->second, GLOBAL_ROOM_NAME); // Put user to global room
   }
   rooms.erase(roomId);
 }
@@ -61,7 +61,7 @@ bool RoomManager::putUserToRoom(User &user, const std::string &roomName) {
   auto &room = rooms.at(roomId);
 
   // Check if user already in target room
-  if (room.participants.count(user.getId())) {
+  if (room.getMembers().count(user.getId())) {
     return true;
   }
 
@@ -70,7 +70,7 @@ bool RoomManager::putUserToRoom(User &user, const std::string &roomName) {
     removeUserFromRoom(user);
   }
 
-  room.participants.insert({user.getId(), user});
+  room.addMember(user);
   userRoomMapping.insert({user.getId(), roomId});
   return true;
 }
@@ -80,7 +80,7 @@ void RoomManager::removeUserFromRoom(User &user) {
   auto userId = user.getId();
   if (userRoomMapping.count(userId)) {
     auto roomId = userRoomMapping.at(userId);
-    rooms.at(roomId).participants.erase(userId);
+    rooms.at(roomId).removeMember(userId);
     userRoomMapping.erase(userId);
   }
 }
@@ -95,6 +95,6 @@ void RoomManager::listRooms() {
   for (std::pair<int, Room> r : rooms) {
     std::cout << r.first << ".Room " << r.second.getName()
               << " members:" << std::endl;
-    r.second.listParticipants();
+    r.second.listMembers();
   }
 }
