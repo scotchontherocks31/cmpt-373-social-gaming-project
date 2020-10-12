@@ -1,5 +1,6 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
+#include "Parser.h"
 
 namespace AST {
     void GlobalMessage::acceptHelper(ASTVisitor& visitor) {

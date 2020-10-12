@@ -4,6 +4,8 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
 #include <memory>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class JSON;
 
@@ -36,9 +38,9 @@ class ASTParser {
 
 class JSONToASTParser : public DomainSpecificParser {
     public:
-        JSONToASTParser(const JSON& json) : json{json} {}
+        JSONToASTParser(const json& json) : json{json} {}
     private:
-        const JSON &json;
+        const json &json;
         // Implement these in a Top Down fashion
         virtual AST parseHelper() override;
         FormatNode parseFormatNode();
