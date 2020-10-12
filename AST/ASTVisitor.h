@@ -147,26 +147,30 @@ private:
   Communication &communication;
 };
 
+class Printer : public ASTVisitor {
+public:
+  virtual ~Printer() { std::cout << "\n"; }
 
-
-class Printer : public ASTVisitor {    
-    private:
-        virtual void visitHelper(GlobalMessage& node) { 
-            visitEnter(node);
-            node.acceptForChildren(*this); 
-        }
-        virtual void visitHelper(FormatNode& node) { 
-            visitEnter(node);
-            node.acceptForChildren(*this); 
-        }
-        void visitEnter(GlobalMessage& node) {
-            std::cout<<"GlobalMessage\n";                
-        }; 
-        void visitEnter(FormatNode& node) {   
-            std::cout<<"FormatNode\n";
-        };  
+private:
+  virtual void visitHelper(GlobalMessage &node) {
+    visitEnter(node, std::cout);
+    node.acceptForChildren(*this);
+    visitLeave(node, std::cout);
+  }
+  virtual void visitHelper(FormatNode &node) {
+    visitEnter(node, std::cout);
+    node.acceptForChildren(*this);
+    visitLeave(node, std::cout);
+  }
+  void visitEnter(GlobalMessage &node, std::ostream &out) {
+    out << "(GlobalMessage";
+  };
+  void visitLeave(GlobalMessage &node, std::ostream &out) { out << ")"; };
+  void visitEnter(FormatNode &node, std::ostream &out) {
+    out << "(FormatNode";
+  };
+  void visitLeave(FormatNode &node, std::ostream &out) { out << ")"; };
 };
-
 
 } // namespace AST
 #endif
