@@ -147,5 +147,26 @@ private:
   Communication &communication;
 };
 
+
+
+class Printer : public ASTVisitor {    
+    private:
+        virtual void visitHelper(GlobalMessage& node) { 
+            visitEnter(node);
+            node.acceptForChildren(*this); 
+        }
+        virtual void visitHelper(FormatNode& node) { 
+            visitEnter(node);
+            node.acceptForChildren(*this); 
+        }
+        void visitEnter(GlobalMessage& node) {
+            std::cout<<"GlobalMessage\n";                
+        }; 
+        void visitEnter(FormatNode& node) {   
+            std::cout<<"FormatNode\n";
+        };  
+};
+
+
 } // namespace AST
 #endif
