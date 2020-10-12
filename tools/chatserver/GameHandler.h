@@ -20,7 +20,7 @@ struct Player {
 };
 
 struct PlayerMessage {
-  const Player &player;
+  Player *player;
   std::string message;
 };
 
@@ -42,7 +42,7 @@ public:
   /// Get info about players in the room
   const std::vector<Player> &getPlayers() const { return players; }
 
-  bool isGameUnused() const { return room->getParticipants().empty(); }
+  bool isGameUnused() const { return room->getMembers().empty(); }
 
 private:
   Room *room;
