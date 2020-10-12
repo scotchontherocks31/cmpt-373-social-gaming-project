@@ -23,12 +23,6 @@ void GameManager::dispatch(const DecoratedMessage &message) {
 
 // TODO: Call this method somewhere to clean empty games if needed.
 void GameManager::cleanEmptyGames() {
-  auto iter = games.begin();
-  while (iter != games.end()) {
-    if (iter->second.isGameUnused()) {
-      iter = games.erase(iter);
-    } else {
-      ++iter;
-    }
-  }
+  std::erase_if(games,
+                [](const auto &pair) { return pair.second.isGameUnused(); });
 }
