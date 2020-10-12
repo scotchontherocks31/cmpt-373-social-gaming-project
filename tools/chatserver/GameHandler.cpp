@@ -21,34 +21,20 @@ void GameHandler::sendToAllPlayers(std::string message) {
   server->sendMessageToRoom(*room, std::move(message));
 }
 
-PlayerMessage GameHandler::receiveFromPlayer(const Player &player) {
-  auto beginIt = inboundMessageQueue.begin();
+std::deque<PlayerMessage> GameHandler::receiveFromPlayer(const Player &player) {
+  std::deque<PlayerMessage> messages;
+  auto it = inboundMessageQueue.begin();
   auto endIt = inboundMessageQueue.end();
-  auto it = beginIt;
   auto checkPlayerId = [&player](PlayerMessage &message) {
     return player.id == message.player.id;
   };
-  while (true) {
-    it = std::find_if(beginIt, endIt, checkPlayerId);
-    if (it == inboundMessageQueue.end()) {
-      // TODO: figure out how to yield when no message is available
-      beginIt = inboundMessageQueue.begin();
-      endIt = inboundMessageQueue.end();
-    } else {
-      break;
+  do {
+    it = std::find_if(it, endIt, checkPlayerId);
+    if (it != endIt) {
+      messages.push_back(std::move(*it));
+      it = inboundMessageQueue.erase(it);
     }
-  }
-
-  auto message = std::move(*it);
-  inboundMessageQueue.erase(it);
-  return message;
-}
-
-std::vector<PlayerMessage> GameHandler::receiveFromAllPlayers() {
-  std::vector<PlayerMessage> messages;
-  for (auto &&player : players) {
-    messages.push_back(receiveFromPlayer(player));
-  }
+  } while (it != endIt);
   return messages;
 }
 

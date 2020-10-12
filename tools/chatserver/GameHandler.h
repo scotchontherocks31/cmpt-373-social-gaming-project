@@ -35,19 +35,14 @@ public:
   /// Send output message to all players in the room
   void sendToAllPlayers(std::string message);
 
-  /// Block until receive message from a specific player
-  PlayerMessage receiveFromPlayer(const Player &player);
-
-  /// Block until receive message from all players in the room
-  std::vector<PlayerMessage> receiveFromAllPlayers();
+  /// Get messages from a player.
+  /// Returns empty deque if no message is available.
+  std::deque<PlayerMessage> receiveFromPlayer(const Player &player);
 
   /// Get info about players in the room
   const std::vector<Player> &getPlayers() const { return players; }
 
   bool isGameUnused() const { return room->getParticipants().empty(); }
-
-  /// Invoked when number of players changed
-  // void onPlayersChanged();
 
 private:
   Room *room;
@@ -56,5 +51,4 @@ private:
   std::map<int, userid> playerIdMapping;
   std::map<userid, int> reversePlayerIdMapping;
   std::list<PlayerMessage> inboundMessageQueue;
-  // std::list<InputRequest> inputRequestQueue;
 };
