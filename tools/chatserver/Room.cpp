@@ -4,8 +4,8 @@
 Room::Room(roomid id, std::string roomName)
     : name(std::move(roomName)), id(id) {}
 
-void Room::listParticipants() {
-  for (std::pair<userid, std::reference_wrapper<User>> p : participants) {
-    std::cout << p.second.get().getId() << std::endl;
+void Room::listMembers() {
+  for (auto &&p : members) {
+    std::cout << p.second->getId() << std::endl;
   }
 }
