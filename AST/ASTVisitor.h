@@ -11,24 +11,20 @@ namespace AST {
 
 class Communication {
 public:
-  // MOCK 
+  // MOCK
   void sendGlobalMessage(std::string &message) {
     std::cout << message << std::endl;
   }
 
   /// Get messages from a player.
   /// Returns empty deque if no message is available.
-  //std::deque<PlayerMessage> receiveFromPlayer(const Player &player);
+  // std::deque<PlayerMessage> receiveFromPlayer(const Player &player);
 
-  //MOCK
+  // MOCK
 
   /// Get messages from a player.
   /// Returns empty deque if no message is available.
-  std::string receiveFromPlayer(int id){
-    return "hello from player";
-  }
-
-
+  std::string receiveFromPlayer(int id) { return "hello from player"; }
 };
 
 class DSLValue;
@@ -127,7 +123,6 @@ private:
   virtual void visitHelper(GlobalMessage &) = 0;
   virtual void visitHelper(FormatNode &) = 0;
   virtual void visitHelper(InputText &) = 0;
- 
 };
 
 class Interpreter : public ASTVisitor {

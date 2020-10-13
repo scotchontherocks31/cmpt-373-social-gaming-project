@@ -67,10 +67,10 @@ private:
   virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
 };
 
-
 class InputText : public ASTNode {
 public:
-  InputText(std::string prompt, std::string result) : prompt{prompt},resultVar{result} {}
+  InputText(std::string prompt, std::string result)
+      : prompt{prompt}, resultVar{result} {}
   const std::string &getPrompt() const { return prompt; }
   const std::string &getResultVar() const { return resultVar; }
 
@@ -79,7 +79,6 @@ private:
   virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
   std::string prompt;
   std::string resultVar;
-  
 };
 
 class AST {
