@@ -36,9 +36,8 @@ private:
   std::map<userid, User> users;
   std::deque<Message> outboundMessages;
   void onConnect(Connection c);
-  void onDisconnect(Connection cz);
-  bool processMessages(Server &server,
-                                const std::deque<Message> &incoming);
+  void onDisconnect(Connection c);
+  bool processMessages(Server &server, const std::deque<Message> &incoming);
   void broadcast(const DecoratedMessage message);
   void narrowcast(const DecoratedMessage message);
   User &getUser(Connection connection) { return users.at(connection.id); }

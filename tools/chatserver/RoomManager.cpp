@@ -99,6 +99,6 @@ void RoomManager::listRooms() {
   }
 }
 
-void RoomManager::configureRoom(User &user){
-    //To implement: Read and parse JSON for room setting
+void RoomManager::configureRoom(User &user) {
+  // To implement: Read and parse JSON for room setting
 }

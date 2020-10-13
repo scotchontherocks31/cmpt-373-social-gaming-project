@@ -7,14 +7,13 @@
 
 Room::Room(roomid id, std::string roomName)
     : name(std::move(roomName)), id(id) {
-      
-        if(roomName != RoomManager::GLOBAL_ROOM_NAME){
-            capacity = DEFAULT_CAPACITY;
-        }
-        else{
-            capacity = MAX_CAPACITY;
-        } 
-    }
+
+  if (roomName != RoomManager::GLOBAL_ROOM_NAME) {
+    capacity = DEFAULT_CAPACITY;
+  } else {
+    capacity = MAX_CAPACITY;
+  }
+}
 
 void Room::listParticipants() {
   for (std::pair<userid, std::reference_wrapper<User>> p : participants) {
