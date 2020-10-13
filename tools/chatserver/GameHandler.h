@@ -27,7 +27,10 @@ struct PlayerMessage {
 class GameHandler {
 public:
   GameHandler(Room &room, GameServer &server);
-  void queueMessage(const DecoratedMessage &message);
+
+  /// Only allow new message to be queued when the game requests it.
+  /// Returns false if fails to queue message.
+  bool queueMessage(const DecoratedMessage &message);
 
   /// Send ouput message to a player
   void sendToPlayer(const Player &player, std::string message);
@@ -47,6 +50,7 @@ public:
 private:
   Room *room;
   GameServer *server;
+  std::map<int, bool> playerMessageRequest; 
   std::vector<Player> players;
   std::map<int, userid> playerIdMapping;
   std::map<userid, int> reversePlayerIdMapping;

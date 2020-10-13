@@ -1,13 +1,16 @@
 #include "GameHandler.h"
 #include "GameServer.h"
+#include <algorithm>
 
 GameHandler::GameHandler(Room &room, GameServer &server)
     : room{&room}, server{&server} {
+  int counter = 0;
   for (auto &[id, user] : room.getMembers()) {
-    int counter = players.size();
     players.push_back({counter, user->name});
     playerIdMapping.insert({counter, id});
+    playerMessageRequest.insert({counter, false});
     reversePlayerIdMapping.insert({id, counter});
+    ++counter;
   }
 }
 
@@ -22,24 +25,27 @@ void GameHandler::sendToAllPlayers(std::string message) {
 }
 
 std::deque<PlayerMessage> GameHandler::receiveFromPlayer(const Player &player) {
+  bool &waiting = playerMessageRequest.at(player.id);
+  waiting = true;
   std::deque<PlayerMessage> messages;
-  auto it = inboundMessageQueue.begin();
-  auto endIt = inboundMessageQueue.end();
-  auto checkPlayerId = [&player](PlayerMessage &message) {
-    return player.id == message.player->id;
-  };
-  do {
-    it = std::find_if(it, endIt, checkPlayerId);
-    if (it != endIt) {
-      messages.push_back(std::move(*it));
-      it = inboundMessageQueue.erase(it);
-    }
-  } while (it != endIt);
+  auto &&[x, y] =
+      std::ranges::partition(inboundMessageQueue, [&player](auto &message) {
+        return player.id != message.player->id;
+      });
+  std::ranges::move(x, inboundMessageQueue.end(), std::back_inserter(messages));
+  inboundMessageQueue.erase(x, inboundMessageQueue.end());
+  if (!messages.empty()) {
+    waiting = false;
+  }
   return messages;
 }
 
-void GameHandler::queueMessage(const DecoratedMessage &message) {
+bool GameHandler::queueMessage(const DecoratedMessage &message) {
   auto playerId = reversePlayerIdMapping.at(message.user.getId());
   auto &player = players.at(playerId);
+  if (!playerMessageRequest.at(playerId)) {
+    return false;
+  }
   inboundMessageQueue.push_back({&player, message.text});
+  return true;
 }
