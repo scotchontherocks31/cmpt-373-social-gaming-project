@@ -67,6 +67,16 @@ private:
   virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
 };
 
+class ParallelFor : public ASTNode {
+public:
+  ParallelFor();
+  
+
+private:
+  virtual void acceptHelper(ASTVisitor &visitor) override;
+  virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
+};
+
 class AST {
 public:
   AST(std::unique_ptr<ASTNode> &&root) : root{std::move(root)} {}
