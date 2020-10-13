@@ -50,7 +50,7 @@ public:
 private:
   Room *room;
   GameServer *server;
-  std::map<int, bool> playerMessageRequest; 
+  std::map<int, bool> playerMessageRequest;
   std::vector<Player> players;
   std::map<int, userid> playerIdMapping;
   std::map<userid, int> reversePlayerIdMapping;
