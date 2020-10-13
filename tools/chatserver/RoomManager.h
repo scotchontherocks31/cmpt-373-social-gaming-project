@@ -13,6 +13,7 @@ public:
   void listRooms();
   static constexpr auto GLOBAL_ROOM_NAME = "Global";
   void configureRoom(User &user);
+
 private:
   const roomid GLOBAL_ROOM_HASH;
   int roomCounter = 1;

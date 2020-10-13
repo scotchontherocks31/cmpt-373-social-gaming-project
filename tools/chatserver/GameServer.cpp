@@ -1,9 +1,7 @@
 #include "GameServer.h"
-#include <chrono>
 #include <iostream>
 #include <iterator>
 #include <sstream>
-#include <thread>
 #include <unistd.h>
 using networking::Connection;
 using networking::Message;
@@ -27,7 +25,7 @@ void GameServer::onDisconnect(Connection c) {
 
 void GameServer::startRunningLoop() {
   while (true) {
-    auto startTime = std::chrono::system_clock::now();
+
     bool errorWhileUpdating = false;
     try {
       server.update();
@@ -39,14 +37,12 @@ void GameServer::startRunningLoop() {
 
     auto incoming = server.receive();
     bool shouldQuit = processMessages(server, incoming);
+    flush();
     if (shouldQuit || errorWhileUpdating) {
       break;
     }
 
-    auto endTime = std::chrono::system_clock::now();
-    std::chrono::duration<double, std::milli> elapsedTime =
-        (endTime - startTime);
-    std::this_thread::sleep_for(elapsedTime);
+    sleep(1);
   }
 }
 
@@ -58,6 +54,7 @@ bool GameServer::processMessages(Server &server,
   std::vector<userid> receiversId;
 
   for (auto &message : incoming) {
+    receiversId.clear();
     std::ostringstream output;
     auto &user = getUser(message.connection);
 
@@ -96,14 +93,11 @@ bool GameServer::processMessages(Server &server,
       }
 
       if (tokens[0] == "leave") {
-        if (roomManager.getRoomFromUser(user).getName() !=
-            RoomManager::GLOBAL_ROOM_NAME) {
-          roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
-        }
+        roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
       }
 
       if (tokens[0] == "list") {
-        roomManager.listRooms(); // change to user only!
+        roomManager.listRooms(); // Should send to only user!
       }
 
       if (tokens[0] == "info") {
@@ -152,24 +146,20 @@ bool GameServer::processMessages(Server &server,
   return quit;
 }
 
+// message to everyone in room
 void GameServer::broadcast(const DecoratedMessage message) {
 
   auto room = roomManager.getRoomFromUser(message.user);
   for (auto &&[_, user] : room.getMembers()) {
     outboundMessages.push_back({user->connection, message.text});
   }
-  flush();
 }
 
+// message to specific players
 void GameServer::narrowcast(const DecoratedMessage message) {
   for (userid userId : message.receiversId) {
     outboundMessages.push_back({getUser(userId).connection, message.text});
   }
-  flush();
-}
-
-void GameServer::sendMessageToUser(const User &user, std::string message) {
-  outboundMessages.push_back({user.connection, std::move(message)});
 }
 
 void GameServer::flush() {

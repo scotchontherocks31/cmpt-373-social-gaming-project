@@ -92,6 +92,7 @@ Room &RoomManager::getRoomFromUser(const User &user) {
 }
 
 void RoomManager::listRooms() {
+  std::string s;
   for (std::pair<int, Room> r : rooms) {
     std::cout << r.first << ".Room " << r.second.getName()
               << " members:" << std::endl;
