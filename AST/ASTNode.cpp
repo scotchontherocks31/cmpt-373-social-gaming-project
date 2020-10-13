@@ -16,4 +16,11 @@ void FormatNode::acceptForChildrenHelper(ASTVisitor &visitor) {
   }
 }
 
+void InputText::acceptHelper(ASTVisitor &visitor) { visitor.visit(*this); }
+void InputText::acceptForChildrenHelper(ASTVisitor &visitor) {
+  for (auto &child : children) {
+    child->accept(visitor);
+  }
+}
+
 } // namespace AST
