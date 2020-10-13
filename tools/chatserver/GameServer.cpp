@@ -128,10 +128,11 @@ bool GameServer::processMessages(Server &server,
         }
       }
 
-      // TODO: must send JSON room configuration from the user
+      /* TODO: must send JSON room configuration from the user
       if (tokens[0] == "configure") {
         roomManager.configureRoom(user);
       }
+      */
 
     } else {
       // If not a command then just output a message
@@ -155,7 +156,7 @@ void GameServer::broadcast(const DecoratedMessage message) {
 
   auto room = roomManager.getRoomFromUser(message.user);
   for (auto &&[_, user] : room.getMembers()) {
-    outboundMessages.push_back({user.get().connection, message.text});
+    outboundMessages.push_back({user->connection, message.text});
   }
   flush();
 }
