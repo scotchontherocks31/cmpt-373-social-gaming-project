@@ -154,7 +154,7 @@ bool GameServer::processMessages(Server &server,
 void GameServer::broadcast(const DecoratedMessage message) {
 
   auto room = roomManager.getRoomFromUser(message.user);
-  for (auto &&[_, user] : room.getParticipants()) {
+  for (auto &&[_, user] : room.getMembers()) {
     outboundMessages.push_back({user.get().connection, message.text});
   }
   flush();

@@ -20,7 +20,7 @@ public:
   void addMember(User &user) { members[user.getId()] = &user; }
   void removeMember(userid userId) { members.erase(id); }
   void listMembers();
-  int getCurrentSize() { return participants.size(); }
+  int getCurrentSize() { return members.size(); }
   int getCapacity() { return capacity; }
   void setCapacity(int newCapacity);
   void setName(std::string newName);

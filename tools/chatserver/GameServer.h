@@ -1,9 +1,6 @@
 #pragma once
 
-<<<<<<< HEAD
 #include "Room.h"
-=======
->>>>>>> MVP
 #include "RoomManager.h"
 #include <deque>
 #include <map>
