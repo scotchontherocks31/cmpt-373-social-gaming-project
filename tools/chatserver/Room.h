@@ -12,16 +12,14 @@ class RoomManager;
 
 class Room {
 public:
+  Room(roomid id, std::string roomName);
   roomid getId() const { return id; }
   const std::string &getName() const { return name; }
-  const std::map<userid, std::reference_wrapper<User>> &
-  getParticipants() const {
-    return participants;
-  }
-  User &getParticipant(userid userId) const {
-    return participants.at(userId).get();
-  };
-  void listParticipants();
+  User &getMember(userid userId) const { return *members.at(userId); };
+  const std::map<userid, User *> &getMembers() const { return members; }
+  void addMember(User &user) { members[user.getId()] = &user; }
+  void removeMember(userid userId) { members.erase(id); }
+  void listMembers();
   int getCurrentSize() { return participants.size(); }
   int getCapacity() { return capacity; }
   void setCapacity(int newCapacity);
@@ -32,7 +30,5 @@ private:
   int capacity;
   std::string name;
   roomid id;
-  std::map<userid, std::reference_wrapper<User>> participants;
-  Room(roomid id, std::string roomName);
-  friend class RoomManager;
+  std::map<userid, User *> members;
 };

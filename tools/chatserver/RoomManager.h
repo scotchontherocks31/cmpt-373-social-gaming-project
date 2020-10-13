@@ -11,8 +11,12 @@ public:
   void removeUserFromRoom(User &user);
   Room &getRoomFromUser(const User &user);
   void listRooms();
+<<<<<<< HEAD
   void configureRoom(User &user);
   inline static const std::string GLOBAL_ROOM_NAME = "Global";
+=======
+  static constexpr auto GLOBAL_ROOM_NAME = "Global";
+>>>>>>> MVP
 
 private:
   const roomid GLOBAL_ROOM_HASH;
