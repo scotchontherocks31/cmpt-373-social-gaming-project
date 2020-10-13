@@ -25,8 +25,6 @@ void GameHandler::sendToAllPlayers(std::string message) {
 }
 
 std::deque<PlayerMessage> GameHandler::receiveFromPlayer(const Player &player) {
-  bool &waiting = playerMessageRequest.at(player.id);
-  waiting = true;
   std::deque<PlayerMessage> messages;
   auto &&[x, y] =
       std::ranges::partition(inboundMessageQueue, [&player](auto &message) {
@@ -34,9 +32,7 @@ std::deque<PlayerMessage> GameHandler::receiveFromPlayer(const Player &player) {
       });
   std::ranges::move(x, inboundMessageQueue.end(), std::back_inserter(messages));
   inboundMessageQueue.erase(x, inboundMessageQueue.end());
-  if (!messages.empty()) {
-    waiting = false;
-  }
+  playerMessageRequest.at(player.id) = messages.empty();
   return messages;
 }
 
