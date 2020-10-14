@@ -1,12 +1,12 @@
 
 add_executable(chatserver
-  chatserver.cpp GameServer.cpp Room.cpp RoomManager.cpp
+  chatserver.cpp GameServer.cpp Room.cpp RoomManager.cpp GameManager.cpp GameHandler.cpp
 )
 
 set_target_properties(chatserver
                       PROPERTIES
                       LINKER_LANGUAGE CXX
-                      CXX_STANDARD 17
+                      CXX_STANDARD 20
                       PREFIX ""
 )
 
