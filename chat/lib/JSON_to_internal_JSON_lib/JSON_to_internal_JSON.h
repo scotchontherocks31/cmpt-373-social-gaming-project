@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <fstream> // TODO remove when files are replaced with server
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 
 using json = nlohman::json;
 //the class is suposed to take a JSON file and
