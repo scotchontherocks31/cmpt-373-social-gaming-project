@@ -14,9 +14,3 @@ Room::Room(roomid id, std::string roomName)
     capacity = MAX_CAPACITY;
   }
 }
-
-void Room::listMembers() {
-  for (auto &&p : members) {
-    std::cout << p.second->getId() << std::endl;
-  }
-}

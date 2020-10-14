@@ -8,9 +8,8 @@ using networking::Message;
 using networking::Server;
 
 GameServer::GameServer(unsigned short port, std::string httpMessage)
-    : server(
-          port, httpMessage, [this](Connection c) { this->onConnect(c); },
-          [this](Connection c) { this->onDisconnect(c); }) {}
+    : server(port, httpMessage, [this](Connection c) { this->onConnect(c); },
+             [this](Connection c) { this->onDisconnect(c); }) {}
 
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";
@@ -81,8 +80,9 @@ bool GameServer::processMessages(Server &server,
         // Create an empty room
         if (tokens.size() == 2) {
           roomManager.createRoom(tokens[1]);
+          output << "creating room " << tokens[1] << "...\n";
         } else {
-          roomManager.createRoom("");
+          output << "please specify a name\n";
         }
       }
 
@@ -90,15 +90,27 @@ bool GameServer::processMessages(Server &server,
         // Create an empty room
         if (tokens.size() == 2) {
           roomManager.putUserToRoom(user, tokens[1]);
+          output << "joining room "
+                 << roomManager.getRoomFromUser(user).getName() << "...\n";
         }
       }
 
       if (tokens[0] == "leave") {
         roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
+        output << "leaving room" << roomManager.getRoomFromUser(user).getName()
+               << "...\n";
       }
 
       if (tokens[0] == "list") {
-        roomManager.listRooms(); // Should send to only user!
+        output << "--------------\n";
+
+        for (std::pair<roomid, Room> r : roomManager.getRooms()) {
+          output << r.second.getName() << " room members:\n";
+          for (std::pair<userid, User *> u : r.second.getMembers()) {
+            output << u.first << "\n";
+          }
+          output << "--------------\n";
+        }
       }
 
       if (tokens[0] == "info") {

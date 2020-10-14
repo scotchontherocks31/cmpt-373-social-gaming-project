@@ -10,7 +10,7 @@ public:
   bool putUserToRoom(User &user, const std::string &roomName);
   void removeUserFromRoom(User &user);
   Room &getRoomFromUser(const User &user);
-  void listRooms();
+  std::map<roomid, Room> getRooms() { return rooms; };
   static constexpr auto GLOBAL_ROOM_NAME = "Global";
   void configureRoom(User &user);
 
