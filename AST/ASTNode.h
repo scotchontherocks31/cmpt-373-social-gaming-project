@@ -67,19 +67,18 @@ private:
   virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
 };
 
-
 class ParallelFor : public ASTNode {
 public:
-  
-  ParallelFor(std::string listName,std::string elementName) : listName{std::move(listName)}, elementName{std::move(elementName)} {}
+  ParallelFor(std::string listName, std::string elementName)
+      : listName{std::move(listName)}, elementName{std::move(elementName)} {}
   const std::string &getListName() const { return listName; }
   const std::string &getElementName() const { return elementName; }
-  
-  private:
-    virtual void acceptHelper(ASTVisitor &visitor) override;
-    virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
-    std::string listName;
-    std::string elementName;
+
+private:
+  virtual void acceptHelper(ASTVisitor &visitor) override;
+  virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
+  std::string listName;
+  std::string elementName;
 };
 
 class InputText : public ASTNode {
@@ -89,14 +88,12 @@ public:
   const std::string &getPrompt() const { return prompt; }
   const std::string &getResultVar() const { return resultVar; }
 
-
 private:
   virtual void acceptHelper(ASTVisitor &visitor) override;
   virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
 
   std::string prompt;
   std::string resultVar;
-
 };
 
 class AST {
