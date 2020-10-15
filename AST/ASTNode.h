@@ -70,11 +70,16 @@ private:
 
 class ParallelFor : public ASTNode {
 public:
-  ParallelFor();
+  
+  ParallelFor(std::string listName,std::string elementName) : listName{std::move(listName)}, elementName{std::move(elementName)} {}
+  const std::string &getListName() const { return listName; }
+  const std::string &getElementName() const { return elementName; }
   
   private:
     virtual void acceptHelper(ASTVisitor &visitor) override;
     virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
+    std::string listName;
+    std::string elementName;
 };
 
 class InputText : public ASTNode {
