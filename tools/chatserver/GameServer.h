@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameManager.h"
+#include "Room.h"
 #include "RoomManager.h"
 #include <deque>
 #include <map>
@@ -13,6 +14,8 @@ using networking::Server;
 struct DecoratedMessage {
   const User &user;
   std::string text;
+  bool isBroadcast;
+  std::vector<userid> receiversId;
 };
 
 struct MessageResult {
@@ -38,9 +41,9 @@ private:
   std::deque<Message> outboundMessages;
   void onConnect(Connection c);
   void onDisconnect(Connection c);
-  MessageResult processMessages(Server &server,
-                                const std::deque<Message> &incoming);
-  void buildOutgoing(const std::vector<DecoratedMessage> &log);
+  bool processMessages(Server &server, const std::deque<Message> &incoming);
+  void broadcast(const DecoratedMessage message);
+  void narrowcast(const DecoratedMessage message);
   User &getUser(Connection connection) { return users.at(connection.id); }
   void flush();
   std::vector<std::string> getCommand(const std::string &message);

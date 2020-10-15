@@ -3,7 +3,6 @@
 #include <iterator>
 #include <sstream>
 #include <unistd.h>
-
 using networking::Connection;
 using networking::Message;
 using networking::Server;
@@ -28,6 +27,7 @@ void GameServer::onDisconnect(Connection c) {
 
 void GameServer::startRunningLoop() {
   while (true) {
+
     bool errorWhileUpdating = false;
     try {
       server.update();
@@ -38,10 +38,8 @@ void GameServer::startRunningLoop() {
     }
 
     auto incoming = server.receive();
-    auto [output, shouldQuit] = processMessages(server, incoming);
-    buildOutgoing(output);
+    bool shouldQuit = processMessages(server, incoming);
     flush();
-
     if (shouldQuit || errorWhileUpdating) {
       break;
     }
@@ -50,36 +48,23 @@ void GameServer::startRunningLoop() {
   }
 }
 
-// take owner command from client and return command split into tokens
-std::vector<std::string> GameServer::getCommand(const std::string &message) {
-  std::vector<std::string> tokens;
-
-  // remove \ from start of string
-  std::string new_message = message.substr(1, message.size() - 1);
-
-  // string split source:
-  // http://www.martinbroadhurst.com/how-to-split-a-string-in-c.html
-  std::stringstream ss(new_message);
-  std::string token;
-  while (std::getline(ss, token, ' ')) {
-    tokens.push_back(token);
-  }
-  return tokens;
-}
-
-MessageResult GameServer::processMessages(Server &server,
-                                          const std::deque<Message> &incoming) {
+bool GameServer::processMessages(Server &server,
+                                 const std::deque<Message> &incoming) {
   std::vector<DecoratedMessage> outMessages;
   bool quit = false;
+  bool isBroadcast = true;
+  std::vector<userid> receiversId;
 
   for (auto &message : incoming) {
+    receiversId.clear();
     std::ostringstream output;
     auto &user = getUser(message.connection);
 
     // Check if message is a command (e.g. /create)
     if (message.text[0] == '/') {
-      // // Parse the the command and get the tokens (e.g. /create Room1 RPS ->
-      // ["create", "Room1", "RPS"])) std::vector tokens =
+      // tokenizes command
+      isBroadcast = false;
+      receiversId.push_back(user.getId());
       auto tokens = getCommand(message.text);
 
       if (tokens[0] == "quit") {
@@ -97,8 +82,9 @@ MessageResult GameServer::processMessages(Server &server,
         // Create an empty room
         if (tokens.size() == 2) {
           roomManager.createRoom(tokens[1]);
+          output << "creating room " << tokens[1] << "...\n";
         } else {
-          roomManager.createRoom("");
+          output << "please specify a name\n";
         }
       }
 
@@ -106,43 +92,80 @@ MessageResult GameServer::processMessages(Server &server,
         // Create an empty room
         if (tokens.size() == 2) {
           roomManager.putUserToRoom(user, tokens[1]);
+          output << "joining room "
+                 << roomManager.getRoomFromUser(user).getName() << "...\n";
         }
       }
 
       if (tokens[0] == "leave") {
-        roomManager.removeUserFromRoom(user);
+        roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
+        output << "leaving room" << roomManager.getRoomFromUser(user).getName()
+               << "...\n";
       }
 
       if (tokens[0] == "list") {
-        roomManager.listRooms();
+        output << roomManager.listRoomsInfo();
       }
-      // if (tokens[0] == "start") {
-      // 	// Start the game
-      // 	startGame(user, tokens, output);
-      // }
-      // if (tokens[0] == "end") {
-      // 	// End the game early
-      // 	endGame(user, tokens, output)
-      // }
-      // if (tokens[0] == "info") {
-      // 	// Print info about the room and game
-      // 	getInfo(user, tokens, output)
-      // }
+
+      if (tokens[0] == "info") {
+        output << "Your id is: " << user.name << "\n"
+               << "You are in room: "
+               << roomManager.getRoomFromUser(user).getName() << "\n"
+               << roomManager.getRoomFromUser(user).getCurrentSize() << "/"
+               << roomManager.getRoomFromUser(user).getCapacity()
+               << "\n"; // Global room Capacity not working
+      }
+
+      if (tokens[0] == "whisper") {
+        bool userFound = false;
+        if (tokens.size() == 2) {
+          userid receiver;
+          // TODO: must change from string to uintptr_t (userid)
+          // roomManager.getRoomFromUser(user).getParticipant()
+          // receiversId.push_back(receiver);
+        }
+        if (userFound) {
+          // Add receiversId.push_back()
+        }
+      }
+
+      /* TODO: must send JSON room configuration from the user
+      if (tokens[0] == "configure") {
+        roomManager.configureRoom(user);
+      }
+      */
+
     } else {
       // If not a command then just output a message
       output << user.name << "> " << message.text << "\n";
     }
-    outMessages.push_back(DecoratedMessage{user, output.str()});
+    outMessages.push_back(
+        DecoratedMessage{user, output.str(), isBroadcast, receiversId});
   }
-  return MessageResult{outMessages, quit};
+
+  for (DecoratedMessage message : outMessages) {
+    if (message.isBroadcast) {
+      broadcast(message);
+    } else {
+      narrowcast(message);
+    }
+  }
+  return quit;
 }
 
-void GameServer::buildOutgoing(const std::vector<DecoratedMessage> &messages) {
-  for (auto &message : messages) {
-    auto room = roomManager.getRoomFromUser(message.user);
-    for (auto &&[_, user] : room.getMembers()) {
-      outboundMessages.push_back({user->connection, message.text});
-    }
+// message to everyone in room
+void GameServer::broadcast(const DecoratedMessage message) {
+
+  auto room = roomManager.getRoomFromUser(message.user);
+  for (auto &&[_, user] : room.getMembers()) {
+    outboundMessages.push_back({user->connection, message.text});
+  }
+}
+
+// message to specific players
+void GameServer::narrowcast(const DecoratedMessage message) {
+  for (userid userId : message.receiversId) {
+    outboundMessages.push_back({getUser(userId).connection, message.text});
   }
 }
 
@@ -153,12 +176,19 @@ void GameServer::flush() {
   }
 }
 
-void GameServer::sendMessageToUser(const User &user, std::string message) {
-  outboundMessages.push_back({user.connection, std::move(message)});
-}
+// take owner command from client and return command split into tokens
+std::vector<std::string> GameServer::getCommand(const std::string &message) {
+  std::vector<std::string> tokens;
 
-void GameServer::sendMessageToRoom(const Room &room, std::string message) {
-  for (auto &&[_, user] : room.getMembers()) {
-    outboundMessages.push_back({user->connection, std::move(message)});
+  // remove "/" from start of string
+  std::string new_message = message.substr(1, message.size() - 1);
+
+  // string split source:
+  // http://www.martinbroadhurst.com/how-to-split-a-string-in-c.html
+  std::stringstream ss(new_message);
+  std::string token;
+  while (std::getline(ss, token, ' ')) {
+    tokens.push_back(token);
   }
+  return tokens;
 }
