@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GameManager.h"
 #include "Room.h"
 #include "RoomManager.h"
 #include <deque>
@@ -22,6 +23,8 @@ struct MessageResult {
   bool shouldShutdown;
 };
 
+class GameManager;
+
 class GameServer {
 public:
   GameServer(unsigned short port, std::string httpMessage);
@@ -33,6 +36,7 @@ public:
 private:
   Server server;
   RoomManager roomManager;
+  GameManager gameManager;
   std::map<userid, User> users;
   std::deque<Message> outboundMessages;
   void onConnect(Connection c);

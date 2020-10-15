@@ -10,7 +10,8 @@ using networking::Server;
 GameServer::GameServer(unsigned short port, std::string httpMessage)
     : server(
           port, httpMessage, [this](Connection c) { this->onConnect(c); },
-          [this](Connection c) { this->onDisconnect(c); }) {}
+          [this](Connection c) { this->onDisconnect(c); }),
+      gameManager(*this, roomManager) {}
 
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";
