@@ -11,19 +11,10 @@ namespace AST {
 
 class Communication {
 public:
-  // MOCK
   void sendGlobalMessage(std::string &message) {
     std::cout << message << std::endl;
   }
 
-  /// Get messages from a player.
-  /// Returns empty deque if no message is available.
-  // std::deque<PlayerMessage> receiveFromPlayer(const Player &player);
-
-  // MOCK
-
-  /// Get messages from a player.
-  /// Returns empty deque if no message is available.
   std::string receiveFromPlayer(int id) { return "hello from player"; }
 };
 
