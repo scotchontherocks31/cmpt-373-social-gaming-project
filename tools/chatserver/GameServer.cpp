@@ -103,15 +103,7 @@ bool GameServer::processMessages(Server &server,
       }
 
       if (tokens[0] == "list") {
-        output << "--------------\n";
-
-        for (std::pair<roomid, Room> r : roomManager.getRooms()) {
-          output << r.second.getName() << " room members:\n";
-          for (std::pair<userid, User *> u : r.second.getMembers()) {
-            output << u.first << "\n";
-          }
-          output << "--------------\n";
-        }
+        output << roomManager.listRoomsInfo();
       }
 
       if (tokens[0] == "info") {
