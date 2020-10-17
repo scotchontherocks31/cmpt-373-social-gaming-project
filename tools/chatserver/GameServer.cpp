@@ -192,3 +192,13 @@ std::vector<std::string> GameServer::getCommand(const std::string &message) {
   }
   return tokens;
 }
+
+void GameServer::sendMessageToUser(const User &user, std::string message) {
+  outboundMessages.push_back({user.connection, std::move(message)});
+}
+
+void GameServer::sendMessageToRoom(const Room &room, std::string message) {
+  for (auto &&[_, user] : room.getMembers()) {
+    outboundMessages.push_back({user->connection, std::move(message)});
+  }
+}
