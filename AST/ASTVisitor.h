@@ -14,8 +14,6 @@ public:
   void sendGlobalMessage(std::string &message) {
     std::cout << message << std::endl;
   }
-
-  std::string receiveFromPlayer(int id) { return "hello from player"; }
 };
 
 class DSLValue;
@@ -107,13 +105,11 @@ class ASTVisitor {
 public:
   void visit(GlobalMessage &node) { visitHelper(node); }
   void visit(FormatNode &node) { visitHelper(node); }
-  void visit(InputText &node) { visitHelper(node); }
   virtual ~ASTVisitor() = default;
 
 private:
   virtual void visitHelper(GlobalMessage &) = 0;
   virtual void visitHelper(FormatNode &) = 0;
-  virtual void visitHelper(InputText &) = 0;
 };
 
 class Interpreter : public ASTVisitor {
@@ -132,12 +128,6 @@ private:
     node.acceptForChildren(*this);
     visitLeave(node);
   }
-
-  virtual void visitHelper(InputText &node) {
-    visitEnter(node);
-    node.acceptForChildren(*this);
-    visitLeave(node);
-  }
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
@@ -151,9 +141,6 @@ private:
 
   void visitEnter(FormatNode &node){};
   void visitLeave(FormatNode &node){};
-
-  void visitEnter(InputText &node){};
-  void visitLeave(InputText &node){};
 
 private:
   Environment environment;
@@ -176,17 +163,10 @@ private:
     node.acceptForChildren(*this);
     visitLeave(node);
   }
-  virtual void visitHelper(InputText &node) {
-    visitEnter(node);
-    node.acceptForChildren(*this);
-    visitLeave(node);
-  }
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(FormatNode &node) { out << "(FormatNode "; };
   void visitLeave(FormatNode &node) { out << ")"; };
-  void visitEnter(InputText &node) { out << "(InputText "; };
-  void visitLeave(InputText &node) { out << ")"; };
 
 private:
   std::ostream &out;
