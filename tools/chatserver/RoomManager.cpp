@@ -58,20 +58,20 @@ bool RoomManager::putUserToRoom(User &user, const std::string &roomName) {
   auto roomId = getIdFromName(roomName);
   if (!rooms.count(roomId))
     return false;
+  auto [it, inserted] = userRoomMapping.insert({user.getId(), roomId});
+  if (!inserted) {
+    // User is in a room
+    if (it->second == roomId) {
+      // User already in the target room
+      return true;
+    } else {
+      // User in a different room,
+      removeUserFromRoom(user);
+      userRoomMapping.insert({user.getId(), roomId});
+    }
+  }
   auto &room = rooms.at(roomId);
-
-  // Check if user already in target room
-  if (room.getMembers().count(user.getId())) {
-    return true;
-  }
-
-  // Check if user is in any other room
-  if (userRoomMapping.count(user.getId())) {
-    removeUserFromRoom(user);
-  }
-
   room.addMember(user);
-  userRoomMapping.insert({user.getId(), roomId});
   return true;
 }
 
