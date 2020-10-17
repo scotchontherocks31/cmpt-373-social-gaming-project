@@ -67,6 +67,34 @@ private:
   virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
 };
 
+/*
+{ "rule": "input-text",
+  "to": << a single player or audience member >>,
+  "prompt": << Message to send with request, as in "output" below  >>,
+  "result": << variable name in which to store the response >>
+
+  OPTIONAL
+  "timeout": << duration to wait for a response >>
+}
+*/
+class InputText : public ASTNode {
+public:
+  InputText(std::string prompt, std::string result, std::string to)
+      : prompt{prompt}, result{result}, to{to} {}
+  const std::string &getPrompt() const { return prompt; }
+  const std::string &getResult() const { return result; }
+  const std::string &getTo() const { return to; }
+
+private:
+  virtual void acceptHelper(ASTVisitor &visitor) override;
+  virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
+  std::string prompt;
+  std::string result;
+  std::string to;
+
+
+};
+
 class AST {
 public:
   AST(std::unique_ptr<ASTNode> &&root) : root{std::move(root)} {}
