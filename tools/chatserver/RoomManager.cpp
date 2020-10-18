@@ -98,7 +98,7 @@ void RoomManager::configureRoom(User &user) {
 std::string RoomManager::listRoomsInfo() {
   std::string info = "--------------\n";
 
-  for (std::pair<roomid, Room> r : getRooms()) {
+  for (auto &r : rooms) {
     info += r.second.getName() + " room members:\n";
     for (std::pair<userid, User *> u : r.second.getMembers()) {
       info += std::to_string(u.first) + "\n";
