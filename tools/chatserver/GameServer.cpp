@@ -182,7 +182,7 @@ std::vector<std::string> GameServer::getCommand(const std::string &message) {
   // remove "/" from start of string
   std::string new_message = message.substr(1);
 
-  // Split string like so 
+  // Split string like so
   // `this is "a big string"` -> ["this", "is", "a big string"]
   bool isQuote = false;
   auto pred = [&](char elem) -> bool {
@@ -195,7 +195,8 @@ std::vector<std::string> GameServer::getCommand(const std::string &message) {
     }
     return false;
   };
-  boost::algorithm::split(tokens, new_message, pred, boost::algorithm::token_compress_on);
+  boost::algorithm::split(tokens, new_message, pred,
+                          boost::algorithm::token_compress_on);
   return tokens;
 }
 
