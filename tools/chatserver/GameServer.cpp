@@ -1,4 +1,5 @@
 #include "GameServer.h"
+#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <iostream>
 #include <iterator>
@@ -81,7 +82,7 @@ bool GameServer::processMessages(Server &server,
 
       if (tokens[0] == "create") {
         // Create an empty room
-        if (tokens.size() == 2) {
+        if (tokens.size() >= 2) {
           roomManager.createRoom(tokens[1]);
           output << "creating room " << tokens[1] << "...\n";
         } else {
@@ -91,7 +92,7 @@ bool GameServer::processMessages(Server &server,
 
       if (tokens[0] == "join") {
         // Create an empty room
-        if (tokens.size() == 2) {
+        if (tokens.size() >= 2) {
           roomManager.putUserToRoom(user, tokens[1]);
           output << "joining room "
                  << roomManager.getRoomFromUser(user).getName() << "...\n";
@@ -99,9 +100,9 @@ bool GameServer::processMessages(Server &server,
       }
 
       if (tokens[0] == "leave") {
-        roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
-        output << "leaving room" << roomManager.getRoomFromUser(user).getName()
+        output << "leaving room " << roomManager.getRoomFromUser(user).getName()
                << "...\n";
+        roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
       }
 
       if (tokens[0] == "list") {
@@ -119,7 +120,7 @@ bool GameServer::processMessages(Server &server,
 
       if (tokens[0] == "whisper") {
         bool userFound = false;
-        if (tokens.size() == 2) {
+        if (tokens.size() >= 2) {
           // TODO: must change from string to uintptr_t (userid)
           // roomManager.getRoomFromUser(user).getParticipant()
           // receiversId.push_back(receiver);
@@ -181,6 +182,7 @@ std::vector<std::string> GameServer::getCommand(const std::string &message) {
 
   // remove "/" from start of string
   std::string new_message = message.substr(1);
+  boost::algorithm::trim(new_message);
 
   // Split string like so
   // `this is "a big string"` -> ["this", "is", "a big string"]
@@ -197,6 +199,9 @@ std::vector<std::string> GameServer::getCommand(const std::string &message) {
   };
   boost::algorithm::split(tokens, new_message, pred,
                           boost::algorithm::token_compress_on);
+  if (tokens.back().empty()) {
+    tokens.pop_back();
+  }
   return tokens;
 }
 
