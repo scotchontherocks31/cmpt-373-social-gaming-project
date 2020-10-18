@@ -143,7 +143,7 @@ bool GameServer::processMessages(Server &server,
         DecoratedMessage{user, output.str(), isBroadcast, receiversId});
   }
 
-  for (DecoratedMessage message : outMessages) {
+  for (auto &message : outMessages) {
     if (message.isBroadcast) {
       broadcast(message);
     } else {
@@ -154,7 +154,7 @@ bool GameServer::processMessages(Server &server,
 }
 
 // message to everyone in room
-void GameServer::broadcast(const DecoratedMessage message) {
+void GameServer::broadcast(const DecoratedMessage &message) {
   auto room = roomManager.getRoomFromUser(message.user);
   for (auto &&[_, user] : room.getMembers()) {
     outboundMessages.push_back({user->connection, message.text});
@@ -162,7 +162,7 @@ void GameServer::broadcast(const DecoratedMessage message) {
 }
 
 // message to specific players
-void GameServer::narrowcast(const DecoratedMessage message) {
+void GameServer::narrowcast(const DecoratedMessage &message) {
   for (userid userId : message.receiversId) {
     outboundMessages.push_back({getUser(userId).connection, message.text});
   }
