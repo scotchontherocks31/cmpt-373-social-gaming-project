@@ -1,4 +1,5 @@
 #include "GameServer.h"
+#include <boost/algorithm/string/split.hpp>
 #include <iostream>
 #include <iterator>
 #include <sstream>
@@ -119,7 +120,6 @@ bool GameServer::processMessages(Server &server,
       if (tokens[0] == "whisper") {
         bool userFound = false;
         if (tokens.size() == 2) {
-          userid receiver;
           // TODO: must change from string to uintptr_t (userid)
           // roomManager.getRoomFromUser(user).getParticipant()
           // receiversId.push_back(receiver);
@@ -155,7 +155,6 @@ bool GameServer::processMessages(Server &server,
 
 // message to everyone in room
 void GameServer::broadcast(const DecoratedMessage message) {
-
   auto room = roomManager.getRoomFromUser(message.user);
   for (auto &&[_, user] : room.getMembers()) {
     outboundMessages.push_back({user->connection, message.text});
@@ -181,15 +180,22 @@ std::vector<std::string> GameServer::getCommand(const std::string &message) {
   std::vector<std::string> tokens;
 
   // remove "/" from start of string
-  std::string new_message = message.substr(1, message.size() - 1);
+  std::string new_message = message.substr(1);
 
-  // string split source:
-  // http://www.martinbroadhurst.com/how-to-split-a-string-in-c.html
-  std::stringstream ss(new_message);
-  std::string token;
-  while (std::getline(ss, token, ' ')) {
-    tokens.push_back(token);
-  }
+  // Split string like so 
+  // `this is "a big string"` -> ["this", "is", "a big string"]
+  bool isQuote = false;
+  auto pred = [&](char elem) -> bool {
+    if (elem == ' ' && !isQuote) {
+      return true;
+    }
+    if (elem == '\"') {
+      isQuote = !isQuote;
+      return true;
+    }
+    return false;
+  };
+  boost::algorithm::split(tokens, new_message, pred, boost::algorithm::token_compress_on);
   return tokens;
 }
 
