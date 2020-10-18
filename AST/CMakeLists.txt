@@ -1,4 +1,4 @@
-add_library(AST ASTNode.cpp)
+add_library(AST ASTNode.cpp ASTVisitor.cpp)
 set_target_properties(AST
                       PROPERTIES
                       LINKER_LANGUAGE CXX

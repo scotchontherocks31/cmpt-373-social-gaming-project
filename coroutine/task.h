@@ -40,12 +40,12 @@ public:
     return *this;
   }
   bool resume() noexcept {
-    if (not isReady()) {
+    if (not isDone()) {
       handle.resume();
     }
-    return not isReady();
+    return not isDone();
   }
-  bool isReady() const noexcept { return !handle || handle.done(); }
+  bool isDone() const noexcept { return !handle || handle.done(); }
   auto operator co_await() const &noexcept { return Awaitable(handle); }
 
   ~Task() {
