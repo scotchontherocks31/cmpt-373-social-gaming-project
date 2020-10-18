@@ -1,36 +1,24 @@
 #include "Parser.h"
+#include <assert.h>
 
 namespace AST{
 
-    //I'm assuming this to setup initial AST 
-    //with a single root node inside of it
     AST JSONToASTParser::parseHelper(){
-        
-        if(this->json["rule"].contains("global-message")){
-            GlobalMessage node = parseGlobalMessage();
-            std::unique_ptr<GlobalMessage> glbl_prt(&node);
-            AST ast(std::move(glbl_prt));
-        }
-
-        //else, funnel in a format root node
-        FormatNode root(this->json["rule"]);
-        std::unique_ptr<FormatNode> root_ptr(&root);
-        AST ast(std::move(root_ptr));
+        assert(json["rules"]);
+        auto &&globalMessage = parseGlobalMessage(json["rules"]);
+        return AST{std::move(globalMessage)};   
     }
 
-    FormatNode JSONToASTParser::parseFormatNode(){
-        //assuming json obj. has a "rules" string
-        FormatNode format(this->json["rule"]);
-        return format;
+    std::unique_ptr<FormatNode> JSONToASTParser::parseFormatNode(const Json& json){
+        assert(json["value"]);
+        return std::make_unique<FormatNode>(this->json["value"]);
     }
 
-    GlobalMessage JSONToASTParser::parseGlobalMessage(){
+    std::unique_ptr<GlobalMessage> JSONToASTParser::parseGlobalMessage(const Json& json){
+        assert(json["rule"]);                         
+        assert(json["rule"].contains("global-message"));
 
-        FormatNode format(this->json["rule"]);
-        std::unique_ptr<FormatNode> format_ptr(&format);
-
-        GlobalMessage result(std::move(format_ptr));
-
-        return result;
+        auto &&format = parseFormatNode(json);
+        return std::make_unique<GlobalMessage>(std::move(format));
     }
 }
