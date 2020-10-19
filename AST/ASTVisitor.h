@@ -103,6 +103,7 @@ public:
   coro::Task<> visit(VarDeclaration &node);
   coro::Task<> visit(Rules &node);
   coro::Task<> visit(ParallelFor &node);
+  coro::Task<> visit(InputText &node);
   virtual ~ASTVisitor() = default;
 
 private:
@@ -112,6 +113,7 @@ private:
   virtual coro::Task<> visitHelper(Rules &) = 0;
   virtual coro::Task<> visitHelper(Variable &) = 0;
   virtual coro::Task<> visitHelper(VarDeclaration &) = 0;
+  virtual coro::Task<> visitHelper(InputText &) = 0;
 };
 
 // TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration and Rules
@@ -150,6 +152,9 @@ private:
 
   void visitEnter(FormatNode &node){};
   void visitLeave(FormatNode &node){};
+
+  void visitEnter(InputText &node){};
+  void visitLeave(InputText &node){};
 
 private:
   Environment environment;
