@@ -17,8 +17,8 @@ roomid getIdFromName(const std::string &name) {
   return std::hash<std::string>()(getNormalizedString(name));
 }
 
-RoomManager::RoomManager() : GLOBAL_ROOM_HASH(getIdFromName(GLOBAL_ROOM_NAME)) {
-  rooms.insert({GLOBAL_ROOM_HASH, Room{GLOBAL_ROOM_HASH, GLOBAL_ROOM_NAME}});
+RoomManager::RoomManager() : globalRoomHash(getIdFromName(GLOBAL_ROOM_NAME)) {
+  rooms.insert({globalRoomHash, Room{globalRoomHash, GLOBAL_ROOM_NAME}});
 }
 
 bool RoomManager::createRoom(const std::string &name) {
@@ -40,7 +40,7 @@ void RoomManager::removeRoom(const std::string &name) {
     return;
   auto roomId = getIdFromName(roomName);
   // Should not remove global room
-  if (!rooms.count(roomId) || roomId == GLOBAL_ROOM_HASH)
+  if (!rooms.count(roomId) || roomId == globalRoomHash)
     return;
   auto &room = rooms.at(roomId);
   while (!room.getMembers().empty()) {

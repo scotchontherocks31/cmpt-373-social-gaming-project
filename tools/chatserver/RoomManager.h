@@ -15,7 +15,7 @@ public:
   std::string listRoomsInfo();
 
 private:
-  const roomid GLOBAL_ROOM_HASH;
+  const roomid globalRoomHash;
   int roomCounter = 1;
   std::map<roomid, Room> rooms;
   std::map<userid, roomid> userRoomMapping;
