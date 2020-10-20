@@ -46,5 +46,4 @@ private:
   void narrowcast(const DecoratedMessage &message);
   User &getUser(Connection connection) { return users.at(connection.id); }
   void flush();
-  std::vector<std::string> getCommand(const std::string &message);
 };

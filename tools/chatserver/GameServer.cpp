@@ -9,11 +9,50 @@ using networking::Connection;
 using networking::Message;
 using networking::Server;
 
+// take owner command from client and return command split into tokens
+std::vector<std::string> tokenizeCommand(std::string command) {
+  constexpr auto WHOLE_STRING_SEPARATOR = " -- ";
+  std::vector<std::string> tokens;
+
+  std::string wholeStr;
+  auto separatorPos = command.find(WHOLE_STRING_SEPARATOR);
+  if (separatorPos != std::string::npos) {
+    auto beginWholeStr = separatorPos + strlen(WHOLE_STRING_SEPARATOR);
+    wholeStr = command.substr(beginWholeStr);
+    boost::algorithm::trim(wholeStr);
+    command = command.substr(0, separatorPos);
+  }
+  boost::algorithm::trim(command);
+
+  // Split string like so
+  // `this is "a big string"` -> ["this", "is", "a big string"]
+  bool isQuote = false;
+  auto pred = [&](char elem) -> bool {
+    if (elem == ' ' && !isQuote) {
+      return true;
+    }
+    if (elem == '\"') {
+      isQuote = !isQuote;
+      return true;
+    }
+    return false;
+  };
+  boost::algorithm::split(tokens, command, pred,
+                          boost::algorithm::token_compress_on);
+  if (tokens.back().empty()) {
+    tokens.pop_back();
+  }
+  if (!wholeStr.empty()) {
+    tokens.push_back(std::move(wholeStr));
+  }
+  return tokens;
+}
+
 GameServer::GameServer(unsigned short port, std::string httpMessage)
     : server(
           port, httpMessage, [this](Connection c) { this->onConnect(c); },
           [this](Connection c) { this->onDisconnect(c); }),
-      gameManager(*this, roomManager) {}
+      roomManager(), gameManager(*this, roomManager) {}
 
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";
@@ -67,7 +106,7 @@ bool GameServer::processMessages(Server &server,
       // tokenizes command
       isBroadcast = false;
       receiversId.push_back(user.getId());
-      auto tokens = getCommand(message.text);
+      auto tokens = tokenizeCommand(message.text.substr(1));
 
       if (tokens[0] == "quit") {
         // Disconnect from server
@@ -174,35 +213,6 @@ void GameServer::flush() {
     server.send(outboundMessages);
     outboundMessages.clear();
   }
-}
-
-// take owner command from client and return command split into tokens
-std::vector<std::string> GameServer::getCommand(const std::string &message) {
-  std::vector<std::string> tokens;
-
-  // remove "/" from start of string
-  std::string new_message = message.substr(1);
-  boost::algorithm::trim(new_message);
-
-  // Split string like so
-  // `this is "a big string"` -> ["this", "is", "a big string"]
-  bool isQuote = false;
-  auto pred = [&](char elem) -> bool {
-    if (elem == ' ' && !isQuote) {
-      return true;
-    }
-    if (elem == '\"') {
-      isQuote = !isQuote;
-      return true;
-    }
-    return false;
-  };
-  boost::algorithm::split(tokens, new_message, pred,
-                          boost::algorithm::token_compress_on);
-  if (tokens.back().empty()) {
-    tokens.pop_back();
-  }
-  return tokens;
 }
 
 void GameServer::sendMessageToUser(const User &user, std::string message) {
