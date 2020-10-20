@@ -4,11 +4,17 @@
 namespace AST{
 
     AST JSONToASTParser::parseHelper(){
-        assert(json["rules"]);
-        auto &&globalMessage = parseGlobalMessage(json["rules"]);
-        return AST{std::move(globalMessage)};   
+        //assert(json["rules"]); "rules" is implemented later probably when "foreach" or "parallefor" is made
+        //auto &&globalMessage = parseGlobalMessage(json["rule"]);
+        //return AST{std::move(globalMessage)}; 
+    
+        std::unique_ptr<FormatNode> format = std::make_unique<FormatNode>(json["value"]);
+        std::unique_ptr<GlobalMessage> globalMessage = std::make_unique<GlobalMessage>(std::move(format));
+        return AST(std::move(globalMessage));
+        
     }
 
+    /*
     std::unique_ptr<FormatNode> JSONToASTParser::parseFormatNode(const Json& json){
         assert(json["value"]);
         return std::make_unique<FormatNode>(this->json["value"]);
@@ -21,4 +27,5 @@ namespace AST{
         auto &&format = parseFormatNode(json);
         return std::make_unique<GlobalMessage>(std::move(format));
     }
+    */
 }

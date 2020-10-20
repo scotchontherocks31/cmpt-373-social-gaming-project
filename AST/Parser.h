@@ -14,7 +14,7 @@ class DomainSpecificParser {
         AST parse() {
             return parseHelper();
         }
-        virtual ~DomainSpecificParser();
+        virtual ~DomainSpecificParser() {}
     private:
         virtual AST parseHelper() = 0;
 };
