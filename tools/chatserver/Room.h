@@ -21,11 +21,9 @@ public:
   void removeMember(userid userId) { members.erase(id); }
   int getCurrentSize() { return members.size(); }
   int getCapacity() { return capacity; }
-  // void setCapacity(int newCapacity);
-  // void setName(std::string newName);
+  void setCapacity(std::size_t newCapacity);
 
 private:
-  // userid hostid;
   int capacity;
   std::string name;
   roomid id;

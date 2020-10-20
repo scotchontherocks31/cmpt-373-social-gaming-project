@@ -14,3 +14,10 @@ Room::Room(roomid id, std::string roomName)
     capacity = MAX_CAPACITY;
   }
 }
+
+void Room::setCapacity(std::size_t newCapacity) {
+  if (members.size() > newCapacity) {
+    return;
+  }
+  capacity = newCapacity;
+}
