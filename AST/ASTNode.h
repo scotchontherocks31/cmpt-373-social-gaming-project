@@ -109,7 +109,7 @@ private:
 class AST {
 public:
   AST(std::unique_ptr<ASTNode> &&root) : root{std::move(root)} {}
-  const ASTNode &getParent() const { return *root; }
+  ASTNode &getParent() { return *root; } // Removed const for testing ... Cant do root.accept()
   void setRoot(std::unique_ptr<ASTNode> &&root) { root.swap(this->root); }
   coro::Task<> accept(ASTVisitor &visitor) {
     auto coroutine = root->accept(visitor);

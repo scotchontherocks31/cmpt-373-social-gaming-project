@@ -4,19 +4,18 @@
 
 
 int main(){
+    std::cout << "Starting test..." << std::endl;
 
+    // create DSLValue
     AST::DSLValue dsl{std::string{"Greeting Game"}};
     // create enviroment
-    auto enviro = AST::Environment{nullptr};
-
-    // insert DSL
+    AST::Environment enviro{nullptr};
+    // insert DSL in environment
     enviro.setBinding(std::string{"Game Name"}, dsl);
-
     // create communication obj
     AST::Communication comm{};
-
     // create interpreter with enviroment and communication
-    AST::Interpreter interp = AST::Interpreter{std::move(enviro), comm};
+    AST::Interpreter interp{std::move(enviro), comm};
 
     
     Json globalmessage= { 
@@ -31,8 +30,7 @@ int main(){
 
     AST::JSONToASTParser JSONtoAST(globalmessage);   //pass in JSON globalmessage
     AST::AST ast = JSONtoAST.parse();  
-    ast.getParent().    
-    
+    ast.getParent().accept(interp); 
     
     return 0;
 }

@@ -1,5 +1,6 @@
 add_executable(AST 
   ASTNode.cpp 
+  ASTVisitor.cpp
   Parser.cpp 
   ParserTest.cpp
 )

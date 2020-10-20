@@ -151,6 +151,12 @@ private:
   void visitEnter(FormatNode &node){};
   void visitLeave(FormatNode &node){};
 
+  //Need these to create interpreter class in ParserTest.cpp
+  virtual coro::Task<> visitHelper(ParallelFor &) {};
+  virtual coro::Task<> visitHelper(Rules &) {};
+  virtual coro::Task<> visitHelper(Variable &) {};
+  virtual coro::Task<> visitHelper(VarDeclaration &) {};
+
 private:
   Environment environment;
   Communication &communication;
