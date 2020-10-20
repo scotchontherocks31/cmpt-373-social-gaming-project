@@ -22,6 +22,7 @@ RoomManager::RoomManager() : globalRoomHash(getIdFromName(GLOBAL_ROOM_NAME)) {
 }
 
 bool RoomManager::createRoom(const std::string &name) {
+  static std::size_t roomCounter = 1;
   auto roomName = boost::algorithm::trim_copy(name);
   roomName = roomName == "" ? "Room " + std::to_string(roomCounter) : roomName;
   auto roomId = getIdFromName(roomName);
