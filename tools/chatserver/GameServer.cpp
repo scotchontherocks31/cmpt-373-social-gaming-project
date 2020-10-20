@@ -9,7 +9,13 @@ using networking::Connection;
 using networking::Message;
 using networking::Server;
 
-// take owner command from client and return command split into tokens
+/// Tokenize raw command string.
+///
+/// Use double quotes to include whitespace in a token:
+/// this is "a big string" -> ["this", "is", "a big string"]
+///
+/// Everything after " -- " is considered a token:
+/// json -- {"id": 1, "color": "red"} -> ["json", "{"id": 1, "color": "red"}"]
 std::vector<std::string> tokenizeCommand(std::string command) {
   constexpr auto WHOLE_STRING_SEPARATOR = " -- ";
   std::vector<std::string> tokens;
@@ -24,8 +30,6 @@ std::vector<std::string> tokenizeCommand(std::string command) {
   }
   boost::algorithm::trim(command);
 
-  // Split string like so
-  // `this is "a big string"` -> ["this", "is", "a big string"]
   bool isQuote = false;
   auto pred = [&](char elem) -> bool {
     if (elem == ' ' && !isQuote) {
