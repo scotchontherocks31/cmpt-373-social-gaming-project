@@ -5,7 +5,7 @@
 class RoomManager {
 public:
   RoomManager();
-  bool createRoom(const std::string &name = "");
+  std::pair<Room *, bool> createRoom(const std::string &name = "");
   void removeRoom(const std::string &name);
   bool putUserToRoom(User &user, const std::string &roomName);
   void removeUserFromRoom(User &user);

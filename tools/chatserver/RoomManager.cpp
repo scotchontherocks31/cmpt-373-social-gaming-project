@@ -21,18 +21,15 @@ RoomManager::RoomManager() : globalRoomHash(getIdFromName(GLOBAL_ROOM_NAME)) {
   rooms.insert({globalRoomHash, Room{globalRoomHash, GLOBAL_ROOM_NAME}});
 }
 
-bool RoomManager::createRoom(const std::string &name) {
+std::pair<Room *, bool> RoomManager::createRoom(const std::string &name) {
   static std::size_t roomCounter = 1;
   auto roomName = boost::algorithm::trim_copy(name);
   roomName = roomName == "" ? "Room " + std::to_string(roomCounter) : roomName;
-  auto roomId = getIdFromName(roomName);
-  if (rooms.count(roomId)) {
-    return false;
-  }
-  auto room = Room{roomId, roomName};
-  rooms.insert({room.getId(), room});
   ++roomCounter;
-  return true;
+  auto roomId = getIdFromName(roomName);
+  auto room = Room{roomId, roomName};
+  auto [it, inserted] = rooms.insert({room.getId(), room});
+  return {&it->second, inserted};
 }
 
 void RoomManager::removeRoom(const std::string &name) {
