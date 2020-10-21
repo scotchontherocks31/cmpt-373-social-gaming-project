@@ -30,7 +30,7 @@ int main(){
 
     AST::JSONToASTParser JSONtoAST(globalmessage);   //pass in JSON globalmessage
     AST::AST ast = JSONtoAST.parse();  //AST With GlobalMessage
-    ast.accept(interp); 
-    
+    auto x = ast.accept(interp); 
+    x.resume();
     return 0;
 }

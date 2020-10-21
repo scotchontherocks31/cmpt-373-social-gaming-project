@@ -25,7 +25,6 @@ public:
   const ASTNode &getParent() const { return *parent; }
   void setParent(ASTNode *parent) { parent = parent; }
   coro::Task<> accept(ASTVisitor &visitor) {
-    std::cout <<"Accept" << std::endl;
     auto coroutine = acceptHelper(visitor);
     while (not coroutine.isDone()) {
       co_await coroutine;
@@ -113,7 +112,6 @@ public:
   const ASTNode &getParent() const { return *root; } 
   void setRoot(std::unique_ptr<ASTNode> &&root) { root.swap(this->root); }
   coro::Task<> accept(ASTVisitor &visitor) {
-    std::cout << "HELLO" << std::endl;
     auto coroutine = root->accept(visitor);
     while (not coroutine.isDone()) {
       co_await coroutine;
