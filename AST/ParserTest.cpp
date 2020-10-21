@@ -29,8 +29,8 @@ int main(){
     };
 
     AST::JSONToASTParser JSONtoAST(globalmessage);   //pass in JSON globalmessage
-    AST::AST ast = JSONtoAST.parse();  
-    ast.getParent().accept(interp); 
+    AST::AST ast = JSONtoAST.parse();  //AST With GlobalMessage
+    ast.accept(interp); 
     
     return 0;
 }
