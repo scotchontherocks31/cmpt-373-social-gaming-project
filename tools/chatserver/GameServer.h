@@ -15,12 +15,6 @@ struct DecoratedMessage {
   const User &user;
   std::string text;
   bool isBroadcast;
-  std::vector<userid> receiversId;
-};
-
-struct MessageResult {
-  std::vector<DecoratedMessage> messages;
-  bool shouldShutdown;
 };
 
 class GameManager;
@@ -50,12 +44,12 @@ private:
   RoomManager roomManager;
   GameManager gameManager;
   std::map<userid, User> users;
+  std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
+  bool running = false;
   void onConnect(Connection c);
   void onDisconnect(Connection c);
-  bool processMessages(const std::deque<Message> &incoming);
-  void broadcast(const DecoratedMessage &message);
-  void narrowcast(const DecoratedMessage &message);
+  void processMessages();
   User &getUser(Connection connection) { return users.at(connection.id); }
   void flush();
 };

@@ -97,7 +97,8 @@ void GameServer::onDisconnect(Connection c) {
 }
 
 void GameServer::startRunningLoop() {
-  while (true) {
+  running = true;
+  while (running) {
 
     bool errorWhileUpdating = false;
     try {
@@ -109,9 +110,13 @@ void GameServer::startRunningLoop() {
     }
 
     auto incoming = server.receive();
-    bool shouldQuit = processMessages(incoming);
-    flush();
-    if (shouldQuit || errorWhileUpdating) {
+    if (!incoming.empty()) {
+      std::move(incoming.begin(), incoming.end(),
+                std::back_inserter(inboundMessages));
+      processMessages();
+      flush();
+    }
+    if (errorWhileUpdating) {
       break;
     }
 
@@ -119,20 +124,15 @@ void GameServer::startRunningLoop() {
   }
 }
 
-bool GameServer::processMessages(const std::deque<Message> &incoming) {
-  std::vector<DecoratedMessage> outMessages;
-  bool quit = false;
-
-  for (auto &message : incoming) {
+void GameServer::processMessages() {
+  for (auto &message : inboundMessages) {
     bool isBroadcast = true;
-    std::vector<userid> receiversId;
     std::ostringstream output;
     auto &user = getUser(message.connection);
 
     // Check if message is a command (e.g. /create)
     if (message.text[0] == '/') {
       isBroadcast = false;
-      receiversId.push_back(user.getId());
 
       // tokenize command
       auto tokens = tokenizeCommand(message.text.substr(1));
@@ -145,7 +145,7 @@ bool GameServer::processMessages(const std::deque<Message> &incoming) {
 
       case SHUTDOWN:
         std::cout << "Shutting down.\n";
-        quit = true;
+        running = false;
         break;
 
       case CREATE: {
@@ -188,19 +188,6 @@ bool GameServer::processMessages(const std::deque<Message> &incoming) {
         break;
       }
 
-      case WHISPER: {
-        bool userFound = false;
-        if (tokens.size() >= 2) {
-          // TODO: must change from string to uintptr_t (userid)
-          // roomManager.getRoomFromUser(user).getParticipant()
-          // receiversId.push_back(receiver);
-        }
-        if (userFound) {
-          // Add receiversId.push_back()
-        }
-        break;
-      }
-
       case UNKNOWN:
         output << "Unknown \'" << tokens[0] << "\" command entered.";
         break;
@@ -213,37 +200,18 @@ bool GameServer::processMessages(const std::deque<Message> &incoming) {
       // If not a command then just output a message
       output << user.name << "> " << message.text << "\n";
     }
-    outMessages.push_back(
-        DecoratedMessage{user, output.str(), isBroadcast, receiversId});
-  }
 
-  for (auto &message : outMessages) {
-    if (message.isBroadcast) {
-      broadcast(message);
+    if (isBroadcast) {
+      auto &room = roomManager.getRoomFromUser(user);
+      sendMessageToRoom(room, output.str());
     } else {
-      narrowcast(message);
+      sendMessageToUser(user, output.str());
     }
-  }
-  return quit;
-}
-
-// message to everyone in room
-void GameServer::broadcast(const DecoratedMessage &message) {
-  auto room = roomManager.getRoomFromUser(message.user);
-  for (auto &&[_, user] : room.getMembers()) {
-    outboundMessages.push_back({user->connection, message.text});
-  }
-}
-
-// message to specific players
-void GameServer::narrowcast(const DecoratedMessage &message) {
-  for (userid userId : message.receiversId) {
-    outboundMessages.push_back({getUser(userId).connection, message.text});
   }
 }
 
 void GameServer::flush() {
-  if (outboundMessages.size()) {
+  if (!outboundMessages.empty()) {
     server.send(outboundMessages);
     outboundMessages.clear();
   }
