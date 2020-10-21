@@ -27,6 +27,18 @@ class GameManager;
 
 class GameServer {
 public:
+  enum Command {
+    QUIT,
+    SHUTDOWN,
+    CREATE,
+    JOIN,
+    LEAVE,
+    LIST,
+    INFO,
+    WHISPER,
+    UNKNOWN
+  };
+
   GameServer(unsigned short port, std::string httpMessage);
   void sendMessageToUser(const User &user, std::string message);
   void sendMessageToRoom(const Room &room, std::string message);
@@ -41,7 +53,7 @@ private:
   std::deque<Message> outboundMessages;
   void onConnect(Connection c);
   void onDisconnect(Connection c);
-  bool processMessages(Server &server, const std::deque<Message> &incoming);
+  bool processMessages(const std::deque<Message> &incoming);
   void broadcast(const DecoratedMessage &message);
   void narrowcast(const DecoratedMessage &message);
   User &getUser(Connection connection) { return users.at(connection.id); }

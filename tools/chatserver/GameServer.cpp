@@ -52,6 +52,32 @@ std::vector<std::string> tokenizeCommand(std::string command) {
   return tokens;
 }
 
+GameServer::Command matchCommand(const std::string &command) {
+  // TODO: Simplify matching with magic_enum
+  if (command == "quit") {
+    return GameServer::Command::QUIT;
+  }
+  if (command == "shutdown") {
+    return GameServer::Command::SHUTDOWN;
+  }
+  if (command == "create") {
+    return GameServer::Command::CREATE;
+  }
+  if (command == "join") {
+    return GameServer::Command::JOIN;
+  }
+  if (command == "leave") {
+    return GameServer::Command::LEAVE;
+  }
+  if (command == "list") {
+    return GameServer::Command::LIST;
+  }
+  if (command == "info") {
+    return GameServer::Command::INFO;
+  }
+  return GameServer::Command::UNKNOWN;
+}
+
 GameServer::GameServer(unsigned short port, std::string httpMessage)
     : server(
           port, httpMessage, [this](Connection c) { this->onConnect(c); },
@@ -83,7 +109,7 @@ void GameServer::startRunningLoop() {
     }
 
     auto incoming = server.receive();
-    bool shouldQuit = processMessages(server, incoming);
+    bool shouldQuit = processMessages(incoming);
     flush();
     if (shouldQuit || errorWhileUpdating) {
       break;
@@ -93,75 +119,76 @@ void GameServer::startRunningLoop() {
   }
 }
 
-bool GameServer::processMessages(Server &server,
-                                 const std::deque<Message> &incoming) {
+bool GameServer::processMessages(const std::deque<Message> &incoming) {
   std::vector<DecoratedMessage> outMessages;
   bool quit = false;
-  bool isBroadcast = true;
-  std::vector<userid> receiversId;
 
   for (auto &message : incoming) {
-    receiversId.clear();
+    bool isBroadcast = true;
+    std::vector<userid> receiversId;
     std::ostringstream output;
     auto &user = getUser(message.connection);
 
     // Check if message is a command (e.g. /create)
     if (message.text[0] == '/') {
-      // tokenizes command
       isBroadcast = false;
       receiversId.push_back(user.getId());
+
+      // tokenize command
       auto tokens = tokenizeCommand(message.text.substr(1));
+      auto command = matchCommand(tokens[0]);
 
-      if (tokens[0] == "quit") {
-        // Disconnect from server
+      switch (command) {
+      case QUIT:
         server.disconnect(user.connection);
-      }
+        break;
 
-      if (tokens[0] == "shutdown") {
-        // Shut down the server
+      case SHUTDOWN:
         std::cout << "Shutting down.\n";
         quit = true;
-      }
+        break;
 
-      if (tokens[0] == "create") {
-        // Create an empty room
-        if (tokens.size() >= 2) {
-          roomManager.createRoom(tokens[1]);
-          output << "creating room " << tokens[1] << "...\n";
+      case CREATE: {
+        auto [roomPtr, created] =
+            roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
+        if (created) {
+          output << "Creating room \"" << roomPtr->getName() << "\"...\n";
         } else {
-          output << "please specify a name\n";
+          output << "Room already existed.\n";
         }
+        break;
       }
 
-      if (tokens[0] == "join") {
-        // Create an empty room
+      case JOIN:
         if (tokens.size() >= 2) {
-          roomManager.putUserToRoom(user, tokens[1]);
-          output << "joining room "
-                 << roomManager.getRoomFromUser(user).getName() << "...\n";
+          if (roomManager.putUserToRoom(user, tokens[1])) {
+            output << "Joining room \""
+                   << roomManager.getRoomFromUser(user).getName() << "\"...\n";
+          } else {
+            output << "Failed to join room.";
+          }
         }
-      }
+        break;
 
-      if (tokens[0] == "leave") {
-        output << "leaving room " << roomManager.getRoomFromUser(user).getName()
-               << "...\n";
+      case LEAVE:
+        output << "Leaving room \""
+               << roomManager.getRoomFromUser(user).getName() << "\"...\n";
         roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
-      }
+        break;
 
-      if (tokens[0] == "list") {
+      case LIST:
         output << roomManager.listRoomsInfo();
+        break;
+
+      case INFO: {
+        auto &room = roomManager.getRoomFromUser(user);
+        output << "Your name is: " << user.name << "\n"
+               << "You are in room: " << room.getName() << " ("
+               << room.getCurrentSize() << "/" << room.getCapacity() << ")\n";
+        break;
       }
 
-      if (tokens[0] == "info") {
-        output << "Your id is: " << user.name << "\n"
-               << "You are in room: "
-               << roomManager.getRoomFromUser(user).getName() << "\n"
-               << roomManager.getRoomFromUser(user).getCurrentSize() << "/"
-               << roomManager.getRoomFromUser(user).getCapacity()
-               << "\n"; // Global room Capacity not working
-      }
-
-      if (tokens[0] == "whisper") {
+      case WHISPER: {
         bool userFound = false;
         if (tokens.size() >= 2) {
           // TODO: must change from string to uintptr_t (userid)
@@ -171,14 +198,17 @@ bool GameServer::processMessages(Server &server,
         if (userFound) {
           // Add receiversId.push_back()
         }
+        break;
       }
 
-      /* TODO: must send JSON room configuration from the user
-      if (tokens[0] == "configure") {
-        roomManager.configureRoom(user);
-      }
-      */
+      case UNKNOWN:
+        output << "Unknown \'" << tokens[0] << "\" command entered.";
+        break;
 
+      default:
+        output << "Command \'" << tokens[0] << "\" is not yet implemented.";
+        break;
+      }
     } else {
       // If not a command then just output a message
       output << user.name << "> " << message.text << "\n";
