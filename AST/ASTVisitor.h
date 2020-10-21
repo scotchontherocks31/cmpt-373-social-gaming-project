@@ -5,15 +5,14 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <task.h>
 #include <variant>
 
 namespace AST {
 
 class Communication {
 public:
-  void sendGlobalMessage(std::string &message) {
-    std::cout << message << std::endl;
-  }
+  void sendGlobalMessage(std::string &message) { std::cout << message << std::endl; }
 };
 
 class DSLValue;
@@ -22,21 +21,17 @@ using Map = std::map<std::string, DSLValue>;
 
 template <typename T>
 concept DSLType =
-    std::is_convertible<T, bool>::value ||
-    std::is_convertible<T, std::string>::value ||
-    std::is_convertible<T, int>::value ||
-    std::is_convertible<T, double>::value ||
+    std::is_convertible<T, bool>::value || std::is_convertible<T, std::string>::value ||
+    std::is_convertible<T, int>::value || std::is_convertible<T, double>::value ||
     std::is_convertible<T, List>::value || std::is_convertible<T, Map>::value;
 
 class DSLValue {
 private:
-  using InternalType =
-      std::variant<std::monostate, bool, std::string, int, double, List, Map>;
+  using InternalType = std::variant<std::monostate, bool, std::string, int, double, List, Map>;
   InternalType value;
 
 public:
-  template <DSLType T>
-  DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {}
+  template <DSLType T> DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {}
   DSLValue() noexcept = default;
   DSLValue(const DSLValue &other) noexcept { this->value = other.value; }
   DSLValue(DSLValue &&other) noexcept { this->value = std::move(other.value); }
@@ -89,9 +84,7 @@ public:
       bindings.erase(lexeme);
     }
   }
-  bool contains(const Lexeme &lexeme) noexcept {
-    return bindings.contains(lexeme);
-  }
+  bool contains(const Lexeme &lexeme) noexcept { return bindings.contains(lexeme); }
   void setBinding(const Lexeme &lexeme, DSLValue value) noexcept {
     bindings.insert_or_assign(lexeme, std::move(value));
   }
@@ -103,30 +96,46 @@ public:
 
 class ASTVisitor {
 public:
-  void visit(GlobalMessage &node) { visitHelper(node); }
-  void visit(FormatNode &node) { visitHelper(node); }
+  explicit ASTVisitor() = default;
+  coro::Task<> visit(GlobalMessage &node);
+  coro::Task<> visit(FormatNode &node);
+  coro::Task<> visit(Variable &node);
+  coro::Task<> visit(VarDeclaration &node);
+  coro::Task<> visit(Rules &node);
+  coro::Task<> visit(ParallelFor &node);
   virtual ~ASTVisitor() = default;
 
 private:
-  virtual void visitHelper(GlobalMessage &) = 0;
-  virtual void visitHelper(FormatNode &) = 0;
+  virtual coro::Task<> visitHelper(GlobalMessage &) = 0;
+  virtual coro::Task<> visitHelper(FormatNode &) = 0;
+  virtual coro::Task<> visitHelper(ParallelFor &) = 0;
+  virtual coro::Task<> visitHelper(Rules &) = 0;
+  virtual coro::Task<> visitHelper(Variable &) = 0;
+  virtual coro::Task<> visitHelper(VarDeclaration &) = 0;
 };
 
+// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration and Rules
 class Interpreter : public ASTVisitor {
 public:
   Interpreter(Environment &&env, Communication &communication)
       : environment{std::move(env)}, communication{communication} {}
 
 private:
-  virtual void visitHelper(GlobalMessage &node) {
+  virtual coro::Task<> visitHelper(GlobalMessage &node) {
     visitEnter(node);
-    node.acceptForChildren(*this);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
     visitLeave(node);
+    co_return;
   }
-  virtual void visitHelper(FormatNode &node) {
+  virtual coro::Task<> visitHelper(FormatNode &node) {
     visitEnter(node);
-    node.acceptForChildren(*this);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
     visitLeave(node);
+    co_return;
   }
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
@@ -147,21 +156,28 @@ private:
   Communication &communication;
 };
 
+// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration and Rules
 class Printer : public ASTVisitor {
 public:
   virtual ~Printer() { std::cout << "\n"; }
   Printer(std::ostream &out) : out{out} {}
 
 private:
-  virtual void visitHelper(GlobalMessage &node) {
+  virtual coro::Task<> visitHelper(GlobalMessage &node) {
     visitEnter(node);
-    node.acceptForChildren(*this);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
     visitLeave(node);
+    co_return;
   }
-  virtual void visitHelper(FormatNode &node) {
+  virtual coro::Task<> visitHelper(FormatNode &node) {
     visitEnter(node);
-    node.acceptForChildren(*this);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
     visitLeave(node);
+    co_return;
   }
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
