@@ -11,7 +11,6 @@ public:
   void removeUserFromRoom(User &user);
   Room &getRoomFromUser(const User &user);
   static constexpr auto GLOBAL_ROOM_NAME = "Global";
-  void configureRoom(User &user);
   std::string listRoomsInfo();
 
 private:

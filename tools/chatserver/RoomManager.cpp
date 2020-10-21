@@ -92,17 +92,13 @@ Room &RoomManager::getRoomFromUser(const User &user) {
   return rooms.at(userRoomMapping.at(user.getId()));
 }
 
-void RoomManager::configureRoom(User &user) {
-  // To implement: Read and parse JSON for room setting
-}
-
 std::string RoomManager::listRoomsInfo() {
   std::string info = "--------------\n";
 
   for (auto &r : rooms) {
     info += r.second.getName() + " room members:\n";
-    for (std::pair<userid, User *> u : r.second.getMembers()) {
-      info += std::to_string(u.first) + "\n";
+    for (auto &&[id, userPtr] : r.second.getMembers()) {
+      info += userPtr->name + "\n";
     }
     info += "--------------\n";
   }
