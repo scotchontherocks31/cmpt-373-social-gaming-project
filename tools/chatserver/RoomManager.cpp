@@ -42,8 +42,8 @@ void RoomManager::removeRoom(const std::string &name) {
     return;
   auto &room = rooms.at(roomId);
   while (!room.getMembers().empty()) {
-    auto it = room.getMembers().begin();
-    putUserToRoom(*it->second, GLOBAL_ROOM_NAME); // Put user to global room
+    auto [_, userPtr] = *room.getMembers().begin();
+    putUserToRoom(*userPtr, GLOBAL_ROOM_NAME); // Put user to global room
   }
   rooms.erase(roomId);
 }
