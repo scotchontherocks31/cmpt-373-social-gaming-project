@@ -169,6 +169,7 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
         roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
     if (created) {
       output << "Creating room \"" << roomPtr->getName() << "\"...\n";
+      gameManager.createGame(*roomPtr);
     } else {
       output << "Room already existed.\n";
     }
