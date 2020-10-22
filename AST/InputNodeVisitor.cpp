@@ -13,7 +13,12 @@ void AST::InputNodeVisitor::getInput()
     std::cout << std::endl;
 }
 
-std::string AST::InputNodeVisitor::getMessage() 
+std::string AST::InputNodeVisitor::getMessage()
 {
     return this->message;
+}
+
+void AST::InputNodeVisitor::getChildren(AST::ASTNode &childrenList)
+{
+    //Add them to the internal variable
 }
