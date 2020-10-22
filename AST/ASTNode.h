@@ -115,9 +115,11 @@ private:
 
 class AST {
 public:
+  AST() noexcept {}
   AST(std::unique_ptr<ASTNode> &&root) : root{std::move(root)} {}
   const ASTNode &getParent() const { return *root; }
   void setRoot(std::unique_ptr<ASTNode> &&root) { root.swap(this->root); }
+  bool empty() { return !bool(root); }
   coro::Task<> accept(ASTVisitor &visitor) {
     auto coroutine = root->accept(visitor);
     while (not coroutine.isDone()) {
