@@ -41,8 +41,13 @@ class JSONToASTParser : public DomainSpecificParser {
         const Json &json;
         // Implement these in a Top Down fashion
         virtual AST parseHelper() override;
-        std::unique_ptr<FormatNode> parseFormatNode(const Json&);
-        std::unique_ptr<GlobalMessage> parseGlobalMessage(const Json&);
+        std::unique_ptr<ASTNode> parseRule(const Json&);
+        std::unique_ptr<Rules> parseRules(const Json&);
+        std::unique_ptr<FormatNode> parseFormatNode(const Json&);               //Completed
+        std::unique_ptr<GlobalMessage> parseGlobalMessage(const Json&);         //Completed
+        std::unique_ptr<VarDeclaration> parseVarDeclaration(const Json&);
+        std::unique_ptr<Variable> parseVariable(const Json&);
+        std::unique_ptr<ParallelFor> parseParallelFor(const Json&);
 };
 
 }

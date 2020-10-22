@@ -42,7 +42,7 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) = 0;
 };
 
-class FormatNode : public ASTNode {
+class FormatNode : public ASTNode {//parser complete
 public:
   explicit FormatNode(std::string format) : format{std::move(format)} {}
   const std::string &getFormat() const { return format; }
@@ -52,7 +52,7 @@ private:
   std::string format;
 };
 
-class GlobalMessage : public ASTNode {
+class GlobalMessage : public ASTNode {//parser complete
 public:
   explicit GlobalMessage(std::unique_ptr<FormatNode> &&formatNode) { appendChild(std::move(formatNode)); }
   const FormatNode &getFormatNode() const { return *static_cast<FormatNode *>(children[0].get()); }
