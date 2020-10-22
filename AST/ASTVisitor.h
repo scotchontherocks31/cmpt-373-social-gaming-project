@@ -290,15 +290,15 @@ private:
   }
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
-  void visitEnter(FormatNode &node) { out << "(FormatNode \""<<node.getFormat()<<"\""; };
+  void visitEnter(FormatNode &node) { out << "(FormatNode \""<<node.getFormat()<<"\" "; };
   void visitLeave(FormatNode &node) { out << ")"; };
   void visitEnter(InputText &node) { out << "(InputText "; };
   void visitLeave(InputText &node) { out << ")"; };
   void visitEnter(Rules &node) { out << "(Rules "; };
   void visitLeave(Rules &node) { out << ")"; };
-  void visitEnter(Variable &node) { out << "(Variable "; };
+  void visitEnter(Variable &node) { out << "(Variable \""<<node.getLexeme()<<"\" "; };
   void visitLeave(Variable &node) { out << ")"; };
-  void visitEnter(VarDeclaration &node) { out << "(VarDeclaration "; };
+  void visitEnter(VarDeclaration &node) { out << "(VarDeclaration \""<<node.getLexeme()<<"\" "; };
   void visitLeave(VarDeclaration &node) { out << ")"; };
   void visitEnter(ParallelFor &node) { out << "(ParallelFor "; };
   void visitLeave(ParallelFor &node) { out << ")"; };
