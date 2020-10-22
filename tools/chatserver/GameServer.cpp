@@ -53,7 +53,7 @@ std::vector<std::string> tokenizeCommand(std::string command) {
 }
 
 GameServer::Command matchCommand(const std::string &command) {
-  // TODO: Simplify matching with magic_enum
+  // TODO: Use std::variant and std::visit to decouple these commands.
   if (command == "quit") {
     return GameServer::Command::QUIT;
   }
