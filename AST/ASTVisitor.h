@@ -290,7 +290,7 @@ private:
   }
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
-  void visitEnter(FormatNode &node) { out << "(FormatNode "; };
+  void visitEnter(FormatNode &node) { out << "(FormatNode \""<<node.getFormat()<<"\""; };
   void visitLeave(FormatNode &node) { out << ")"; };
   void visitEnter(InputText &node) { out << "(InputText "; };
   void visitLeave(InputText &node) { out << ")"; };
