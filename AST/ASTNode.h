@@ -101,8 +101,8 @@ public:
     appendChild(std::move(result));
   }
   const FormatNode &getPrompt() const { return *static_cast<FormatNode *>(children[0].get()); }
-  const FormatNode &getTo() const { return *static_cast<Variable *>(children[1].get()); }
-  const FormatNode &getResult() const { return *static_cast<VarDeclaration *>(children[2].get()); }
+  const Variable &getTo() const { return *static_cast<Variable *>(children[1].get()); }
+  const VarDeclaration &getResult() const { return *static_cast<VarDeclaration *>(children[2].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
