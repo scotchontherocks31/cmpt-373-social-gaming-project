@@ -1,6 +1,10 @@
 #include "GameHandler.h"
 #include "GameServer.h"
+#include "json.hpp"
+#include "Parser.h"
 #include <algorithm>
+
+using json = nlohmann::json;
 
 GameHandler::GameHandler(Room &room, GameServer &server)
     : room{&room}, server{&server} {
@@ -11,6 +15,16 @@ GameHandler::GameHandler(Room &room, GameServer &server)
     playerMessageRequest.insert({counter, false});
     reversePlayerIdMapping.insert({id, counter});
     ++counter;
+  }
+}
+
+void GameHandler::configure(const std::string &json) {
+  if (ast.empty()) {
+    auto object = json::parse(json);
+    auto parser = AST::JSONToASTParser(std::move(object));
+    ast = parser.parse();
+  } else {
+    // TODO: handle game reconfigure
   }
 }
 

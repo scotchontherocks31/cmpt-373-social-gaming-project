@@ -13,7 +13,7 @@ set_target_properties(chatserver
 find_package(Threads REQUIRED)
 
 target_link_libraries(chatserver
-  networking
+  networking AST json magic_enum
   ${CMAKE_THREAD_LIBS_INIT}
 )
 
