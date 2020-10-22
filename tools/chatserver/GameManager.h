@@ -8,6 +8,7 @@ class GameManager {
 public:
   GameManager(GameServer &server, RoomManager &roomManager);
   GameHandler &createGame(Room &room);
+  GameHandler &getGame(const Room &room) { return games.at(room.getId()); };
   void dispatch(const DecoratedMessage &message);
 
 private:
