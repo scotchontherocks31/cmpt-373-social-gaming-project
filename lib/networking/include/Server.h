@@ -5,7 +5,6 @@
 // for details.
 /////////////////////////////////////////////////////////////////////////////
 
-
 #ifndef NETWORKING_SERVER_H
 #define NETWORKING_SERVER_H
 
@@ -15,9 +14,7 @@
 #include <string>
 #include <unordered_map>
 
-
 namespace networking {
-
 
 /**
  *  An identifier for a Client connected to a Server. The ID of a Connection is
@@ -26,20 +23,14 @@ namespace networking {
 struct Connection {
   uintptr_t id;
 
-  bool
-  operator==(Connection other) const {
-    return id == other.id;
-  }
+  bool operator==(Connection other) const { return id == other.id; }
 };
 
-
 struct ConnectionHash {
-  size_t
-  operator()(Connection c) const {
+  size_t operator()(Connection c) const {
     return std::hash<decltype(c.id)>{}(c.id);
   }
 };
-
 
 /**
  *  A Message containing text that can be sent to or was recieved from a given
@@ -50,14 +41,12 @@ struct Message {
   std::string text;
 };
 
-
 /** A compilation firewall for the server. */
 class ServerImpl;
 
 struct ServerImplDeleter {
-  void operator()(ServerImpl* serverImpl);
+  void operator()(ServerImpl *serverImpl);
 };
-
 
 /**
  *  @class Server
@@ -93,13 +82,11 @@ public:
    *  in response to standard HTTP requests for any path ending in `index.html`.
    */
   template <typename C, typename D>
-  Server(unsigned short port,
-         std::string httpMessage,
-         C onConnect,
+  Server(unsigned short port, std::string httpMessage, C onConnect,
          D onDisconnect)
-    : connectionHandler{std::make_unique<ConnectionHandlerImpl<C,D>>(onConnect, onDisconnect)},
-      impl{buildImpl(*this, port, std::move(httpMessage))}
-      { }
+      : connectionHandler{std::make_unique<ConnectionHandlerImpl<C, D>>(
+            onConnect, onDisconnect)},
+        impl{buildImpl(*this, port, std::move(httpMessage))} {}
 
   /**
    *  Perform all pending sends and receives. This function can throw an
@@ -110,7 +97,7 @@ public:
   /**
    *  Send a list of messages to their respective Clients.
    */
-  void send(const std::deque<Message>& messages);
+  void send(const std::deque<Message> &messages);
 
   /**
    *  Receive Message instances from Client instances. This returns all Message
@@ -142,27 +129,24 @@ private:
   class ConnectionHandlerImpl final : public ConnectionHandler {
   public:
     ConnectionHandlerImpl(C onConnect, D onDisconnect)
-      : onConnect{std::move(onConnect)},
-        onDisconnect{std::move(onDisconnect)}
-        { }
+        : onConnect{std::move(onConnect)}, onDisconnect{
+                                               std::move(onDisconnect)} {}
     ~ConnectionHandlerImpl() override = default;
-    void handleConnect(Connection c)    override { onConnect(c);    }
+    void handleConnect(Connection c) override { onConnect(c); }
     void handleDisconnect(Connection c) override { onDisconnect(c); }
+
   private:
     C onConnect;
     D onDisconnect;
   };
 
-  static std::unique_ptr<ServerImpl,ServerImplDeleter>
-  buildImpl(Server& server, unsigned short port, std::string httpMessage);
+  static std::unique_ptr<ServerImpl, ServerImplDeleter>
+  buildImpl(Server &server, unsigned short port, std::string httpMessage);
 
   std::unique_ptr<ConnectionHandler> connectionHandler;
-  std::unique_ptr<ServerImpl,ServerImplDeleter> impl;
+  std::unique_ptr<ServerImpl, ServerImplDeleter> impl;
 };
 
-
-}
-
+} // namespace networking
 
 #endif
-
