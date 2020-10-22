@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Room.h"
-#include "ASTNode.h"
 #include <list>
 #include <map>
 #include <string>
@@ -46,14 +45,11 @@ public:
   /// Get info about players in the room
   const std::vector<Player> &getPlayers() const { return players; }
 
-  void configure(const std::string &json);
-
   bool isGameUnused() const { return room->getMembers().empty(); }
 
 private:
   Room *room;
   GameServer *server;
-  AST::AST ast;
   std::map<int, bool> playerMessageRequest;
   std::vector<Player> players;
   std::map<int, userid> playerIdMapping;
