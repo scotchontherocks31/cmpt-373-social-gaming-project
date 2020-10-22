@@ -50,6 +50,7 @@ private:
   void onConnect(Connection c);
   void onDisconnect(Connection c);
   void processMessages();
+  std::string processCommand(User &user, std::string rawCommand);
   User &getUser(Connection connection) { return users.at(connection.id); }
   void flush();
 };

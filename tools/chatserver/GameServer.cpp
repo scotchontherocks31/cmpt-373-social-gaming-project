@@ -127,87 +127,92 @@ void GameServer::startRunningLoop() {
 void GameServer::processMessages() {
   for (auto &message : inboundMessages) {
     bool isBroadcast = true;
-    std::ostringstream output;
+    std::string output;
     auto &user = getUser(message.connection);
 
     // Check if message is a command (e.g. /create)
     if (message.text[0] == '/') {
       isBroadcast = false;
-
-      // tokenize command
-      auto tokens = tokenizeCommand(message.text.substr(1));
-      auto command = matchCommand(tokens[0]);
-
-      switch (command) {
-      case QUIT:
-        server.disconnect(user.connection);
-        break;
-
-      case SHUTDOWN:
-        std::cout << "Shutting down.\n";
-        running = false;
-        break;
-
-      case CREATE: {
-        auto [roomPtr, created] =
-            roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
-        if (created) {
-          output << "Creating room \"" << roomPtr->getName() << "\"...\n";
-        } else {
-          output << "Room already existed.\n";
-        }
-        break;
-      }
-
-      case JOIN:
-        if (tokens.size() >= 2) {
-          if (roomManager.putUserToRoom(user, tokens[1])) {
-            output << "Joining room \""
-                   << roomManager.getRoomFromUser(user).getName() << "\"...\n";
-          } else {
-            output << "Failed to join room.";
-          }
-        }
-        break;
-
-      case LEAVE:
-        output << "Leaving room \""
-               << roomManager.getRoomFromUser(user).getName() << "\"...\n";
-        roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
-        break;
-
-      case LIST:
-        output << roomManager.listRoomsInfo();
-        break;
-
-      case INFO: {
-        auto &room = roomManager.getRoomFromUser(user);
-        output << "Your name is: " << user.name << "\n"
-               << "You are in room: " << room.getName() << " ("
-               << room.getCurrentSize() << "/" << room.getCapacity() << ")\n";
-        break;
-      }
-
-      case UNKNOWN:
-        output << "Unknown \'" << tokens[0] << "\" command entered.";
-        break;
-
-      default:
-        output << "Command \'" << tokens[0] << "\" is not yet implemented.";
-        break;
-      }
+      output = processCommand(user, message.text.substr(1));
     } else {
       // If not a command then just output a message
-      output << user.name << "> " << message.text << "\n";
+      output = user.name + "> " + message.text + "\n";
     }
 
     if (isBroadcast) {
       auto &room = roomManager.getRoomFromUser(user);
-      sendMessageToRoom(room, output.str());
+      sendMessageToRoom(room, std::move(output));
     } else {
-      sendMessageToUser(user, output.str());
+      sendMessageToUser(user, std::move(output));
     }
   }
+}
+
+std::string GameServer::processCommand(User &user, std::string rawCommand) {
+  std::ostringstream output;
+  // tokenize command
+  auto tokens = tokenizeCommand(std::move(rawCommand));
+  auto command = matchCommand(tokens[0]);
+
+  switch (command) {
+  case QUIT:
+    server.disconnect(user.connection);
+    break;
+
+  case SHUTDOWN:
+    std::cout << "Shutting down.\n";
+    running = false;
+    break;
+
+  case CREATE: {
+    auto [roomPtr, created] =
+        roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
+    if (created) {
+      output << "Creating room \"" << roomPtr->getName() << "\"...\n";
+    } else {
+      output << "Room already existed.\n";
+    }
+    break;
+  }
+
+  case JOIN:
+    if (tokens.size() >= 2) {
+      if (roomManager.putUserToRoom(user, tokens[1])) {
+        output << "Joining room \""
+               << roomManager.getRoomFromUser(user).getName() << "\"...\n";
+      } else {
+        output << "Failed to join room.";
+      }
+    }
+    break;
+
+  case LEAVE:
+    output << "Leaving room \"" << roomManager.getRoomFromUser(user).getName()
+           << "\"...\n";
+    roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
+    break;
+
+  case LIST:
+    output << roomManager.listRoomsInfo();
+    break;
+
+  case INFO: {
+    auto &room = roomManager.getRoomFromUser(user);
+    output << "Your name is: " << user.name << "\n"
+           << "You are in room: " << room.getName() << " ("
+           << room.getCurrentSize() << "/" << room.getCapacity() << ")\n";
+    break;
+  }
+
+  case UNKNOWN:
+    output << "Unknown \'" << tokens[0] << "\" command entered.";
+    break;
+
+  default:
+    output << "Command \'" << tokens[0] << "\" is not yet implemented.";
+    break;
+  }
+  return output.str();
 }
 
 void GameServer::flush() {
