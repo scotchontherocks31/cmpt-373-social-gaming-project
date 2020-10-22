@@ -25,6 +25,12 @@ coro::Task<> ASTVisitor::visit(VarDeclaration &node) {
     co_await coroutine;
   }
 }
+coro::Task<> ASTVisitor::visit(InputText &node) {
+  auto coroutine = visitHelper(node);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
 coro::Task<> ASTVisitor::visit(Rules &node) {
   auto coroutine = visitHelper(node);
   while (not coroutine.isDone()) {
@@ -43,5 +49,6 @@ coro::Task<> ASTVisitor::visitHelper(ParallelFor &) { co_return; }
 coro::Task<> ASTVisitor::visitHelper(Rules &) { co_return; }
 coro::Task<> ASTVisitor::visitHelper(Variable &) { co_return; }
 coro::Task<> ASTVisitor::visitHelper(VarDeclaration &) { co_return; }
+coro::Task<> ASTVisitor::visitHelper(InputText &) { co_return; }
 
 } // namespace AST

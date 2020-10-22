@@ -12,7 +12,9 @@ namespace AST {
 
 class Communication {
 public:
-  void sendGlobalMessage(std::string &message) { std::cout << message << std::endl; }
+  void sendGlobalMessage(std::string &message) {
+    std::cout << message << std::endl;
+  }
 };
 
 class DSLValue;
@@ -21,17 +23,21 @@ using Map = std::map<std::string, DSLValue>;
 
 template <typename T>
 concept DSLType =
-    std::is_convertible<T, bool>::value || std::is_convertible<T, std::string>::value ||
-    std::is_convertible<T, int>::value || std::is_convertible<T, double>::value ||
+    std::is_convertible<T, bool>::value ||
+    std::is_convertible<T, std::string>::value ||
+    std::is_convertible<T, int>::value ||
+    std::is_convertible<T, double>::value ||
     std::is_convertible<T, List>::value || std::is_convertible<T, Map>::value;
 
 class DSLValue {
 private:
-  using InternalType = std::variant<std::monostate, bool, std::string, int, double, List, Map>;
+  using InternalType =
+      std::variant<std::monostate, bool, std::string, int, double, List, Map>;
   InternalType value;
 
 public:
-  template <DSLType T> DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {}
+  template <DSLType T>
+  DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {}
   DSLValue() noexcept = default;
   DSLValue(const DSLValue &other) noexcept { this->value = other.value; }
   DSLValue(DSLValue &&other) noexcept { this->value = std::move(other.value); }
@@ -84,7 +90,9 @@ public:
       bindings.erase(lexeme);
     }
   }
-  bool contains(const Lexeme &lexeme) noexcept { return bindings.contains(lexeme); }
+  bool contains(const Lexeme &lexeme) noexcept {
+    return bindings.contains(lexeme);
+  }
   void setBinding(const Lexeme &lexeme, DSLValue value) noexcept {
     bindings.insert_or_assign(lexeme, std::move(value));
   }
@@ -116,7 +124,8 @@ private:
   virtual coro::Task<> visitHelper(InputText &) = 0;
 };
 
-// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration and Rules
+// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
+// and Rules
 class Interpreter : public ASTVisitor {
 public:
   Interpreter(Environment &&env, Communication &communication)
@@ -132,6 +141,46 @@ private:
     co_return;
   }
   virtual coro::Task<> visitHelper(FormatNode &node) {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  virtual coro::Task<> visitHelper(InputText &node) {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  virtual coro::Task<> visitHelper(Variable &node) {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  virtual coro::Task<> visitHelper(VarDeclaration &node) {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  virtual coro::Task<> visitHelper(Rules &node) {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  virtual coro::Task<> visitHelper(ParallelFor &node) {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -156,12 +205,27 @@ private:
   void visitEnter(InputText &node){};
   void visitLeave(InputText &node){};
 
+  void visitEnter(Variable &node){};
+  void visitLeave(Variable &node){};
+
+  void visitEnter(VarDeclaration &node){};
+  void visitLeave(VarDeclaration &node){};
+
+  void visitEnter(Rules &node){};
+  void visitLeave(Rules &node){};
+
+  void visitEnter(ParallelFor &node){};
+  void visitLeave(ParallelFor &node){};
+
+  
+
 private:
   Environment environment;
   Communication &communication;
 };
 
-// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration and Rules
+// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
+// and Rules
 class Printer : public ASTVisitor {
 public:
   virtual ~Printer() { std::cout << "\n"; }
@@ -184,10 +248,61 @@ private:
     visitLeave(node);
     co_return;
   }
+  virtual coro::Task<> visitHelper(InputText &node) {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  virtual coro::Task<> visitHelper(Rules &node) {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  virtual coro::Task<> visitHelper(Variable &node) {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  virtual coro::Task<> visitHelper(VarDeclaration &node) {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  virtual coro::Task<> visitHelper(ParallelFor &node) {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
-  void visitEnter(FormatNode &node) { out << "(FormatNode "; };
+  void visitEnter(FormatNode &node) { out << "(FormatNode \""<<node.getFormat()<<"\""; };
   void visitLeave(FormatNode &node) { out << ")"; };
+  void visitEnter(InputText &node) { out << "(InputText "; };
+  void visitLeave(InputText &node) { out << ")"; };
+  void visitEnter(Rules &node) { out << "(Rules "; };
+  void visitLeave(Rules &node) { out << ")"; };
+  void visitEnter(Variable &node) { out << "(Variable "; };
+  void visitLeave(Variable &node) { out << ")"; };
+  void visitEnter(VarDeclaration &node) { out << "(VarDeclaration "; };
+  void visitLeave(VarDeclaration &node) { out << ")"; };
+  void visitEnter(ParallelFor &node) { out << "(ParallelFor "; };
+  void visitLeave(ParallelFor &node) { out << ")"; };
+
 
 private:
   std::ostream &out;

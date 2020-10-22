@@ -36,7 +36,9 @@ protected:
   std::vector<std::unique_ptr<ASTNode>> children;
   ASTNode *parent;
   int numChildren;
-  void appendChild(std::unique_ptr<ASTNode> &&child) { children.push_back(std::move(child)); }
+  void appendChild(std::unique_ptr<ASTNode> &&child) {
+    children.push_back(std::move(child));
+  }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) = 0;
@@ -54,8 +56,12 @@ private:
 
 class GlobalMessage : public ASTNode {
 public:
-  explicit GlobalMessage(std::unique_ptr<FormatNode> &&formatNode) { appendChild(std::move(formatNode)); }
-  const FormatNode &getFormatNode() const { return *static_cast<FormatNode *>(children[0].get()); }
+  explicit GlobalMessage(std::unique_ptr<FormatNode> &&formatNode) {
+    appendChild(std::move(formatNode));
+  }
+  const FormatNode &getFormatNode() const {
+    return *static_cast<FormatNode *>(children[0].get());
+  }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -63,10 +69,10 @@ private:
 
 class Rules : public ASTNode {
 public:
-    explicit Rules() = default;
-    void appendChild(std::unique_ptr<ASTNode> &&child) {
-        ASTNode::appendChild(std::move(child));
-    }
+  explicit Rules() = default;
+  void appendChild(std::unique_ptr<ASTNode> &&child) {
+    ASTNode::appendChild(std::move(child));
+  }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -74,9 +80,9 @@ private:
 
 class Variable : public ASTNode {
 public:
-    // TODO: Add types to check validity (eg. list vs bool)
-    explicit Variable(std::string lexeme) : lexeme{std::move(lexeme)} {}
-    const std::string &getLexeme() const { return lexeme; }
+  // TODO: Add types to check validity (eg. list vs bool)
+  explicit Variable(std::string lexeme) : lexeme{std::move(lexeme)} {}
+  const std::string &getLexeme() const { return lexeme; }
 
 private:
   std::string lexeme;
@@ -85,8 +91,8 @@ private:
 
 class VarDeclaration : public ASTNode {
 public:
-    explicit VarDeclaration(std::string lexeme) : lexeme{std::move(lexeme)} {}
-    const std::string &getLexeme() const { return lexeme; }
+  explicit VarDeclaration(std::string lexeme) : lexeme{std::move(lexeme)} {}
+  const std::string &getLexeme() const { return lexeme; }
 
 private:
   std::string lexeme;
@@ -101,8 +107,8 @@ public:
     appendChild(std::move(result));
   }
   const FormatNode &getPrompt() const { return *static_cast<FormatNode *>(children[0].get()); }
-  const FormatNode &getTo() const { return *static_cast<Variable *>(children[1].get()); }
-  const FormatNode &getResult() const { return *static_cast<VarDeclaration *>(children[2].get()); }
+  const Variable &getTo() const { return *static_cast<Variable *>(children[1].get()); }
+  const VarDeclaration &getResult() const { return *static_cast<VarDeclaration *>(children[2].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -110,12 +116,13 @@ private:
 
 class ParallelFor : public ASTNode {
 public:
-    ParallelFor(std::unique_ptr<Variable> &&variable, 
-            std::unique_ptr<VarDeclaration> &&varDeclaration, std::unique_ptr<Rules> &&rules) {
-        appendChild(std::move(variable));
-        appendChild(std::move(varDeclaration));
-        appendChild(std::move(rules));
-    }
+  ParallelFor(std::unique_ptr<Variable> &&variable,
+              std::unique_ptr<VarDeclaration> &&varDeclaration,
+              std::unique_ptr<Rules> &&rules) {
+    appendChild(std::move(variable));
+    appendChild(std::move(varDeclaration));
+    appendChild(std::move(rules));
+  }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;

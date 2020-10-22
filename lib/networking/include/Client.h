@@ -5,16 +5,13 @@
 // for details.
 /////////////////////////////////////////////////////////////////////////////
 
-
 #ifndef NETWORKING_CLIENT_H
 #define NETWORKING_CLIENT_H
 
 #include <memory>
 #include <string>
 
-
 namespace networking {
-
 
 /**
  *  @class Client
@@ -69,9 +66,6 @@ private:
   std::unique_ptr<ClientImpl> impl;
 };
 
-
-}
-
+} // namespace networking
 
 #endif
-
