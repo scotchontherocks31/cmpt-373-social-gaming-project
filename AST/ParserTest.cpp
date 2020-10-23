@@ -1,7 +1,7 @@
 #include "Parser.h"
-#include <nlohmann/json.hpp>
+#include "json.hpp"
 #include "ASTNode.h"
-
+using Json = nlohmann::json;
 
 int main(){
     std::cout << "Starting test..." << std::endl;
