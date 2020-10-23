@@ -33,9 +33,9 @@ public:
     UNKNOWN
   };
 
-  GameServer(unsigned short port, std::string httpMessage);
-  void sendMessageToUser(const User &user, std::string message);
-  void sendMessageToRoom(const Room &room, std::string message);
+  GameServer(unsigned short port, const std::string &httpMessage);
+  void sendMessageToUser(const User &user, const std::string &message);
+  void sendMessageToRoom(const Room &room, const std::string &message);
   User &getUser(userid id) { return users.at(id); }
   void startRunningLoop();
 
@@ -50,7 +50,7 @@ private:
   void onConnect(Connection c);
   void onDisconnect(Connection c);
   void processMessages();
-  std::string processCommand(User &user, std::string rawCommand);
+  std::string processCommand(User &user, const std::string &rawCommand);
   User &getUser(Connection connection) { return users.at(connection.id); }
   void flush();
 };
