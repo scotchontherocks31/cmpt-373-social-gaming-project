@@ -29,7 +29,7 @@ public:
     LEAVE,
     LIST,
     INFO,
-    WHISPER,
+    GAME,
     UNKNOWN
   };
 

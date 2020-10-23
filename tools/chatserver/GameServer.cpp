@@ -75,6 +75,9 @@ GameServer::Command matchCommand(const std::string &command) {
   if (command == "info") {
     return GameServer::Command::INFO;
   }
+  if (command == "game") {
+    return GameServer::Command::GAME;
+  }
   return GameServer::Command::UNKNOWN;
 }
 
@@ -137,6 +140,7 @@ void GameServer::processMessages() {
     } else {
       // If not a command then just output a message
       output = user.name + "> " + message.text + "\n";
+      gameManager.dispatch(user, message.text);
     }
 
     if (isBroadcast) {
@@ -203,6 +207,10 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
            << room.getCurrentSize() << "/" << room.getCapacity() << ")\n";
     break;
   }
+
+  case GAME:
+    output << gameManager.processCommand(user, tokens);
+    break;
 
   case UNKNOWN:
     output << "Unknown \'" << tokens[0] << "\" command entered.";

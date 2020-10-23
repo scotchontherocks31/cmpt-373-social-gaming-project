@@ -8,7 +8,6 @@
 
 class GameServer;
 class GameManager;
-struct DecoratedMessage;
 
 /*
 TODO: Consider making message context aware so that a random message
@@ -30,10 +29,11 @@ public:
   GameHandler(Room &room, GameServer &server);
   void loadGame(AST::AST &ast);
   void runGame();
+  bool isRunning() { return !gameTask.isDone(); }
 
   /// Only allow new message to be queued when the game requests it.
   /// Returns false if fails to queue message.
-  bool queueMessage(const DecoratedMessage &message);
+  bool queueMessage(const User &user, const std::string &message);
 
   /// Send ouput message to a player
   void sendToPlayer(const Player &player, std::string message);

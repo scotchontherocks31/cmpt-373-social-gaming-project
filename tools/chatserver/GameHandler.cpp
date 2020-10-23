@@ -38,16 +38,16 @@ std::deque<PlayerMessage> GameHandler::receiveFromPlayer(const Player &player) {
   return messages;
 }
 
-bool GameHandler::queueMessage(const DecoratedMessage &message) {
+bool GameHandler::queueMessage(const User& user, const std::string &message) {
   if (gameTask.isDone()) {
     return false;
   }
-  auto playerId = reversePlayerIdMapping.at(message.user.getId());
+  auto playerId = reversePlayerIdMapping.at(user.getId());
   auto &player = players.at(playerId);
   if (!playerMessageRequest.at(playerId)) {
     return false;
   }
-  inboundMessageQueue.push_back({&player, message.text});
+  inboundMessageQueue.push_back({&player, message});
   return true;
 }
 
