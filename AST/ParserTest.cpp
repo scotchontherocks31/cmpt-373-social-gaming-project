@@ -31,7 +31,7 @@ int main() {
 
   std::cout << "Got the JSON..." << std::endl;
   AST::JSONToASTParser JSONtoAST(std::move(rule)); // pass in JSON globalmessage
-  AST::AST ast = JSONtoAST.parse();     // AST With GlobalMessage
+  AST::AST ast = JSONtoAST.parse();                // AST With GlobalMessage
   std::cout << "Got the JSON..." << std::endl;
   auto x = ast.accept(interp);
   x.resume();
