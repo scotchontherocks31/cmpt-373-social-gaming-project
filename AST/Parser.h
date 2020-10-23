@@ -33,7 +33,7 @@ private:
 
 class JSONToASTParser : public DomainSpecificParser {
 public:
-  JSONToASTParser(const Json &json) : json{json} {}
+  JSONToASTParser(Json &&json) : json{json} {}
 
 private:
   const Json json;
