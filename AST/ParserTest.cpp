@@ -26,23 +26,13 @@ int main(){
         {"rule", "parallelfor"},
         {"list", "players"},
         {"element", "player"},
-        { "rules" ,{ globalmessage }    }
+        { "rules" , { globalmessage } }
     };
-
-    
 
     Json rule = {
        { "rules" , { para, globalmessage} }
     };
     
-
-    if(rule.is_array())
-        std::cout << "JSON has an array" << std::endl;
-        std::cout << rule.dump(4) << std::endl;
-    
-   
-    
-
     Json notGlobalmessage= {
         {"rule", "not-global-message"},
         {"value", "Not Great job!"}  
@@ -52,9 +42,8 @@ int main(){
     AST::JSONToASTParser JSONtoAST(rule);   //pass in JSON globalmessage
     AST::AST ast = JSONtoAST.parse();  //AST With GlobalMessage
     std::cout << "Got the JSON..." << std::endl;
-    //auto x = ast.accept(interp); 
-    //x.resume();
+    auto x = ast.accept(interp); 
+    x.resume();
     
-    std::cout << "AST Children: " << ast.getParent().getChildrenCount() << std::endl;   //should be 2
     return 0;
 }

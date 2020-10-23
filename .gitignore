@@ -2,3 +2,4 @@
 /build
 .devcontainer
 Dockerfile
+.DS_Store
