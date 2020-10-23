@@ -44,7 +44,7 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) = 0;
 };
 
-class FormatNode : public ASTNode {//parser complete
+class FormatNode : public ASTNode { // parser complete
 public:
   explicit FormatNode(std::string format) : format{std::move(format)} {}
   const std::string &getFormat() const { return format; }
@@ -54,7 +54,7 @@ private:
   std::string format;
 };
 
-class GlobalMessage : public ASTNode {//parser complete
+class GlobalMessage : public ASTNode { // parser complete
 public:
   explicit GlobalMessage(std::unique_ptr<FormatNode> &&formatNode) {
     appendChild(std::move(formatNode));
@@ -116,7 +116,7 @@ private:
 class AST {
 public:
   AST(std::unique_ptr<ASTNode> &&root) : root{std::move(root)} {}
-  const ASTNode &getParent() const { return *root; } 
+  const ASTNode &getParent() const { return *root; }
   void setRoot(std::unique_ptr<ASTNode> &&root) { root.swap(this->root); }
   coro::Task<> accept(ASTVisitor &visitor) {
     auto coroutine = root->accept(visitor);
