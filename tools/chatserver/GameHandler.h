@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Room.h"
+#include "ASTVisitor.h"
 #include <list>
 #include <map>
 #include <string>
@@ -27,6 +28,8 @@ struct PlayerMessage {
 class GameHandler {
 public:
   GameHandler(Room &room, GameServer &server);
+  void loadGame(AST::AST &ast);
+  void runGame();
 
   /// Only allow new message to be queued when the game requests it.
   /// Returns false if fails to queue message.
@@ -50,9 +53,12 @@ public:
 private:
   Room *room;
   GameServer *server;
+  AST::Communication bridge;
+  AST::Interpreter interpreter;
   std::map<int, bool> playerMessageRequest;
   std::vector<Player> players;
   std::map<int, userid> playerIdMapping;
   std::map<userid, int> reversePlayerIdMapping;
   std::list<PlayerMessage> inboundMessageQueue;
+  coro::Task<void> gameTask;
 };

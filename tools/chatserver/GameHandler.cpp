@@ -3,7 +3,9 @@
 #include <algorithm>
 
 GameHandler::GameHandler(Room &room, GameServer &server)
-    : room{&room}, server{&server} {
+    : room{&room}, server{&server}, bridge{}, interpreter{
+                                                  AST::Environment(nullptr),
+                                                  bridge} {
   int counter = 0;
   for (auto &[id, user] : room.getMembers()) {
     players.push_back({counter, user->name});
@@ -37,6 +39,9 @@ std::deque<PlayerMessage> GameHandler::receiveFromPlayer(const Player &player) {
 }
 
 bool GameHandler::queueMessage(const DecoratedMessage &message) {
+  if (gameTask.isDone()) {
+    return false;
+  }
   auto playerId = reversePlayerIdMapping.at(message.user.getId());
   auto &player = players.at(playerId);
   if (!playerMessageRequest.at(playerId)) {
@@ -44,4 +49,14 @@ bool GameHandler::queueMessage(const DecoratedMessage &message) {
   }
   inboundMessageQueue.push_back({&player, message.text});
   return true;
+}
+
+void GameHandler::loadGame(AST::AST &ast) {
+  gameTask = ast.accept(interpreter);
+}
+
+void GameHandler::runGame() {
+  if (!gameTask.isDone()) {
+    gameTask.resume();
+  }
 }
