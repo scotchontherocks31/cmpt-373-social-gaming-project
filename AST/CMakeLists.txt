@@ -1,9 +1,4 @@
-add_executable(AST 
-  ASTNode.cpp 
-  ASTVisitor.cpp
-  Parser.cpp 
-  ParserTest.cpp
-)
+add_library(AST ASTNode.cpp ASTVisitor.cpp Parser.cpp)
 
 set_target_properties(AST
                       PROPERTIES
