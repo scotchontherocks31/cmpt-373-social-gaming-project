@@ -130,7 +130,7 @@ public:
       : environment{std::move(env)}, communication{communication} {}
 
 private:
-  virtual coro::Task<> visitHelper(GlobalMessage &node) {
+  coro::Task<> visitHelper(GlobalMessage &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -138,7 +138,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(FormatNode &node) {
+  coro::Task<> visitHelper(FormatNode &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -159,6 +159,12 @@ private:
 
   void visitEnter(FormatNode &node){};
   void visitLeave(FormatNode &node){};
+
+  // Need these to create interpreter class in ParserTest.cpp
+  coro::Task<> visitHelper(ParallelFor &) override { co_return; };
+  coro::Task<> visitHelper(Rules &) override { co_return; };
+  coro::Task<> visitHelper(Variable &) override { co_return; };
+  coro::Task<> visitHelper(VarDeclaration &) override { co_return; };
 
 private:
   Environment environment;

@@ -1,5 +1,6 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
+#include "Parser.h"
 
 namespace AST {
 coro::Task<> GlobalMessage::acceptHelper(ASTVisitor &visitor) {
