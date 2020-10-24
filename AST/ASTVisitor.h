@@ -223,6 +223,12 @@ private:
   void visitLeave(ParallelFor &node){};
 
   
+  // Need these to create interpreter class in ParserTest.cpp
+  coro::Task<> visitHelper(ParallelFor &) override { co_return; };
+  coro::Task<> visitHelper(Rules &) override { co_return; };
+  coro::Task<> visitHelper(Variable &) override { co_return; };
+  coro::Task<> visitHelper(VarDeclaration &) override { co_return; };
+
 
 private:
   Environment environment;
