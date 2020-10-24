@@ -148,7 +148,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(InputText &node) {
+  coro::Task<> visitHelper(InputText &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -156,7 +156,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(Variable &node) {
+  coro::Task<> visitHelper(Variable &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -164,7 +164,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(VarDeclaration &node) {
+  coro::Task<> visitHelper(VarDeclaration &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -172,7 +172,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(Rules &node) {
+  coro::Task<> visitHelper(Rules &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -180,7 +180,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(ParallelFor &node) {
+  coro::Task<> visitHelper(ParallelFor &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -218,12 +218,6 @@ private:
   void visitLeave(ParallelFor &node){};
 
   
-  // Need these to create interpreter class in ParserTest.cpp
-  coro::Task<> visitHelper(ParallelFor &) override { co_return; };
-  coro::Task<> visitHelper(Rules &) override { co_return; };
-  coro::Task<> visitHelper(Variable &) override { co_return; };
-  coro::Task<> visitHelper(VarDeclaration &) override { co_return; };
-
 private:
   Environment environment;
   Communication &communication;
