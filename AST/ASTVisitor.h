@@ -230,7 +230,7 @@ public:
   Printer(std::ostream &out) : out{out} {}
 
 private:
-  virtual coro::Task<> visitHelper(GlobalMessage &node) {
+  coro::Task<> visitHelper(GlobalMessage &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -238,7 +238,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(FormatNode &node) {
+  coro::Task<> visitHelper(FormatNode &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -246,7 +246,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(InputText &node) {
+  coro::Task<> visitHelper(InputText &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -254,7 +254,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(Rules &node) {
+  coro::Task<> visitHelper(Rules &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -262,7 +262,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(Variable &node) {
+  coro::Task<> visitHelper(Variable &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -270,7 +270,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(VarDeclaration &node) {
+  coro::Task<> visitHelper(VarDeclaration &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -278,7 +278,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(ParallelFor &node) {
+  coro::Task<> visitHelper(ParallelFor &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
