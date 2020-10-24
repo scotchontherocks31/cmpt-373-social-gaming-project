@@ -45,4 +45,11 @@ coro::Task<> Rules::acceptHelper(ASTVisitor &visitor) {
   }
 }
 
+coro::Task<> InputText::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
 } // namespace AST
