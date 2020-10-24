@@ -32,7 +32,7 @@ private:
 
 class JSONToASTParser : public DomainSpecificParser {
 public:
-  JSONToASTParser(Json &&json) : json{json} {}
+  JSONToASTParser(Json &&json) : json{std::move(json)} {}
 
 private:
   const Json json;
