@@ -5,7 +5,7 @@ namespace AST {
 
 AST JSONToASTParser::parseHelper() {
 
-  return AST{std::move(parseRules(this->json["rules"]))};
+  return AST{parseRules(this->json["rules"])};
 }
 
 std::unique_ptr<Rules> JSONToASTParser::parseRules(const Json &json) {

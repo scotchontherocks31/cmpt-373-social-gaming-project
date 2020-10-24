@@ -12,7 +12,6 @@ namespace AST {
 class DomainSpecificParser {
 public:
   AST parse() { return parseHelper(); }
-  virtual ~DomainSpecificParser() {}
 
 private:
   virtual AST parseHelper() = 0;
@@ -38,7 +37,7 @@ public:
 private:
   const Json json;
   // Implement these in a Top Down fashion
-  virtual AST parseHelper() override;
+  AST parseHelper() override;
   std::unique_ptr<ASTNode> parseRule(const Json &);
   std::unique_ptr<Rules> parseRules(const Json &);
   std::unique_ptr<FormatNode> parseFormatNode(const Json &);
