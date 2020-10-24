@@ -38,7 +38,7 @@ std::deque<PlayerMessage> GameHandler::receiveFromPlayer(const Player &player) {
   return messages;
 }
 
-bool GameHandler::queueMessage(const User& user, const std::string &message) {
+bool GameHandler::queueMessage(const User &user, const std::string &message) {
   if (gameTask.isDone()) {
     return false;
   }

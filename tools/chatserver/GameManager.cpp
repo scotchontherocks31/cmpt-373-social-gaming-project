@@ -47,14 +47,14 @@ GameManager::processCommand(const User &user,
   std::ostringstream output;
   if (tokens.size() < 2) {
     return "Invalid command.\n";
-  } 
+  }
   if (tokens[1] == "create") {
     if (tokens.size() < 4) {
       output << "Error. Create command requires 2 arguments.\n";
     } else {
       createGame(tokens[2], tokens[3]);
     }
-  } 
+  }
   if (tokens[1] == "start") {
     if (tokens.size() < 3) {
       output << "Error. Start command requires 1 argument.\n";
