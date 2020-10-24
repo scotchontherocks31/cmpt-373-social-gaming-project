@@ -203,7 +203,12 @@ private:
   void visitLeave(FormatNode &node){};
 
   void visitEnter(InputText &node){};
-  void visitLeave(InputText &node){};
+  void visitLeave(InputText &node){
+    const auto &formatNodeNode = node.getPrompt(); //formatNodeNode variable name is to avoid confusion with the class FormatNode
+    const auto &variableNode = node.getTo();
+    const auto &variableDecNode = node.getResult();
+    const std::string &format = formatNodeNode.getFormat();
+  };
 
   void visitEnter(Variable &node){};
   void visitLeave(Variable &node){};
