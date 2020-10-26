@@ -8,7 +8,7 @@ struct DecoratedMessage;
 class GameManager {
 public:
   GameManager(GameServer &server, RoomManager &roomManager);
-  GameHandler &getGameHandler(const User &user);
+  GameInstance &getGameInstance(const User &user);
   std::pair<AST::AST *, bool> createGame(std::string name, std::string json);
   AST::AST &getGame(const std::string &name) { return games.at(name); };
   std::string processCommand(const User &user,
@@ -18,7 +18,7 @@ public:
 private:
   GameServer &server;
   RoomManager &roomManager;
-  std::map<roomid, GameHandler> handlers;
+  std::map<roomid, GameInstance> instances;
   std::map<std::string, AST::AST> games;
   void cleanEmptyGameHandlers();
 };

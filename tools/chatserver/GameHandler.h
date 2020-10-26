@@ -24,9 +24,9 @@ struct PlayerMessage {
   std::string message;
 };
 
-class GameHandler : public AST::Communicator {
+class GameInstance : public AST::Communicator {
 public:
-  GameHandler(Room &room, GameServer &server);
+  GameInstance(Room &room, GameServer &server);
   void loadGame(AST::AST &ast);
   void runGame();
   bool isRunning() { return !gameTask.isDone(); }

@@ -10,10 +10,10 @@ GameManager::GameManager(GameServer &server, RoomManager &roomManager)
     : server{server}, roomManager{roomManager} {}
 
 // If game is already existed for the room, replace with new one.
-GameHandler &GameManager::getGameHandler(const User &user) {
+GameInstance &GameManager::getGameInstance(const User &user) {
   auto &room = roomManager.getRoomFromUser(user);
   auto roomId = room.getId();
-  auto [it, _] = handlers.insert({roomId, GameHandler{room, server}});
+  auto [it, _] = instances.insert({roomId, GameInstance{room, server}});
   return it->second;
 }
 
@@ -31,10 +31,10 @@ std::pair<AST::AST *, bool> GameManager::createGame(std::string name,
 void GameManager::dispatch(const User &user, std::string message) {
   auto &room = roomManager.getRoomFromUser(user);
   auto roomId = room.getId();
-  if (!handlers.count(roomId)) {
+  if (!instances.count(roomId)) {
     return; // Game does not exist. Exit.
   }
-  auto &game = handlers.at(roomId);
+  auto &game = instances.at(roomId);
   if (game.queueMessage(user, std::move(message))) {
     game.runGame();
   }
@@ -59,20 +59,20 @@ GameManager::processCommand(const User &user,
     if (tokens.size() < 3) {
       output << "Error. Start command requires 1 argument.\n";
     } else {
-      auto &handler = getGameHandler(user);
+      auto &handler = getGameInstance(user);
       handler.loadGame(games.at(tokens[2]));
       handler.runGame();
       output << "Starting game \"" << tokens[2] << "\"\n";
     }
   }
   if (tokens[1] == "clean") {
-    output << "Cleaning empty game handlers.\n";
+    output << "Cleaning empty game instances.\n";
     cleanEmptyGameHandlers();
   }
   return output.str();
 }
 
 void GameManager::cleanEmptyGameHandlers() {
-  std::erase_if(handlers,
+  std::erase_if(instances,
                 [](const auto &pair) { return pair.second.isGameUnused(); });
 }
