@@ -72,7 +72,6 @@ GameManager::processCommand(const User &user,
   return output.str();
 }
 
-// TODO: Call this method somewhere to clean empty handlers if needed.
 void GameManager::cleanEmptyGameHandlers() {
   std::erase_if(handlers,
                 [](const auto &pair) { return pair.second.isGameUnused(); });
