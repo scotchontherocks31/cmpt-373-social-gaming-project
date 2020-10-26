@@ -33,7 +33,7 @@ public:
     UNKNOWN
   };
 
-  GameServer(unsigned short port, const std::string &httpMessage);
+  GameServer(unsigned short port, std::string httpMessage);
   void sendMessageToUser(const User &user, std::string message);
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
