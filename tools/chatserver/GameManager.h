@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ASTNode.h"
-#include "GameHandler.h"
+#include "GameInstance.h"
 
 struct DecoratedMessage;
 

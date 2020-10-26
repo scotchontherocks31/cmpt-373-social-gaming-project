@@ -1,4 +1,4 @@
-#include "GameHandler.h"
+#include "GameInstance.h"
 #include "GameServer.h"
 #include <algorithm>
 
