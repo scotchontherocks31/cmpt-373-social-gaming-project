@@ -83,7 +83,8 @@ GameServer::Command matchCommand(const std::string &command) {
 
 GameServer::GameServer(unsigned short port, std::string httpMessage)
     : server(
-          port, std::move(httpMessage), [this](Connection c) { this->onConnect(c); },
+          port, std::move(httpMessage),
+          [this](Connection c) { this->onConnect(c); },
           [this](Connection c) { this->onDisconnect(c); }),
       roomManager(), gameManager(*this, roomManager) {}
 
