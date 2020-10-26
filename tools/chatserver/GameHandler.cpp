@@ -3,9 +3,8 @@
 #include <algorithm>
 
 GameHandler::GameHandler(Room &room, GameServer &server)
-    : room{&room}, server{&server}, bridge{}, interpreter{
-                                                  AST::Environment(nullptr),
-                                                  bridge} {
+    : room{&room}, server{&server}, interpreter{AST::Environment{nullptr},
+                                                *this} {
   int counter = 0;
   for (auto &[id, user] : room.getMembers()) {
     players.push_back({counter, user->name});
@@ -22,7 +21,7 @@ void GameHandler::sendToPlayer(const Player &player, std::string message) {
   server->sendMessageToUser(user, std::move(message));
 }
 
-void GameHandler::sendToAllPlayers(std::string message) {
+void GameHandler::sendGlobalMessage(std::string message) {
   server->sendMessageToRoom(*room, std::move(message));
 }
 

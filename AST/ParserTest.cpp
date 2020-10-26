@@ -13,7 +13,7 @@ int main() {
   // insert DSL in environment
   enviro.setBinding(std::string{"Game Name"}, dsl);
   // create communication obj
-  AST::Communication comm{};
+  AST::PrintCommunicator comm{};
   // create interpreter with enviroment and communication
   AST::Interpreter interp{std::move(enviro), comm};
 

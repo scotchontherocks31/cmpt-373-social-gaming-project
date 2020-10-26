@@ -24,7 +24,7 @@ struct PlayerMessage {
   std::string message;
 };
 
-class GameHandler {
+class GameHandler : public AST::Communicator {
 public:
   GameHandler(Room &room, GameServer &server);
   void loadGame(AST::AST &ast);
@@ -38,8 +38,7 @@ public:
   /// Send ouput message to a player
   void sendToPlayer(const Player &player, std::string message);
 
-  /// Send output message to all players in the room
-  void sendToAllPlayers(std::string message);
+  void sendGlobalMessage(std::string message) override;
 
   /// Get messages from a player.
   /// Returns empty deque if no message is available.
@@ -53,7 +52,6 @@ public:
 private:
   Room *room;
   GameServer *server;
-  AST::Communication bridge;
   AST::Interpreter interpreter;
   std::map<int, bool> playerMessageRequest;
   std::vector<Player> players;
