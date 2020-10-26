@@ -33,7 +33,7 @@ public:
 
   /// Only allow new message to be queued when the game requests it.
   /// Returns false if fails to queue message.
-  bool queueMessage(const User &user, const std::string &message);
+  bool queueMessage(const User &user, std::string message);
 
   /// Send ouput message to a player
   void sendToPlayer(const Player &player, std::string message);

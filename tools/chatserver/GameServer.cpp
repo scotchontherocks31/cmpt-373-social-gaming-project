@@ -141,7 +141,7 @@ void GameServer::processMessages() {
     } else {
       // If not a command then just output a message
       output = user.name + "> " + message.text + "\n";
-      gameManager.dispatch(user, message.text);
+      gameManager.dispatch(user, std::move(message.text));
     }
 
     if (isBroadcast) {

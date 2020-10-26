@@ -9,12 +9,11 @@ class GameManager {
 public:
   GameManager(GameServer &server, RoomManager &roomManager);
   GameHandler &getGameHandler(const User &user);
-  std::pair<AST::AST *, bool> createGame(const std::string &name,
-                                         const std::string &json);
+  std::pair<AST::AST *, bool> createGame(std::string name, std::string json);
   AST::AST &getGame(const std::string &name) { return games.at(name); };
   std::string processCommand(const User &user,
                              const std::vector<std::string> &tokens);
-  void dispatch(const User &user, const std::string &message);
+  void dispatch(const User &user, std::string message);
 
 private:
   GameServer &server;
