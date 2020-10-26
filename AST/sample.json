@@ -1,4 +1,13 @@
 {
+    "configuration": {
+        "name": "Fav Food",
+        "player count": {"min": 1, "max": 4},
+        "audience": false,
+        "setup": {
+          "Rounds": 3
+        }
+    },
+
     "rules": [
         {
             "rule": "parallelfor",
@@ -10,12 +19,12 @@
                     "to": "player",
                     "prompt": "What is your favorite food?",
                     "result": "player.food"
+                },
+                {
+                    "rule": "global-message",
+                    "value": "{player.food} is your favorite" 
                 }
             ]
-        },
-        {
-            "rule": "global-message",
-            "value": "player.food is your favorite"
-        }
+        }   
     ]
 }
