@@ -1,6 +1,7 @@
 #include "Parser.h"
 #include "ASTNode.h"
 #include "json.hpp"
+#include <fstream>
 using Json = nlohmann::json;
 
 int main() {
@@ -17,17 +18,8 @@ int main() {
   // create interpreter with enviroment and communication
   AST::Interpreter interp{std::move(enviro), comm};
 
-  Json globalmessage = {{"rule", "global-message"}, {"value", "Great job!"}};
-
-  Json para = {{"rule", "parallelfor"},
-               {"list", "players"},
-               {"element", "player"},
-               {"rules", {globalmessage}}};
-
-  Json rule = {{"rules", {para, globalmessage}}};
-
-  Json notGlobalmessage = {{"rule", "not-global-message"},
-                           {"value", "Not Great job!"}};
+  std::ifstream file("sample.json");
+  Json rule = Json::parse(file);
 
   std::cout << "Got the JSON..." << std::endl;
   AST::JSONToASTParser JSONtoAST(std::move(rule)); // pass in JSON globalmessage

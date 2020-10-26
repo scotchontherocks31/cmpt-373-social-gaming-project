@@ -1,0 +1,23 @@
+{
+    "rules": [
+        {
+            "rule": "parallelfor",
+            "list": "players",
+            "element": "player",
+            "rules":[
+                {
+                    "rule": "global-message", 
+                    "value": "Great job!" 
+                }
+            ] 
+               
+        },
+        {
+            "rule": "global-message", 
+            "value": "Great job!"
+        }
+    ]
+}
+
+
+

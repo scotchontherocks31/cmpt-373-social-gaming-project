@@ -5,6 +5,9 @@ add_executable(AST
   ParserTest.cpp
 )
 
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/sample.json
+     DESTINATION ${CMAKE_BINARY_DIR})
+
 set_target_properties(AST
                       PROPERTIES
                       LINKER_LANGUAGE CXX
