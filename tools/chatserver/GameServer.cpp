@@ -152,8 +152,7 @@ void GameServer::processMessages() {
   }
 }
 
-std::string GameServer::processCommand(User &user,
-                                       const std::string &rawCommand) {
+std::string GameServer::processCommand(User &user, std::string rawCommand) {
   std::ostringstream output;
   // tokenize command
   auto tokens = tokenizeCommand(std::move(rawCommand));
@@ -231,13 +230,11 @@ void GameServer::flush() {
   }
 }
 
-void GameServer::sendMessageToUser(const User &user,
-                                   const std::string &message) {
-  outboundMessages.push_back({user.connection, message});
+void GameServer::sendMessageToUser(const User &user, std::string message) {
+  outboundMessages.push_back({user.connection, std::move(message)});
 }
 
-void GameServer::sendMessageToRoom(const Room &room,
-                                   const std::string &message) {
+void GameServer::sendMessageToRoom(const Room &room, std::string message) {
   for (auto &&[_, user] : room.getMembers()) {
     outboundMessages.push_back({user->connection, message});
   }
