@@ -5,19 +5,17 @@
             "list": "players",
             "element": "player",
             "rules":[
-                {
-                    "rule": "global-message", 
-                    "value": "Great job!" 
+                { 
+                    "rule": "input-text",
+                    "to": "player",
+                    "prompt": "What is your favorite food?",
+                    "result": "player.food"
                 }
-            ] 
-               
+            ]
         },
         {
-            "rule": "global-message", 
-            "value": "Great job!"
+            "rule": "global-message",
+            "value": "player.food is your favorite"
         }
     ]
 }
-
-
-
