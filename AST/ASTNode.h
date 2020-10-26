@@ -99,6 +99,29 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
+class InputText : public ASTNode {
+public:
+  explicit InputText(std::unique_ptr<FormatNode> &&prompt,
+                     std::unique_ptr<Variable> &&to,
+                     std::unique_ptr<VarDeclaration> &&result) {
+    appendChild(std::move(prompt));
+    appendChild(std::move(to));
+    appendChild(std::move(result));
+  }
+  const FormatNode &getPrompt() const {
+    return *static_cast<FormatNode *>(children[0].get());
+  }
+  const Variable &getTo() const {
+    return *static_cast<Variable *>(children[1].get());
+  }
+  const VarDeclaration &getResult() const {
+    return *static_cast<VarDeclaration *>(children[2].get());
+  }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
 class ParallelFor : public ASTNode {
 public:
   ParallelFor(std::unique_ptr<Variable> &&variable,
