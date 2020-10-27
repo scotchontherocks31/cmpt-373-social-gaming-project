@@ -210,7 +210,7 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
   }
 
   case GAME:
-    output << gameManager.processCommand(user, tokens);
+    output << processGameCommand(user, tokens);
     break;
 
   case UNKNOWN:
@@ -220,6 +220,38 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
   default:
     output << "Command \'" << tokens[0] << "\" is not yet implemented.";
     break;
+  }
+  return output.str();
+}
+
+std::string GameServer::processGameCommand(const User &user,
+                                           std::vector<std::string> &tokens) {
+  // TODO: rework this to use visitor pattern
+  std::ostringstream output;
+  if (tokens.size() < 2) {
+    return "Invalid command.\n";
+  }
+  if (tokens[1] == "create") {
+    if (tokens.size() < 4) {
+      output << "Error. Create command requires 2 arguments.\n";
+    } else {
+      output << "Creating game \"" << tokens[2] << "\"\n";
+      gameManager.createGame(std::move(tokens[2]), std::move(tokens[3]));
+    }
+  }
+  if (tokens[1] == "start") {
+    if (tokens.size() < 3) {
+      output << "Error. Start command requires 1 argument.\n";
+    } else {
+      auto &handler = gameManager.getGameInstance(user);
+      output << "Starting game \"" << tokens[2] << "\"\n";
+      handler.loadGame(gameManager.getGame(tokens[2]));
+      handler.runGame();
+    }
+  }
+  if (tokens[1] == "clean") {
+    output << "Cleaning empty game instances.\n";
+    gameManager.cleanEmptyGameHandlers();
   }
   return output.str();
 }
