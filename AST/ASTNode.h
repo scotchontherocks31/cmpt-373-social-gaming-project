@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <task.h>
+//#include "../coroutine/task.h"
 #include <vector>
 
 namespace AST {
@@ -124,13 +125,23 @@ private:
 
 class ParallelFor : public ASTNode {
 public:
-  ParallelFor(std::unique_ptr<Variable> &&variable,
+  explicit ParallelFor(std::unique_ptr<Variable> &&variable,
               std::unique_ptr<VarDeclaration> &&varDeclaration,
               std::unique_ptr<Rules> &&rules) {
     appendChild(std::move(variable));
     appendChild(std::move(varDeclaration));
-    appendChild(std::move(rules));
+    appendChild(std::move(rules));}
+
+  const Variable &getListName() const {
+    return *static_cast<Variable *>(children[0].get());
   }
+  const VarDeclaration &getElementName() const {
+    return *static_cast<VarDeclaration *>(children[1].get());
+  }
+  const Rules &getRules() const {
+    return *static_cast< Rules *>(children[2].get());
+  }
+  
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
