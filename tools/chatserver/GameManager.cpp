@@ -9,7 +9,7 @@ using json = nlohmann::json;
 GameManager::GameManager(GameServer &server, RoomManager &roomManager)
     : server{server}, roomManager{roomManager} {}
 
-// If game is already existed for the room, replace with new one.
+// If game already exists in the room, replace with new one.
 GameInstance &GameManager::getGameInstance(const User &user) {
   auto &room = roomManager.getRoomFromUser(user);
   auto roomId = room.getId();

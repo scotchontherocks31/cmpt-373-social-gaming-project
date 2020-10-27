@@ -57,5 +57,5 @@ private:
   std::map<int, userid> playerIdMapping;
   std::map<userid, int> reversePlayerIdMapping;
   std::list<PlayerMessage> inboundMessageQueue;
-  coro::Task<void> gameTask;
+  coro::Task<> gameTask;
 };
