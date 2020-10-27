@@ -27,7 +27,7 @@ struct PlayerMessage {
 class GameInstance : public AST::Communicator {
 public:
   GameInstance(Room &room, GameServer &server);
-  void loadGame(AST::AST &ast);
+  void loadGame(AST::AST &ast, AST::Environment env = AST::Environment{});
   void runGame();
   bool isRunning() { return !gameTask.isDone(); }
 
@@ -52,7 +52,6 @@ public:
 private:
   Room *room;
   GameServer *server;
-  AST::Interpreter interpreter;
   std::map<int, bool> playerMessageRequest;
   std::vector<Player> players;
   std::map<int, userid> playerIdMapping;

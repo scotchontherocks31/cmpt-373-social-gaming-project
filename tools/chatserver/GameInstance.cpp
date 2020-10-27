@@ -3,8 +3,7 @@
 #include <algorithm>
 
 GameInstance::GameInstance(Room &room, GameServer &server)
-    : room{&room}, server{&server}, interpreter{AST::Environment{nullptr},
-                                                *this} {
+    : room{&room}, server{&server} {
   int counter = 0;
   for (auto &[id, user] : room.getMembers()) {
     players.push_back({counter, user->name});
@@ -51,7 +50,8 @@ bool GameInstance::queueMessage(const User &user, std::string message) {
   return true;
 }
 
-void GameInstance::loadGame(AST::AST &ast) {
+void GameInstance::loadGame(AST::AST &ast, AST::Environment env) {
+  auto interpreter = AST::Interpreter{std::move(env), *this};
   gameTask = ast.accept(interpreter);
 }
 
