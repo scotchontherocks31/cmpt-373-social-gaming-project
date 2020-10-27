@@ -129,7 +129,8 @@ void GameServer::startRunningLoop() {
 }
 
 void GameServer::processMessages() {
-  for (auto &message : inboundMessages) {
+  while (!inboundMessages.empty()) {
+    auto &message = inboundMessages.front();
     bool isBroadcast = true;
     std::string output;
     auto &user = getUser(message.connection);
@@ -150,6 +151,7 @@ void GameServer::processMessages() {
     } else {
       sendMessageToUser(user, std::move(output));
     }
+    inboundMessages.pop_front();
   }
 }
 
