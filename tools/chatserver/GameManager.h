@@ -12,7 +12,7 @@ public:
   std::pair<AST::AST *, bool> createGame(std::string name, std::string json);
   AST::AST &getGame(const std::string &name) { return games.at(name); };
   void dispatch(const User &user, std::string message);
-  void cleanEmptyGameHandlers();
+  void cleanEmptyGameInstances();
 
 private:
   GameServer &server;

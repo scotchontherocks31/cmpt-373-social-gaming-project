@@ -240,21 +240,22 @@ std::string GameServer::processGameCommand(const User &user,
       output << "Creating game \"" << tokens[2] << "\"\n";
       gameManager.createGame(std::move(tokens[2]), std::move(tokens[3]));
     }
-  }
-  if (tokens[1] == "start") {
+  } else if (tokens[1] == "start") {
     if (tokens.size() < 3) {
       output << "Error. Start command requires 1 argument.\n";
     } else {
-      auto &handler = gameManager.getGameInstance(user);
+      auto &instance = gameManager.getGameInstance(user);
       output << "Starting game \"" << tokens[2] << "\"\n";
-      handler.loadGame(gameManager.getGame(tokens[2]));
-      handler.runGame();
+      instance.loadGame(gameManager.getGame(tokens[2]));
+      instance.runGame();
     }
-  }
-  if (tokens[1] == "clean") {
+  } else if (tokens[1] == "clean") {
     output << "Cleaning empty game instances.\n";
-    gameManager.cleanEmptyGameHandlers();
+    gameManager.cleanEmptyGameInstances();
+  } else {
+    output << "Invalid game command \"" << tokens[2] << "\"\n";
   }
+
   return output.str();
 }
 

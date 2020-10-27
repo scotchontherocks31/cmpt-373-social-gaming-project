@@ -39,7 +39,7 @@ void GameManager::dispatch(const User &user, std::string message) {
   }
 }
 
-void GameManager::cleanEmptyGameHandlers() {
+void GameManager::cleanEmptyGameInstances() {
   std::erase_if(instances,
                 [](const auto &pair) { return pair.second.isGameUnused(); });
 }
