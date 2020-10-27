@@ -12,7 +12,7 @@ namespace AST {
 
 class Communication {
 public:
-  void sendGlobalMessage(std::string &message) {
+  void sendGlobalMessage(const std::string &message) {
     std::cout << message << std::endl;
   }
 };
@@ -191,12 +191,8 @@ private:
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
-    auto &&formatMessage = formatMessageNode.getFormat();
-    const std::string GAME_NAME = "Game Name";
-    auto &&gameNameDSL = environment.getValue(GAME_NAME);
-    auto &&gameName = gameNameDSL.get<std::string>();
-    auto finalMessage = formatMessage + gameName;
-    communication.sendGlobalMessage(finalMessage);
+    const std::string &mess = formatMessageNode.getFormat();
+    communication.sendGlobalMessage(mess);
   };
 
   void visitEnter(FormatNode &node){};
