@@ -206,8 +206,13 @@ private:
   void visitLeave(InputText &node){
     const auto &formatNodeNode = node.getPrompt(); //formatNodeNode variable name is to avoid confusion with the class FormatNode
     const auto &variableNode = node.getTo();
+    auto &&player == environment.getValue("Player");//Is this how it works?
     const auto &variableDecNode = node.getResult();
     const std::string &format = formatNodeNode.getFormat();
+    //send quarry to the communication class
+    communication.sendGlobalMessage(format);
+    //put return values to the environment using variableDecNode
+    //??? Cant find the function for the job
   };
 
   void visitEnter(Variable &node){};
