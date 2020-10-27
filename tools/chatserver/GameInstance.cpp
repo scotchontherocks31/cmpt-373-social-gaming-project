@@ -25,7 +25,8 @@ void GameInstance::sendGlobalMessage(std::string message) {
   server->sendMessageToRoom(*room, std::move(message));
 }
 
-std::deque<PlayerMessage> GameInstance::receiveFromPlayer(const Player &player) {
+std::deque<PlayerMessage>
+GameInstance::receiveFromPlayer(const Player &player) {
   std::deque<PlayerMessage> messages;
   auto &&[x, y] =
       std::ranges::partition(inboundMessageQueue, [&player](auto &message) {
