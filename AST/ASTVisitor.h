@@ -88,6 +88,7 @@ private:
   std::map<Lexeme, DSLValue> bindings;
 
 public:
+  Environment() : parent{nullptr} {}
   explicit Environment(Environment *parent) : parent{parent} {}
   DSLValue &getValue(const Lexeme &lexeme) noexcept { return bindings[lexeme]; }
   void removeBinding(const Lexeme &lexeme) noexcept {
