@@ -5,7 +5,8 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <task.h>
+//#include <task.h>
+#include "../coroutine/task.h"
 #include <variant>
 #include <deque>
 
@@ -226,9 +227,9 @@ private:
     }
 
     // only move onto next task when current one completes
-    for(auto &&ruleTask : tasks){
+    for(coro::Task<> &ruleTask : tasks){
       do{ 
-        coro::co_await ruleTask;
+        co_await ruleTask;
       }
       while(not ruleTask.isDone());
     }
