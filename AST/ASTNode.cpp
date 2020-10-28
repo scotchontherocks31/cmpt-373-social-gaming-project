@@ -52,11 +52,4 @@ coro::Task<> InputText::acceptHelper(ASTVisitor &visitor) {
   }
 }
 
-void ParallelFor::acceptHelper(ASTVisitor &visitor) { visitor.visit(*this); }
-void ParallelFor::acceptForChildrenHelper(ASTVisitor &visitor) {
-  for (auto &child : children) {
-    child->accept(visitor);
-  }
-}
-
 } // namespace AST

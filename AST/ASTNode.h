@@ -101,16 +101,25 @@ private:
 
 class ParallelFor : public ASTNode {
 public:
-  ParallelFor(std::string listName, std::string elementName)
-      : listName{std::move(listName)}, elementName{std::move(elementName)} {}
-  const std::string &getListName() const { return listName; }
-  const std::string &getElementName() const { return elementName; }
+  explicit ParallelFor(std::unique_ptr<Variable> &&listName,
+                       std::unique_ptr<VarDeclaration> &&elementName,
+                       std::unique_ptr<Rules> &&rules) {
+    appendChild(std::move(listName));
+    appendChild(std::move(elementName));
+    appendChild(std::move(rules));
+  }
+  const Variable &getListName() const {
+    return *static_cast<Variable *>(children[0].get());
+  }
+  const VarDeclaration &getElementName() const {
+    return *static_cast<VarDeclaration *>(children[1].get());
+  }
+  const Rules &getRules() const {
+    return *static_cast<Rules *>(children[2].get());
+  }
 
 private:
-  virtual void acceptHelper(ASTVisitor &visitor) override;
-  virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
-  std::string listName;
-  std::string elementName;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class InputText : public ASTNode {
@@ -133,29 +142,7 @@ public:
   }
 
 private:
-<<<<<<< HEAD
-  virtual void acceptHelper(ASTVisitor &visitor) override;
-  virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
-
-  std::string prompt;
-  std::string resultVar;
-=======
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
-};
-
-class ParallelFor : public ASTNode {
-public:
-  ParallelFor(std::unique_ptr<Variable> &&variable,
-              std::unique_ptr<VarDeclaration> &&varDeclaration,
-              std::unique_ptr<Rules> &&rules) {
-    appendChild(std::move(variable));
-    appendChild(std::move(varDeclaration));
-    appendChild(std::move(rules));
-  }
-
-private:
-  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
->>>>>>> develop
 };
 
 class AST {

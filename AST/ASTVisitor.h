@@ -182,17 +182,10 @@ private:
   }
   coro::Task<> visitHelper(ParallelFor &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
-    }
     visitLeave(node);
     co_return;
   }
-  virtual void visitHelper(ParallelFor &node) {
-    visitEnter(node);
-    node.acceptForChildren(*this);
-    visitLeave(node);
-  }
+
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
@@ -291,11 +284,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual void visitHelper(ParallelFor &node) {
-    visitEnter(node);
-    node.acceptForChildren(*this);
-    visitLeave(node);
-  }
+
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(FormatNode &node) {
