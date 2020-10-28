@@ -174,11 +174,8 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(Rules &node) override {
-    auto visitTask = visitEnter(node);
-    co_await visitTask;
-
-    auto leaveTask = visitLeave(node);
-    co_await leaveTask;
+    co_await visitEnter(node);
+    visitLeave(node);
     co_return;
   }
   coro::Task<> visitHelper(ParallelFor &node) override {
@@ -226,7 +223,7 @@ private:
       } while (not ruleTask.isDone());
     }
   };
-  coro::Task<> visitLeave(Rules &node) { co_return; };
+  void visitLeave(Rules &node) { };
 
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
