@@ -2,6 +2,7 @@
 #define AST_VISITOR_H
 
 #include "ASTNode.h"
+#include <deque>
 #include <iostream>
 #include <map>
 #include <string>
@@ -176,10 +177,7 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(Rules &node) override {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
-    }
+    co_await visitEnter(node);
     visitLeave(node);
     co_return;
   }
@@ -196,7 +194,7 @@ private:
     const std::string GAME_NAME = "Game Name";
     auto &&gameNameDSL = environment.getValue(GAME_NAME);
     auto &&gameName = gameNameDSL.get<std::string>();
-    auto finalMessage = formatMessage + gameName;
+    auto finalMessage = formatMessage;
     communication.sendGlobalMessage(finalMessage);
   };
 
@@ -212,7 +210,20 @@ private:
   void visitEnter(VarDeclaration &node){};
   void visitLeave(VarDeclaration &node){};
 
-  void visitEnter(Rules &node){};
+  coro::Task<> visitEnter(Rules &node) {
+    auto rules = node.getChildren();
+
+    std::deque<coro::Task<>> tasks;
+    for (auto &&rule : rules) {
+      tasks.push_back(rule->accept(*this));
+    }
+
+    for (coro::Task<> &ruleTask : tasks) {
+      do {
+        co_await ruleTask;
+      } while (not ruleTask.isDone());
+    }
+  };
   void visitLeave(Rules &node){};
 
   void visitEnter(ParallelFor &node){
