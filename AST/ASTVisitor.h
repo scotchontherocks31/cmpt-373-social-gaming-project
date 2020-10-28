@@ -5,8 +5,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-//#include <task.h>
-#include "../coroutine/task.h"
+#include <task.h>
 #include <variant>
 #include <deque>
 
@@ -213,15 +212,14 @@ private:
   void visitEnter(VarDeclaration &node){};
   void visitLeave(VarDeclaration &node){};
 
-  void visitEnter(Rules &node){
-    std::cout<<"rules working?"<<std::endl;
+  coro::Task<> visitEnter(Rules &node){
+ 
     // getAllChildrenRules
     auto rules = node.getChildren();
 
 
     std::deque<coro::Task<>> tasks;
     for (auto &&rule : rules) { 
-      //std::cout<<"okay"<<std::endl;
       // create all tasks
       tasks.push_back(rule->accept(*this)); 
     }
