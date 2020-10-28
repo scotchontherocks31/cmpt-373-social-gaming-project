@@ -7,6 +7,7 @@
 #include <string>
 #include <task.h>
 #include <variant>
+#include <deque>
 
 namespace AST {
 
@@ -195,7 +196,7 @@ private:
     const std::string GAME_NAME = "Game Name";
     auto &&gameNameDSL = environment.getValue(GAME_NAME);
     auto &&gameName = gameNameDSL.get<std::string>();
-    auto finalMessage = formatMessage + gameName;
+    auto finalMessage = formatMessage ;
     communication.sendGlobalMessage(finalMessage);
   };
 
@@ -211,7 +212,29 @@ private:
   void visitEnter(VarDeclaration &node){};
   void visitLeave(VarDeclaration &node){};
 
-  void visitEnter(Rules &node){};
+  void visitEnter(Rules &node){
+    std::cout<<"rules working?"<<std::endl;
+    // getAllChildrenRules
+    auto rules = node.getChildren();
+
+
+    std::deque<coro::Task<>> tasks;
+    for (auto &&rule : rules) { 
+      //std::cout<<"okay"<<std::endl;
+      // create all tasks
+      tasks.push_back(rule->accept(*this)); 
+    }
+
+    // only move onto next task when current one completes
+    for(auto &&ruleTask : tasks){
+      do{ 
+        coro::co_await ruleTask;
+      }
+      while(not ruleTask.isDone());
+    }
+
+
+  };
   void visitLeave(Rules &node){};
 
   void visitEnter(ParallelFor &node){};
