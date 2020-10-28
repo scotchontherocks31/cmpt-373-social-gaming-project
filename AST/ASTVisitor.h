@@ -223,7 +223,7 @@ private:
       } while (not ruleTask.isDone());
     }
   };
-  void visitLeave(Rules &node) { };
+  void visitLeave(Rules &node){};
 
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
