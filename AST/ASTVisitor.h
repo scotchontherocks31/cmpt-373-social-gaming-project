@@ -5,26 +5,16 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <task.h>
 #include <variant>
 
 namespace AST {
 
 class Communication {
 public:
-  // MOCK
   void sendGlobalMessage(std::string &message) {
     std::cout << message << std::endl;
   }
-
-  /// Get messages from a player.
-  /// Returns empty deque if no message is available.
-  // std::deque<PlayerMessage> receiveFromPlayer(const Player &player);
-
-  // MOCK
-
-  /// Get messages from a player.
-  /// Returns empty deque if no message is available.
-  std::string receiveFromPlayer(int id) { return "hello from player"; }
 };
 
 class DSLValue;
@@ -114,40 +104,89 @@ public:
 
 class ASTVisitor {
 public:
-  void visit(GlobalMessage &node) { visitHelper(node); }
-  void visit(FormatNode &node) { visitHelper(node); }
-  void visit(InputText &node) { visitHelper(node); }
-  void visit(ParallelFor &node) { visitHelper(node); }
+  explicit ASTVisitor() = default;
+  coro::Task<> visit(GlobalMessage &node);
+  coro::Task<> visit(FormatNode &node);
+  coro::Task<> visit(Variable &node);
+  coro::Task<> visit(VarDeclaration &node);
+  coro::Task<> visit(Rules &node);
+  coro::Task<> visit(ParallelFor &node);
+  coro::Task<> visit(InputText &node);
   virtual ~ASTVisitor() = default;
 
 private:
-  virtual void visitHelper(GlobalMessage &) = 0;
-  virtual void visitHelper(FormatNode &) = 0;
-  virtual void visitHelper(InputText &) = 0;
-  virtual void visitHelper(ParallelFor &) = 0;
+  virtual coro::Task<> visitHelper(GlobalMessage &) = 0;
+  virtual coro::Task<> visitHelper(FormatNode &) = 0;
+  virtual coro::Task<> visitHelper(ParallelFor &) = 0;
+  virtual coro::Task<> visitHelper(Rules &) = 0;
+  virtual coro::Task<> visitHelper(Variable &) = 0;
+  virtual coro::Task<> visitHelper(VarDeclaration &) = 0;
+  virtual coro::Task<> visitHelper(InputText &) = 0;
 };
 
+// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
+// and Rules
 class Interpreter : public ASTVisitor {
 public:
   Interpreter(Environment &&env, Communication &communication)
       : environment{std::move(env)}, communication{communication} {}
 
 private:
-  virtual void visitHelper(GlobalMessage &node) {
+  coro::Task<> visitHelper(GlobalMessage &node) override {
     visitEnter(node);
-    node.acceptForChildren(*this);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
     visitLeave(node);
+    co_return;
   }
-  virtual void visitHelper(FormatNode &node) {
+  coro::Task<> visitHelper(FormatNode &node) override {
     visitEnter(node);
-    node.acceptForChildren(*this);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
     visitLeave(node);
+    co_return;
   }
-
-  virtual void visitHelper(InputText &node) {
+  coro::Task<> visitHelper(InputText &node) override {
     visitEnter(node);
-    node.acceptForChildren(*this);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
     visitLeave(node);
+    co_return;
+  }
+  coro::Task<> visitHelper(Variable &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  coro::Task<> visitHelper(VarDeclaration &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  coro::Task<> visitHelper(Rules &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  coro::Task<> visitHelper(ParallelFor &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
   }
   virtual void visitHelper(ParallelFor &node) {
     visitEnter(node);
@@ -171,6 +210,15 @@ private:
   void visitEnter(InputText &node){};
   void visitLeave(InputText &node){};
 
+  void visitEnter(Variable &node){};
+  void visitLeave(Variable &node){};
+
+  void visitEnter(VarDeclaration &node){};
+  void visitLeave(VarDeclaration &node){};
+
+  void visitEnter(Rules &node){};
+  void visitLeave(Rules &node){};
+
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
 
@@ -179,26 +227,69 @@ private:
   Communication &communication;
 };
 
+// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
+// and Rules
 class Printer : public ASTVisitor {
 public:
   virtual ~Printer() { std::cout << "\n"; }
   Printer(std::ostream &out) : out{out} {}
 
 private:
-  virtual void visitHelper(GlobalMessage &node) {
+  coro::Task<> visitHelper(GlobalMessage &node) override {
     visitEnter(node);
-    node.acceptForChildren(*this);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
     visitLeave(node);
+    co_return;
   }
-  virtual void visitHelper(FormatNode &node) {
+  coro::Task<> visitHelper(FormatNode &node) override {
     visitEnter(node);
-    node.acceptForChildren(*this);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
     visitLeave(node);
+    co_return;
   }
-  virtual void visitHelper(InputText &node) {
+  coro::Task<> visitHelper(InputText &node) override {
     visitEnter(node);
-    node.acceptForChildren(*this);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
     visitLeave(node);
+    co_return;
+  }
+  coro::Task<> visitHelper(Rules &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  coro::Task<> visitHelper(Variable &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  coro::Task<> visitHelper(VarDeclaration &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  coro::Task<> visitHelper(ParallelFor &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
   }
   virtual void visitHelper(ParallelFor &node) {
     visitEnter(node);
@@ -207,10 +298,22 @@ private:
   }
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
-  void visitEnter(FormatNode &node) { out << "(FormatNode "; };
+  void visitEnter(FormatNode &node) {
+    out << "(FormatNode \"" << node.getFormat() << "\" ";
+  };
   void visitLeave(FormatNode &node) { out << ")"; };
   void visitEnter(InputText &node) { out << "(InputText "; };
   void visitLeave(InputText &node) { out << ")"; };
+  void visitEnter(Rules &node) { out << "(Rules "; };
+  void visitLeave(Rules &node) { out << ")"; };
+  void visitEnter(Variable &node) {
+    out << "(Variable \"" << node.getLexeme() << "\" ";
+  };
+  void visitLeave(Variable &node) { out << ")"; };
+  void visitEnter(VarDeclaration &node) {
+    out << "(VarDeclaration \"" << node.getLexeme() << "\" ";
+  };
+  void visitLeave(VarDeclaration &node) { out << ")"; };
   void visitEnter(ParallelFor &node) { out << "(ParallelFor "; };
   void visitLeave(ParallelFor &node) { out << ")"; };
 

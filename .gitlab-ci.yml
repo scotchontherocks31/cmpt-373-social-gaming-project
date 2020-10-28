@@ -1,0 +1,18 @@
+image: "kokoberry/team-f:latest"
+
+stages:
+    - build
+    - test
+
+build:
+    stage: build
+    script:
+        - mkdir build
+        - cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -H. -B./build -G "Unix Makefiles"
+        - cmake --build ./build
+
+lint:
+    stage: test
+    script:
+        - apt-get update && apt-get install -y clang-format
+        - find . -path ./build -prune -false -o -type f \( -name *.cpp -o -name *.h \) | xargs clang-format -style=llvm -dry-run -Werror

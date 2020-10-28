@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <task.h>
 #include <vector>
 
 namespace AST {
@@ -14,8 +15,8 @@ class ASTVisitor;
 class ASTNode {
 public:
   int getChildrenCount() const { return this->numChildren; }
-  const std::vector<ASTNode const *> getChildren() const {
-    std::vector<ASTNode const *> returnValue;
+  std::vector<ASTNode *> getChildren() {
+    std::vector<ASTNode *> returnValue;
     for (auto &x : children) {
       returnValue.push_back(x.get());
     }
@@ -23,9 +24,11 @@ public:
   }
   const ASTNode &getParent() const { return *parent; }
   void setParent(ASTNode *parent) { parent = parent; }
-  void accept(ASTVisitor &visitor) { acceptHelper(visitor); }
-  void acceptForChildren(ASTVisitor &visitor) {
-    acceptForChildrenHelper(visitor);
+  coro::Task<> accept(ASTVisitor &visitor) {
+    auto coroutine = acceptHelper(visitor);
+    while (not coroutine.isDone()) {
+      co_await coroutine;
+    }
   }
   virtual ~ASTNode(){};
 
@@ -38,24 +41,22 @@ protected:
   }
 
 private:
-  virtual void acceptHelper(ASTVisitor &visitor) = 0;
-  virtual void acceptForChildrenHelper(ASTVisitor &visitor) = 0;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) = 0;
 };
 
-class FormatNode : public ASTNode {
+class FormatNode : public ASTNode { // parser complete
 public:
-  FormatNode(std::string format) : format{std::move(format)} {}
+  explicit FormatNode(std::string format) : format{std::move(format)} {}
   const std::string &getFormat() const { return format; }
 
 private:
-  virtual void acceptHelper(ASTVisitor &visitor) override;
-  virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
   std::string format;
 };
 
-class GlobalMessage : public ASTNode {
+class GlobalMessage : public ASTNode { // parser complete
 public:
-  GlobalMessage(std::unique_ptr<FormatNode> &&formatNode) {
+  explicit GlobalMessage(std::unique_ptr<FormatNode> &&formatNode) {
     appendChild(std::move(formatNode));
   }
   const FormatNode &getFormatNode() const {
@@ -63,8 +64,39 @@ public:
   }
 
 private:
-  virtual void acceptHelper(ASTVisitor &visitor) override;
-  virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
+class Rules : public ASTNode {
+public:
+  explicit Rules() = default;
+  void appendChild(std::unique_ptr<ASTNode> &&child) {
+    ASTNode::appendChild(std::move(child));
+  }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
+class Variable : public ASTNode {
+public:
+  // TODO: Add types to check validity (eg. list vs bool)
+  explicit Variable(std::string lexeme) : lexeme{std::move(lexeme)} {}
+  const std::string &getLexeme() const { return lexeme; }
+
+private:
+  std::string lexeme;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
+class VarDeclaration : public ASTNode {
+public:
+  explicit VarDeclaration(std::string lexeme) : lexeme{std::move(lexeme)} {}
+  const std::string &getLexeme() const { return lexeme; }
+
+private:
+  std::string lexeme;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class ParallelFor : public ASTNode {
@@ -83,17 +115,47 @@ private:
 
 class InputText : public ASTNode {
 public:
-  InputText(std::string prompt, std::string result)
-      : prompt{prompt}, resultVar{result} {}
-  const std::string &getPrompt() const { return prompt; }
-  const std::string &getResultVar() const { return resultVar; }
+  explicit InputText(std::unique_ptr<FormatNode> &&prompt,
+                     std::unique_ptr<Variable> &&to,
+                     std::unique_ptr<VarDeclaration> &&result) {
+    appendChild(std::move(prompt));
+    appendChild(std::move(to));
+    appendChild(std::move(result));
+  }
+  const FormatNode &getPrompt() const {
+    return *static_cast<FormatNode *>(children[0].get());
+  }
+  const Variable &getTo() const {
+    return *static_cast<Variable *>(children[1].get());
+  }
+  const VarDeclaration &getResult() const {
+    return *static_cast<VarDeclaration *>(children[2].get());
+  }
 
 private:
+<<<<<<< HEAD
   virtual void acceptHelper(ASTVisitor &visitor) override;
   virtual void acceptForChildrenHelper(ASTVisitor &visitor) override;
 
   std::string prompt;
   std::string resultVar;
+=======
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
+class ParallelFor : public ASTNode {
+public:
+  ParallelFor(std::unique_ptr<Variable> &&variable,
+              std::unique_ptr<VarDeclaration> &&varDeclaration,
+              std::unique_ptr<Rules> &&rules) {
+    appendChild(std::move(variable));
+    appendChild(std::move(varDeclaration));
+    appendChild(std::move(rules));
+  }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+>>>>>>> develop
 };
 
 class AST {
@@ -101,7 +163,12 @@ public:
   AST(std::unique_ptr<ASTNode> &&root) : root{std::move(root)} {}
   const ASTNode &getParent() const { return *root; }
   void setRoot(std::unique_ptr<ASTNode> &&root) { root.swap(this->root); }
-  void accept(ASTVisitor &visitor) { root->accept(visitor); }
+  coro::Task<> accept(ASTVisitor &visitor) {
+    auto coroutine = root->accept(visitor);
+    while (not coroutine.isDone()) {
+      co_await coroutine;
+    }
+  }
 
 private:
   std::unique_ptr<ASTNode> root;

@@ -3,16 +3,19 @@
 
 #include "ASTNode.h"
 #include "ASTVisitor.h"
+#include "json.hpp"
 #include <memory>
-
-class JSON;
+using Json = nlohmann::json;
 
 namespace AST {
 
 class DomainSpecificParser {
 public:
   AST parse() { return parseHelper(); }
+<<<<<<< HEAD
   virtual ~DomainSpecificParser();
+=======
+>>>>>>> develop
 
 private:
   virtual AST parseHelper() = 0;
@@ -33,14 +36,19 @@ private:
 
 class JSONToASTParser : public DomainSpecificParser {
 public:
-  JSONToASTParser(const JSON &json) : json{json} {}
+  JSONToASTParser(Json &&json) : json{json} {}
 
 private:
-  const JSON &json;
+  const Json json;
   // Implement these in a Top Down fashion
-  virtual AST parseHelper() override;
-  FormatNode parseFormatNode();
-  GlobalMessage parseGlobalMessage();
+  AST parseHelper() override;
+  std::unique_ptr<ASTNode> parseRule(const Json &);
+  std::unique_ptr<Rules> parseRules(const Json &);
+  std::unique_ptr<FormatNode> parseFormatNode(const Json &);
+  std::unique_ptr<GlobalMessage> parseGlobalMessage(const Json &);
+  std::unique_ptr<VarDeclaration> parseVarDeclaration(const Json &);
+  std::unique_ptr<Variable> parseVariable(const Json &);
+  std::unique_ptr<ParallelFor> parseParallelFor(const Json &);
 };
 
 } // namespace AST

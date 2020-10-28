@@ -1,25 +1,54 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
+#include "Parser.h"
 
 namespace AST {
-void GlobalMessage::acceptHelper(ASTVisitor &visitor) { visitor.visit(*this); }
-void GlobalMessage::acceptForChildrenHelper(ASTVisitor &visitor) {
-  for (auto &child : children) {
-    child->accept(visitor);
+coro::Task<> GlobalMessage::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
   }
 }
 
-void FormatNode::acceptHelper(ASTVisitor &visitor) { visitor.visit(*this); }
-void FormatNode::acceptForChildrenHelper(ASTVisitor &visitor) {
-  for (auto &child : children) {
-    child->accept(visitor);
+coro::Task<> FormatNode::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
   }
 }
 
-void InputText::acceptHelper(ASTVisitor &visitor) { visitor.visit(*this); }
-void InputText::acceptForChildrenHelper(ASTVisitor &visitor) {
-  for (auto &child : children) {
-    child->accept(visitor);
+coro::Task<> ParallelFor::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
+coro::Task<> Variable::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
+coro::Task<> VarDeclaration::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
+coro::Task<> Rules::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
+coro::Task<> InputText::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
   }
 }
 
