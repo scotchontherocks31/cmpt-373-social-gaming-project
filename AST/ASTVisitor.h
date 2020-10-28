@@ -203,16 +203,29 @@ private:
   void visitLeave(FormatNode &node){};
 
   void visitEnter(InputText &node){};
+  //A lot of help from Sarb was used 
   void visitLeave(InputText &node){
+ 		// rename this to prompt
     const auto &formatNodeNode = node.getPrompt(); //formatNodeNode variable name is to avoid confusion with the class FormatNode
-    const auto &variableNode = node.getTo();
-    auto &&player == environment.getValue("Player");//Is this how it works?
-    const auto &variableDecNode = node.getResult();
-    const std::string &format = formatNodeNode.getFormat();
+    const std::string &format = formatNodeNode.getFormat(); // this 
+    
+    const auto &variableNode = node.getTo(); // in order to the string you have use getLexeme() on the the variable node class
+    auto &&player == environment.getValue("Player");// variableNode this is the name of the variable
+    // player will have id/obj of that player
+    
+    //name of result variable?
+    auto resultVar = node.getResult()
+    // 
+    auto resultName = result.getLexeme() // because we need string of varable name
+    
     //send quarry to the communication class
-    communication.sendGlobalMessage(format);
+    auto result = communication.playerInput(prompt, playerId/playerObj, ect); 
+    // result should be DSL value I think.
+    if (result is null) {
+    	co_await suspend_always{};
     //put return values to the environment using variableDecNode
-    //??? Cant find the function for the job
+    // insert DSL
+  	enviro.setBinding(resultName, dsl);
   };
 
   void visitEnter(Variable &node){};
