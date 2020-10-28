@@ -5,7 +5,8 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <task.h>
+//#include <task.h>
+#include "../coroutine/task.h"
 #include <variant>
 #include <list>
 #include <deque> 
@@ -230,7 +231,7 @@ private:
       std::cout<<player<<std::endl;
       //TODO set the player variable in the environment
 
-      x.push_back(theRules.accept(*this)); // we create co routine/task with same rules for each player?
+      //x.push_back(theRules.accept(*this)); // we create co routine/task with same rules for each player?
     }
     // Ard if we are co awaiting each of the rules co routine in this next loop
     // then when we yeild it will go to the rules again since it is child of parallelFor
