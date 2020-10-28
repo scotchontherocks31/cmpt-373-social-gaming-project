@@ -2,12 +2,12 @@
 #define AST_VISITOR_H
 
 #include "ASTNode.h"
+#include <deque>
 #include <iostream>
 #include <map>
 #include <string>
 #include <task.h>
 #include <variant>
-#include <deque>
 
 namespace AST {
 
@@ -174,11 +174,11 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(Rules &node) override {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
-    }
-    visitLeave(node);
+    auto visitTask = visitEnter(node);
+    co_await visitTask;
+
+    auto leaveTask = visitLeave(node);
+    co_await leaveTask;
     co_return;
   }
   coro::Task<> visitHelper(ParallelFor &node) override {
@@ -196,7 +196,7 @@ private:
     const std::string GAME_NAME = "Game Name";
     auto &&gameNameDSL = environment.getValue(GAME_NAME);
     auto &&gameName = gameNameDSL.get<std::string>();
-    auto finalMessage = formatMessage ;
+    auto finalMessage = formatMessage;
     communication.sendGlobalMessage(finalMessage);
   };
 
@@ -212,29 +212,21 @@ private:
   void visitEnter(VarDeclaration &node){};
   void visitLeave(VarDeclaration &node){};
 
-  coro::Task<> visitEnter(Rules &node){
- 
-    // getAllChildrenRules
+  coro::Task<> visitEnter(Rules &node) {
     auto rules = node.getChildren();
 
-
     std::deque<coro::Task<>> tasks;
-    for (auto &&rule : rules) { 
-      // create all tasks
-      tasks.push_back(rule->accept(*this)); 
+    for (auto &&rule : rules) {
+      tasks.push_back(rule->accept(*this));
     }
 
-    // only move onto next task when current one completes
-    for(coro::Task<> &ruleTask : tasks){
-      do{ 
+    for (coro::Task<> &ruleTask : tasks) {
+      do {
         co_await ruleTask;
-      }
-      while(not ruleTask.isDone());
+      } while (not ruleTask.isDone());
     }
-
-
   };
-  void visitLeave(Rules &node){};
+  coro::Task<> visitLeave(Rules &node) { co_return; };
 
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
