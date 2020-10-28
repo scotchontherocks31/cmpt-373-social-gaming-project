@@ -6,8 +6,8 @@
 #include <iostream>
 #include <map>
 #include <string>
-//#include <task.h>
-#include "../coroutine/task.h"
+#include <task.h>
+//include "../coroutine/task.h"
 #include <variant>
 #include <list>
 #include <deque> 
@@ -182,7 +182,7 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(ParallelFor &node) override {
-    visitEnter(node);
+    co_await visitEnter(node);
     visitLeave(node);
     co_return;
   }
@@ -226,7 +226,7 @@ private:
   };
   void visitLeave(Rules &node){};
 
-  void visitEnter(ParallelFor &node){
+  coro::Task<> visitEnter(ParallelFor &node){
     std::cout << "visit enter ParallelFor" << std::endl;
     // get name of list variable
     const auto &listNameVar = node.getListName();
@@ -235,22 +235,16 @@ private:
     // get the list from environment
     std::list<std::string> players {"Sarb","Ard","Vlad","Kabir","Tom","Jiho"}; // TODO: actually get this from env instead of mocking
     // retreive the rules for each player
-    const auto &theRules = node.getRules();
+    auto &&theRules = node.getRules();
     
-    std::deque<coro::Task<>> x;
-    for (auto &&player : players) {
-      std::cout<<player<<std::endl;
+    std::deque<coro::Task<>> tasks;
+    //for (auto &&player : players) {
+      //std::cout<<player<<std::endl;
       //TODO set the player variable in the environment
 
-      //x.push_back(theRules.accept(*this)); // we create co routine/task with same rules for each player?
-    }
-    // Ard if we are co awaiting each of the rules co routine in this next loop
-    // then when we yeild it will go to the rules again since it is child of parallelFor
-    // shouldnt rules, listname, elementname be members of parallalFor node instead of children
-    
-    
-
-
+      tasks.push_back(theRules.accept(*this)); // we create co routine/task with same rules for each player?
+    //}
+   
   };
   void visitLeave(ParallelFor &node){};
 
