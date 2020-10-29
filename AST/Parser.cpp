@@ -23,7 +23,7 @@ std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
   } else if (json["rule"] == "parallelfor") {
     return parseParallelFor(json);
   } else {
-      assert(false);
+    assert(false);
   }
 }
 

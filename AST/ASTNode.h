@@ -12,12 +12,11 @@ namespace AST {
 
 namespace {
 
-template <typename T>
-T &cast(auto &children, int index) {
-    return *static_cast<T *>(children[index].get());
+template <typename T> T &cast(auto &children, int index) {
+  return *static_cast<T *>(children[index].get());
 }
 
-}
+} // namespace
 
 class ASTVisitor;
 
@@ -79,9 +78,10 @@ private:
 
 class Rules : public ASTNode {
 public:
-  explicit Rules(auto&& nodes) : ASTNode{nodes.size()}{
-      std::ranges::for_each(nodes, [this](auto &&node){node->setParent(this);});
-      std::ranges::move(nodes, children.begin());
+  explicit Rules(auto &&nodes) : ASTNode{nodes.size()} {
+    std::ranges::for_each(nodes,
+                          [this](auto &&node) { node->setParent(this); });
+    std::ranges::move(nodes, children.begin());
   }
 
 private:
@@ -118,12 +118,8 @@ public:
     appendChild(std::move(to));
     appendChild(std::move(result));
   }
-  const FormatNode &getPrompt() const {
-    return cast<FormatNode>(children, 0);
-  }
-  const Variable &getTo() const {
-    return cast<Variable>(children, 1);
-  }
+  const FormatNode &getPrompt() const { return cast<FormatNode>(children, 0); }
+  const Variable &getTo() const { return cast<Variable>(children, 1); }
   const VarDeclaration &getResult() const {
     return cast<VarDeclaration>(children, 2);
   }
@@ -141,15 +137,11 @@ public:
     appendChild(std::move(varDeclaration));
     appendChild(std::move(rules));
   }
-  const Variable &getList() const {
-    return cast<Variable>(children, 0);
-  }
+  const Variable &getList() const { return cast<Variable>(children, 0); }
   const VarDeclaration &getElement() const {
     return cast<VarDeclaration>(children, 1);
   }
-  const Rules &getRules() const {
-    return cast<Rules>(children, 2);
-  }
+  const Rules &getRules() const { return cast<Rules>(children, 2); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
