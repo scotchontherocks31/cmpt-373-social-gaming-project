@@ -10,14 +10,19 @@
 
 namespace AST {
 
+class DSLValue;
+
 class Communication {
 public:
   void sendGlobalMessage(std::string &message) {
     std::cout << message << std::endl;
   }
+
+  Variable playerInput( const FormatNode &prompt, const DSLValue &player) {
+    std::cout << "playerInput called" << std::endl;
+  }
 };
 
-class DSLValue;
 using List = std::vector<DSLValue>;
 using Map = std::map<std::string, DSLValue>;
 
@@ -207,15 +212,16 @@ private:
   //A lot of help from Sarb
   void visitLeave(InputText &node){
     const auto &prompt = node.getPrompt();
-    const std::string &format = prompt.getFormat();
+    //const std::string &format = prompt.getFormat(); //guess it is extra here
     const auto &variableNode = node.getTo(); // in order to the string you have use getLexeme() on the the variable node class
-    const auto &&player = environment.getValue(variableNode.getLexeme());//takes Player info from environment (mocked for now)
+    const auto player = environment.getValue(variableNode.getLexeme());//takes Player info from environment (mocked for now)
     // player will have id/obj of that player (or already has but on a different branch)
-    auto &&resultVar = node.getResult()
-    auto &&resultName = result.getLexeme() // because we need string of varable name
-    auto &&result = communication.playerInput(prompt, player, resultName); //suppose to send gloada message about the palyer for the gameInstance class
+    auto &&resultVar = node.getResult();
+    auto &&result = communication.playerInput(prompt, player); //suppose to send gloada message about the palyer for the gameInstance class
+    //auto &&resultName = result.getLexeme(); // because we need string of varable name //do we?
+    
     // result should be DSL value I think.
-    if (player.getValue() == NULL) { //replace resultVar with result
+    if (result.getLexeme() == NULL) {
     	std::__n4861::suspend_always{};
     }
   	environment.setBinding(resultVar.getLexeme(), player);
