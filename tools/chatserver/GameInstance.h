@@ -16,7 +16,7 @@ from player doesn't get mixed with an actual response.
 */
 
 struct Player {
-  int id;
+  size_t id;
   std::string name;
 };
 
@@ -40,6 +40,8 @@ public:
   void sendToPlayer(const Player &player, std::string message);
 
   void sendGlobalMessage(std::string message) override;
+  void sendPlayerMessage(size_t playerIndex, std::string message) override;
+  std::deque<PlayerMessage> getInputFromPlayer(size_t playerIndex) override;
 
   /// Get messages from a player.
   /// Returns empty deque if no message is available.

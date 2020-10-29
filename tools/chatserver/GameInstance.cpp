@@ -4,7 +4,7 @@
 
 GameInstance::GameInstance(Room &room, GameServer &server)
     : room{&room}, server{&server} {
-  int counter = 0;
+  size_t counter = 0;
   for (auto &[id, user] : room.getMembers()) {
     players.push_back({counter, user->name});
     playerIdMapping.insert({counter, id});
@@ -12,6 +12,12 @@ GameInstance::GameInstance(Room &room, GameServer &server)
     reversePlayerIdMapping.insert({id, counter});
     ++counter;
   }
+}
+
+void GameInstance::sendPlayerMessage(size_t playerIndex, std::string message) {
+  auto userId = playerIdMapping.at(playerIndex);
+  auto &user = room->getMember(userId);
+  server->sendMessageToUser(user, std::move(message));
 }
 
 void GameInstance::sendToPlayer(const Player &player, std::string message) {
@@ -22,6 +28,18 @@ void GameInstance::sendToPlayer(const Player &player, std::string message) {
 
 void GameInstance::sendGlobalMessage(std::string message) {
   server->sendMessageToRoom(*room, std::move(message));
+}
+
+std::deque<PlayerMessage> GameInstance::getInputFromPlayer(size_t playerIndex) {
+  std::deque<PlayerMessage> messages;
+  auto &&[x, y] =
+      std::ranges::partition(inboundMessageQueue, [playerIndex](auto &message) {
+        return playerIndex != message.player->id;
+      });
+  std::ranges::move(x, inboundMessageQueue.end(), std::back_inserter(messages));
+  inboundMessageQueue.erase(x, inboundMessageQueue.end());
+  playerMessageRequest.at(playerIndex) = messages.empty();
+  return messages;
 }
 
 std::deque<PlayerMessage>
