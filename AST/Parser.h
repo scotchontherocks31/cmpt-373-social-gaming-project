@@ -12,10 +12,6 @@ namespace AST {
 class DomainSpecificParser {
 public:
   AST parse() { return parseHelper(); }
-<<<<<<< HEAD
-  virtual ~DomainSpecificParser();
-=======
->>>>>>> develop
 
 private:
   virtual AST parseHelper() = 0;
