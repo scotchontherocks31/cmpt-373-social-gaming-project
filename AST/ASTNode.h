@@ -1,6 +1,7 @@
 #ifndef AST_NODE_H
 #define AST_NODE_H
 
+#include "Environment.h"
 #include <algorithm>
 #include <iostream>
 #include <memory>
@@ -149,9 +150,13 @@ private:
 
 class AST {
 public:
-  AST(std::unique_ptr<ASTNode> &&root) : root{std::move(root)} {}
+  AST(std::unique_ptr<ASTNode> &&root, Environment startingEnv = {}) : 
+      root{std::move(root)}, startingEnv{std::move(startingEnv)} {}
   const ASTNode &getParent() const { return *root; }
   void setRoot(std::unique_ptr<ASTNode> &&root) { root.swap(this->root); }
+  Environment getEnv() const {
+      return startingEnv;
+  }
   coro::Task<> accept(ASTVisitor &visitor) {
     auto coroutine = root->accept(visitor);
     while (not coroutine.isDone()) {
@@ -161,6 +166,7 @@ public:
 
 private:
   std::unique_ptr<ASTNode> root;
+  Environment startingEnv;
 };
 
 } // namespace AST

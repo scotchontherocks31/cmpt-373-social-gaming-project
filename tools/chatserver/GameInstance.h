@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ASTVisitor.h"
+#include "Environment.h"
 #include "Room.h"
 #include <list>
 #include <map>

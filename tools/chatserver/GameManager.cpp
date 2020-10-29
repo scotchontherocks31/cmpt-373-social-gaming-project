@@ -22,7 +22,7 @@ std::pair<AST::AST *, bool> GameManager::createGame(std::string name,
   if (games.count(name)) {
     return {&games.at(name), false};
   }
-  auto parser = AST::JSONToASTParser(std::move(json));
+  auto parser = AST::JSONToASTParser(nlohmann::json::parse(json));
   auto [it, inserted] = games.insert({std::move(name), parser.parse()});
   return {&it->second, inserted};
 }

@@ -32,9 +32,7 @@ private:
 
 class JSONToASTParser : public DomainSpecificParser {
 public:
-  JSONToASTParser(std::string json)
-      : json{nlohmann::json::parse(std::move(json))} {}
-  JSONToASTParser(Json &&json) : json{json} {}
+  JSONToASTParser(Json json) : json{std::move(json)} {}
 
 private:
   const Json json;
@@ -47,6 +45,7 @@ private:
   std::unique_ptr<VarDeclaration> parseVarDeclaration(const Json &);
   std::unique_ptr<Variable> parseVariable(const Json &);
   std::unique_ptr<ParallelFor> parseParallelFor(const Json &);
+  std::unique_ptr<InputText> parseInputText(const Json &);
 };
 
 } // namespace AST
