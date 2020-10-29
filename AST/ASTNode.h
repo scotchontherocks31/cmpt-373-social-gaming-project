@@ -10,11 +10,22 @@
 
 namespace AST {
 
+namespace {
+
+template <typename T>
+T &cast(auto children, int index) {
+    return *static_cast<T *>(children[index].get());
+}
+
+}
+
 class ASTVisitor;
 
 class ASTNode {
 public:
-  int getChildrenCount() const { return this->numChildren; }
+  explicit ASTNode() = default;
+  explicit ASTNode(size_t size) : children{size} {}
+  int getChildrenCount() const { return children.size(); }
   std::vector<ASTNode *> getChildren() {
     std::vector<ASTNode *> returnValue;
     for (auto &x : children) {
@@ -23,7 +34,7 @@ public:
     return returnValue;
   }
   const ASTNode &getParent() const { return *parent; }
-  void setParent(ASTNode *parent) { parent = parent; }
+  void setParent(ASTNode *parent) { this->parent = parent; }
   coro::Task<> accept(ASTVisitor &visitor) {
     auto coroutine = acceptHelper(visitor);
     while (not coroutine.isDone()) {
@@ -35,7 +46,6 @@ public:
 protected:
   std::vector<std::unique_ptr<ASTNode>> children;
   ASTNode *parent;
-  int numChildren;
   void appendChild(std::unique_ptr<ASTNode> &&child) {
     children.push_back(std::move(child));
   }
@@ -60,7 +70,7 @@ public:
     appendChild(std::move(formatNode));
   }
   const FormatNode &getFormatNode() const {
-    return *static_cast<FormatNode *>(children[0].get());
+    return cast<FormatNode>(children, 0);
   }
 
 private:
@@ -69,9 +79,9 @@ private:
 
 class Rules : public ASTNode {
 public:
-  explicit Rules() = default;
-  void appendChild(std::unique_ptr<ASTNode> &&child) {
-    ASTNode::appendChild(std::move(child));
+  explicit Rules(auto&& nodes) : ASTNode{nodes.size()}{
+      std::ranges::for_each(nodes, [this](auto &&node){node.setParent(this);});
+      std::ranges::move(nodes, children);
   }
 
 private:
@@ -109,13 +119,13 @@ public:
     appendChild(std::move(result));
   }
   const FormatNode &getPrompt() const {
-    return *static_cast<FormatNode *>(children[0].get());
+    return cast<FormatNode>(children, 0);
   }
   const Variable &getTo() const {
-    return *static_cast<Variable *>(children[1].get());
+    return cast<Variable>(children, 1);
   }
   const VarDeclaration &getResult() const {
-    return *static_cast<VarDeclaration *>(children[2].get());
+    return cast<VarDeclaration>(children, 2);
   }
 
 private:
@@ -130,6 +140,15 @@ public:
     appendChild(std::move(variable));
     appendChild(std::move(varDeclaration));
     appendChild(std::move(rules));
+  }
+  const Variable &getList() const {
+    return cast<Variable>(children, 0);
+  }
+  const VarDeclaration &getElement() const {
+    return cast<VarDeclaration>(children, 1);
+  }
+  const Rules &getRules() const {
+    return cast<Rules>(children, 2);
   }
 
 private:
