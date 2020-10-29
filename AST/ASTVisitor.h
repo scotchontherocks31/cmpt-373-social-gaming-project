@@ -16,6 +16,8 @@ namespace AST {
 class Communicator {
 public:
   virtual void sendGlobalMessage(std::string message) = 0;
+  virtual void sendPlayerMessage(size_t playerIndex, std::string message) = 0;
+  virtual std::deque<std::string> getInputFromPlayer(size_t playerIndex) = 0;
 };
 
 class PrintCommunicator : public Communicator {
