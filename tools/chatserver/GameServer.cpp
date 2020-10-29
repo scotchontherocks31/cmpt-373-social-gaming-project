@@ -53,7 +53,7 @@ std::vector<std::string> tokenizeCommand(std::string command) {
 }
 
 GameServer::Command matchCommand(const std::string &command) {
-  // TODO: Simplify matching with magic_enum
+  // TODO: Use std::variant and std::visit to decouple these commands.
   if (command == "quit") {
     return GameServer::Command::QUIT;
   }
@@ -75,12 +75,16 @@ GameServer::Command matchCommand(const std::string &command) {
   if (command == "info") {
     return GameServer::Command::INFO;
   }
+  if (command == "game") {
+    return GameServer::Command::GAME;
+  }
   return GameServer::Command::UNKNOWN;
 }
 
 GameServer::GameServer(unsigned short port, std::string httpMessage)
     : server(
-          port, httpMessage, [this](Connection c) { this->onConnect(c); },
+          port, std::move(httpMessage),
+          [this](Connection c) { this->onConnect(c); },
           [this](Connection c) { this->onDisconnect(c); }),
       roomManager(), gameManager(*this, roomManager) {}
 
@@ -125,7 +129,8 @@ void GameServer::startRunningLoop() {
 }
 
 void GameServer::processMessages() {
-  for (auto &message : inboundMessages) {
+  while (!inboundMessages.empty()) {
+    auto &message = inboundMessages.front();
     bool isBroadcast = true;
     std::string output;
     auto &user = getUser(message.connection);
@@ -137,6 +142,7 @@ void GameServer::processMessages() {
     } else {
       // If not a command then just output a message
       output = user.name + "> " + message.text + "\n";
+      gameManager.dispatch(user, std::move(message.text));
     }
 
     if (isBroadcast) {
@@ -145,6 +151,7 @@ void GameServer::processMessages() {
     } else {
       sendMessageToUser(user, std::move(output));
     }
+    inboundMessages.pop_front();
   }
 }
 
@@ -169,7 +176,6 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
         roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
     if (created) {
       output << "Creating room \"" << roomPtr->getName() << "\"...\n";
-      gameManager.createGame(*roomPtr);
     } else {
       output << "Room already existed.\n";
     }
@@ -205,6 +211,10 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
     break;
   }
 
+  case GAME:
+    output << processGameCommand(user, tokens);
+    break;
+
   case UNKNOWN:
     output << "Unknown \'" << tokens[0] << "\" command entered.";
     break;
@@ -213,6 +223,39 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
     output << "Command \'" << tokens[0] << "\" is not yet implemented.";
     break;
   }
+  return output.str();
+}
+
+std::string GameServer::processGameCommand(const User &user,
+                                           std::vector<std::string> &tokens) {
+  // TODO: rework this to use visitor pattern
+  std::ostringstream output;
+  if (tokens.size() < 2) {
+    return "Invalid command.\n";
+  }
+  if (tokens[1] == "create") {
+    if (tokens.size() < 4) {
+      output << "Error. Create command requires 2 arguments.\n";
+    } else {
+      output << "Creating game \"" << tokens[2] << "\"\n";
+      gameManager.createGame(std::move(tokens[2]), std::move(tokens[3]));
+    }
+  } else if (tokens[1] == "start") {
+    if (tokens.size() < 3) {
+      output << "Error. Start command requires 1 argument.\n";
+    } else {
+      auto &instance = gameManager.getGameInstance(user);
+      output << "Starting game \"" << tokens[2] << "\"\n";
+      instance.loadGame(gameManager.getGame(tokens[2]));
+      instance.runGame();
+    }
+  } else if (tokens[1] == "clean") {
+    output << "Cleaning empty game instances.\n";
+    gameManager.cleanEmptyGameInstances();
+  } else {
+    output << "Invalid game command \"" << tokens[2] << "\"\n";
+  }
+
   return output.str();
 }
 
@@ -229,6 +272,6 @@ void GameServer::sendMessageToUser(const User &user, std::string message) {
 
 void GameServer::sendMessageToRoom(const Room &room, std::string message) {
   for (auto &&[_, user] : room.getMembers()) {
-    outboundMessages.push_back({user->connection, std::move(message)});
+    outboundMessages.push_back({user->connection, message});
   }
 }
