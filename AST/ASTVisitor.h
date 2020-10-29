@@ -47,6 +47,7 @@ public:
     value = std::forward<T>(a);
     return *this;
   }
+  InternalType getValue() {return value;} //to get the value
   DSLValue &operator=(const DSLValue &other) noexcept {
     this->value = other.value;
     return *this;
@@ -203,29 +204,21 @@ private:
   void visitLeave(FormatNode &node){};
 
   void visitEnter(InputText &node){};
-  //A lot of help from Sarb was used 
+  //A lot of help from Sarb
   void visitLeave(InputText &node){
- 		// rename this to prompt
-    const auto &formatNodeNode = node.getPrompt(); //formatNodeNode variable name is to avoid confusion with the class FormatNode
-    const std::string &format = formatNodeNode.getFormat(); // this 
-    
+    const auto &prompt = node.getPrompt();
+    const std::string &format = prompt.getFormat();
     const auto &variableNode = node.getTo(); // in order to the string you have use getLexeme() on the the variable node class
-    auto &&player == environment.getValue("Player");// variableNode this is the name of the variable
-    // player will have id/obj of that player
-    
-    //name of result variable?
-    auto resultVar = node.getResult()
-    // 
-    auto resultName = result.getLexeme() // because we need string of varable name
-    
-    //send quarry to the communication class
-    auto result = communication.playerInput(prompt, playerId/playerObj, ect); 
+    const auto &&player = environment.getValue(variableNode.getLexeme());//takes Player info from environment (mocked for now)
+    // player will have id/obj of that player (or already has but on a different branch)
+    auto &&resultVar = node.getResult()
+    auto &&resultName = result.getLexeme() // because we need string of varable name
+    auto &&result = communication.playerInput(prompt, player, resultName); //suppose to send gloada message about the palyer for the gameInstance class
     // result should be DSL value I think.
-    if (result is null) {
-    	co_await suspend_always{};
-    //put return values to the environment using variableDecNode
-    // insert DSL
-  	enviro.setBinding(resultName, dsl);
+    if (player.getValue() == NULL) { //replace resultVar with result
+    	std::__n4861::suspend_always{};
+    }
+  	environment.setBinding(resultVar.getLexeme(), player);
   };
 
   void visitEnter(Variable &node){};
@@ -240,13 +233,13 @@ private:
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
 
-  
+  /*
   // Need these to create interpreter class in ParserTest.cpp
   coro::Task<> visitHelper(ParallelFor &) override { co_return; };
   coro::Task<> visitHelper(Rules &) override { co_return; };
   coro::Task<> visitHelper(Variable &) override { co_return; };
   coro::Task<> visitHelper(VarDeclaration &) override { co_return; };
-
+*/
 
 private:
   Environment environment;
