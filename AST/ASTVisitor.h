@@ -183,7 +183,7 @@ private:
     for (auto &&child : node.getChildren()) {
       auto task = child->accept(*this);
       while (not task.isDone()) {
-          co_await task;
+        co_await task;
       }
     }
     visitLeave(node);
