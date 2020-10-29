@@ -225,7 +225,7 @@ private:
     	std::__n4861::suspend_always{};
     }
   	environment.setBinding(resultVar.getLexeme(), player);
-  };
+  }
 
   void visitEnter(Variable &node){};
   void visitLeave(Variable &node){};
