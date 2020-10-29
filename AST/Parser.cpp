@@ -1,12 +1,12 @@
 #include "Parser.h"
-#include <assert.h>
 #include "Runtime.h"
+#include <assert.h>
 
 namespace AST {
 
-AST JSONToASTParser::parseHelper() { 
-    JsonRuntime runtime{json[0]};
-    return AST{parseRules(json[0]["rules"]), runtime.createEnvironment()}; 
+AST JSONToASTParser::parseHelper() {
+  JsonRuntime runtime{json[0]};
+  return AST{parseRules(json[0]["rules"]), runtime.createEnvironment()};
 }
 
 std::unique_ptr<Rules> JSONToASTParser::parseRules(const Json &json) {
@@ -64,13 +64,12 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
   return std::make_unique<Variable>(json["list"]);
 }
 
-std::unique_ptr<InputText>
-JSONToASTParser::parseInputText(const Json &json) {
-    auto &&prompt = parseFormatNode(json);
-    auto &&to = parseVariable(json);
-    auto &&result = parseVarDeclaration(json);
-    return std::make_unique<InputText>(std::move(prompt), std::move(to),
-                                       std::move(result));
+std::unique_ptr<InputText> JSONToASTParser::parseInputText(const Json &json) {
+  auto &&prompt = parseFormatNode(json);
+  auto &&to = parseVariable(json);
+  auto &&result = parseVarDeclaration(json);
+  return std::make_unique<InputText>(std::move(prompt), std::move(to),
+                                     std::move(result));
 }
 
 } // namespace AST

@@ -3,13 +3,13 @@
 
 #include "ASTNode.h"
 #include "Environment.h"
+#include <deque>
 #include <iostream>
+#include <json.hpp>
 #include <map>
 #include <string>
 #include <task.h>
 #include <variant>
-#include <deque>
-#include <json.hpp>
 
 class PlayerMessage;
 
@@ -56,7 +56,8 @@ private:
 class Interpreter : public ASTVisitor {
 public:
   Interpreter(Environment &&env, Communicator &communicator)
-      : globalEnv{std::move(env)}, parentEnv{&globalEnv}, communicator{communicator} {}
+      : globalEnv{std::move(env)}, parentEnv{&globalEnv}, communicator{
+                                                              communicator} {}
 
 private:
   coro::Task<> visitHelper(GlobalMessage &node) final {
@@ -113,7 +114,7 @@ private:
   coro::Task<> visitHelper(ParallelFor &node) final {
     visitEnter(node);
     auto &env = parentEnv->createChildEnvironment();
-    auto &list= node.getList();
+    auto &list = node.getList();
     auto &element = node.getElement();
     co_await list.accept(*this);
     co_await element.accept(*this);
@@ -121,22 +122,22 @@ private:
     std::deque<std::pair<coro::Task<>, std::string>> tasks;
     auto &listVar = env.getValue(list.getLexeme());
     for (auto &element : listVar) {
-        tasks.push_back({(node.getRules()).accept(*this), element});
+      tasks.push_back({(node.getRules()).accept(*this), element});
     }
     std::deque<std::pair<coro::Task<>, std::string>> waitingTasks;
     while (not tasks.empty()) {
       while (not tasks.empty()) {
-          auto &task = tasks.front();
-          tasks.pop_front();
-          env.setBinding(element.getLexeme(), task.second);
-          parentEnv = &env;
-          task.first.resume();
-          if (not task.first.isDone()) {
-              waitingTasks.push_back(std::move(task));
-          }
+        auto &task = tasks.front();
+        tasks.pop_front();
+        env.setBinding(element.getLexeme(), task.second);
+        parentEnv = &env;
+        task.first.resume();
+        if (not task.first.isDone()) {
+          waitingTasks.push_back(std::move(task));
+        }
       }
       if (not waitingTasks.empty()) {
-          co_await std::suspend_always{};
+        co_await std::suspend_always{};
       }
       std::ranges::move(waitingTasks, std::back_inserter(tasks));
     }
