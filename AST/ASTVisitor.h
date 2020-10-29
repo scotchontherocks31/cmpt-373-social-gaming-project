@@ -73,9 +73,14 @@ private:
   }
   coro::Task<> visitHelper(InputText &node) final {
     visitEnter(node);
+    auto &env = parentEnv->createChildEnvironment();
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
+    auto &prompt = node.getPrompt();
+    auto &to = node.getTo();
+    auto &toVar = env.getValue(to.getLexeme());
+    communicator.sendPlayerMessage(std::move(prompt.getFormat()));
     visitLeave(node);
     co_return;
   }

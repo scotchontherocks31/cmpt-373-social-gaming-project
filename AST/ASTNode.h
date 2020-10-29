@@ -119,9 +119,9 @@ public:
     appendChild(std::move(to));
     appendChild(std::move(result));
   }
-  const FormatNode &getPrompt() const { return cast<FormatNode>(children, 0); }
-  const Variable &getTo() const { return cast<Variable>(children, 1); }
-  const VarDeclaration &getResult() const {
+  FormatNode &getPrompt() const { return cast<FormatNode>(children, 0); }
+  Variable &getTo() const { return cast<Variable>(children, 1); }
+  VarDeclaration &getResult() const {
     return cast<VarDeclaration>(children, 2);
   }
 
