@@ -10,9 +10,14 @@
 
 namespace AST {
 
-class Communication {
+class Communicator {
 public:
-  void sendGlobalMessage(const std::string &message) {
+  virtual void sendGlobalMessage(std::string message) = 0;
+};
+
+class PrintCommunicator : public Communicator {
+public:
+  void sendGlobalMessage(std::string message) override {
     std::cout << message << std::endl;
   }
 };
@@ -83,6 +88,7 @@ private:
   std::map<Lexeme, DSLValue> bindings;
 
 public:
+  Environment() : parent{nullptr} {}
   explicit Environment(Environment *parent) : parent{parent} {}
   DSLValue &getValue(const Lexeme &lexeme) noexcept { return bindings[lexeme]; }
   void removeBinding(const Lexeme &lexeme) noexcept {
@@ -128,8 +134,8 @@ private:
 // and Rules
 class Interpreter : public ASTVisitor {
 public:
-  Interpreter(Environment &&env, Communication &communication)
-      : environment{std::move(env)}, communication{communication} {}
+  Interpreter(Environment &&env, Communicator &communicator)
+      : environment{std::move(env)}, communicator{communicator} {}
 
 private:
   coro::Task<> visitHelper(GlobalMessage &node) override {
@@ -191,8 +197,17 @@ private:
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
+<<<<<<< HEAD
     const std::string &mess = formatMessageNode.getFormat();
     communication.sendGlobalMessage(mess);
+=======
+    auto &&formatMessage = formatMessageNode.getFormat();
+    const std::string GAME_NAME = "Game Name";
+    auto &&gameNameDSL = environment.getValue(GAME_NAME);
+    auto &&gameName = gameNameDSL.get<std::string>();
+    auto finalMessage = formatMessage + gameName;
+    communicator.sendGlobalMessage(std::move(finalMessage));
+>>>>>>> develop
   };
 
   void visitEnter(FormatNode &node){};
@@ -215,7 +230,7 @@ private:
 
 private:
   Environment environment;
-  Communication &communication;
+  Communicator &communicator;
 };
 
 // TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
