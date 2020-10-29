@@ -109,8 +109,32 @@ private:
   coro::Task<> visitHelper(ParallelFor &node) final {
     visitEnter(node);
     auto &env = parentEnv->createChildEnvironment();
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
+    auto &list= node.getList();
+    auto &element = node.getElement();
+    co_await list.accept(*this);
+    co_await element.accept(*this);
+    env.setBinding(element.getLexeme(), {});
+    std::deque<std::pair<coro::Task<>, std::string>> tasks;
+    auto &listVar = env.getValue(list.getLexeme());
+    for (auto &element : listVar) {
+        tasks.push_back({(node.getRules()).accept(*this), element});
+    }
+    std::deque<std::pair<coro::Task<>, std::string>> waitingTasks;
+    while (not tasks.empty()) {
+      while (not tasks.empty()) {
+          auto &task = tasks.front();
+          tasks.pop_front();
+          env.setBinding(element.getLexeme(), task.second);
+          parentEnv = &env;
+          task.first.resume();
+          if (not task.first.isDone()) {
+              waitingTasks.push_back(std::move(task));
+          }
+      }
+      if (not waitingTasks.empty()) {
+          co_await std::suspend_always{};
+      }
+      std::ranges::move(waitingTasks, std::back_inserter(tasks));
     }
     visitLeave(node);
     co_return;

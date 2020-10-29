@@ -72,4 +72,5 @@ JSONToASTParser::parseInputText(const Json &json) {
     return std::make_unique<InputText>(std::move(prompt), std::move(to),
                                        std::move(result));
 }
+
 } // namespace AST

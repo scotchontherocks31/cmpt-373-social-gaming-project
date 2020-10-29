@@ -138,11 +138,11 @@ public:
     appendChild(std::move(varDeclaration));
     appendChild(std::move(rules));
   }
-  const Variable &getList() const { return cast<Variable>(children, 0); }
-  const VarDeclaration &getElement() const {
+  Variable &getList() const { return cast<Variable>(children, 0); }
+  VarDeclaration &getElement() const {
     return cast<VarDeclaration>(children, 1);
   }
-  const Rules &getRules() const { return cast<Rules>(children, 2); }
+  Rules &getRules() const { return cast<Rules>(children, 2); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
