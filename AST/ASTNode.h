@@ -13,7 +13,7 @@ namespace AST {
 namespace {
 
 template <typename T>
-T &cast(auto children, int index) {
+T &cast(auto &children, int index) {
     return *static_cast<T *>(children[index].get());
 }
 
@@ -80,8 +80,8 @@ private:
 class Rules : public ASTNode {
 public:
   explicit Rules(auto&& nodes) : ASTNode{nodes.size()}{
-      std::ranges::for_each(nodes, [this](auto &&node){node.setParent(this);});
-      std::ranges::move(nodes, children);
+      std::ranges::for_each(nodes, [this](auto &&node){node->setParent(this);});
+      std::ranges::move(nodes, children.begin());
   }
 
 private:

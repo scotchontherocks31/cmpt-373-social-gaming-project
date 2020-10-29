@@ -9,21 +9,21 @@ AST JSONToASTParser::parseHelper() {
 }
 
 std::unique_ptr<Rules> JSONToASTParser::parseRules(const Json &json) {
-
-  auto rulePtr = std::make_unique<Rules>();
+  auto list = std::vector<std::unique_ptr<ASTNode>>{};
   for (const auto &rule : json) {
     std::cout << rule.dump(4) << std::endl;
-    rulePtr->appendChild(parseRule(rule));
+    list.push_back(parseRule(rule));
   }
-  return rulePtr;
+  return std::make_unique<Rules>(list);
 }
 
 std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
-
   if (json["rule"] == "global-message") {
     return parseGlobalMessage(json);
   } else if (json["rule"] == "parallelfor") {
     return parseParallelFor(json);
+  } else {
+      assert(false);
   }
 }
 
