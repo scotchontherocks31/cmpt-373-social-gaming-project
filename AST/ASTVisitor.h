@@ -81,7 +81,7 @@ private:
     }
     auto &prompt = node.getPrompt();
     auto &to = node.getTo();
-    auto &toVar = env.getValue(to.getLexeme());
+    auto &toVar = *env.getVariable(to.getLexeme());
     communicator.sendPlayerMessage(toVar["index"] , prompt.getFormat());
     visitLeave(node);
     co_return;
@@ -122,7 +122,7 @@ private:
     co_await element.accept(*this);
     env.setBinding(element.getLexeme(), {});
     std::deque<std::pair<coro::Task<>, DSLValue *>> tasks;
-    auto &listVar = env.getValue(list.getLexeme());
+    auto &listVar = *env.getVariable(list.getLexeme());
     for (auto &element : listVar) {
         tasks.push_back({(node.getRules()).accept(*this), &element});
     }
@@ -131,7 +131,7 @@ private:
       while (not tasks.empty()) {
           auto &task = tasks.front();
           tasks.pop_front();
-          env.setBinding(element.getLexeme(), *task.second);
+          env.setVarBinding(element.getLexeme(), task.second);
           parentEnv = &env;
           task.first.resume();
           if (not task.first.isDone()) {
