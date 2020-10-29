@@ -78,9 +78,14 @@ private:
   }
   coro::Task<> visitHelper(InputText &node) final {
     visitEnter(node);
+    auto &env = parentEnv->createChildEnvironment();
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
+    auto &prompt = node.getPrompt();
+    auto &to = node.getTo();
+    auto &toVar = env.getValue(to.getLexeme());
+    communicator.sendPlayerMessage(toVar["index"], prompt.getFormat());
     visitLeave(node);
     co_return;
   }
@@ -119,17 +124,17 @@ private:
     co_await list.accept(*this);
     co_await element.accept(*this);
     env.setBinding(element.getLexeme(), {});
-    std::deque<std::pair<coro::Task<>, std::string>> tasks;
+    std::deque<std::pair<coro::Task<>, DSLValue *>> tasks;
     auto &listVar = env.getValue(list.getLexeme());
     for (auto &element : listVar) {
-      tasks.push_back({(node.getRules()).accept(*this), element});
+      tasks.push_back({(node.getRules()).accept(*this), &element});
     }
-    std::deque<std::pair<coro::Task<>, std::string>> waitingTasks;
+    std::deque<std::pair<coro::Task<>, DSLValue *>> waitingTasks;
     while (not tasks.empty()) {
       while (not tasks.empty()) {
         auto &task = tasks.front();
         tasks.pop_front();
-        env.setBinding(element.getLexeme(), task.second);
+        env.setBinding(element.getLexeme(), *task.second);
         parentEnv = &env;
         task.first.resume();
         if (not task.first.isDone()) {

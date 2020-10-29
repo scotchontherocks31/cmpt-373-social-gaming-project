@@ -29,7 +29,7 @@ Environment JsonRuntime::createEnvironmentHelper() {
   auto numPlayers = json["configuration"]["player count"]["max"].get<size_t>();
   auto players = DSLValue{};
   for (size_t i = 0; i < numPlayers; ++i) {
-    players["player" + std::to_string(i)] = DSLValue{};
+    players["player" + std::to_string(i)] = DSLValue{{"index", i}};
   }
   env.setBinding("Players", players);
   return env;
