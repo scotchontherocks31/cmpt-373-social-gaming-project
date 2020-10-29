@@ -82,7 +82,7 @@ private:
     auto &prompt = node.getPrompt();
     auto &to = node.getTo();
     auto &toVar = env.getValue(to.getLexeme());
-    communicator.sendPlayerMessage(std::move(prompt.getFormat()));
+    communicator.sendPlayerMessage(toVar["index"] , prompt.getFormat());
     visitLeave(node);
     co_return;
   }
