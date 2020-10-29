@@ -44,7 +44,7 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) = 0;
 };
 
-class FormatNode : public ASTNode {
+class FormatNode : public ASTNode { // parser complete
 public:
   explicit FormatNode(std::string format) : format{std::move(format)} {}
   const std::string &getFormat() const { return format; }
@@ -54,7 +54,7 @@ private:
   std::string format;
 };
 
-class GlobalMessage : public ASTNode {
+class GlobalMessage : public ASTNode { // parser complete
 public:
   explicit GlobalMessage(std::unique_ptr<FormatNode> &&formatNode) {
     appendChild(std::move(formatNode));
@@ -101,14 +101,22 @@ private:
 
 class InputText : public ASTNode {
 public:
-  explicit InputText(std::unique_ptr<FormatNode> &&prompt, std::unique_ptr<Variable> &&to, std::unique_ptr<VarDeclaration> &&result) { 
-    appendChild(std::move(prompt)); 
+  explicit InputText(std::unique_ptr<FormatNode> &&prompt,
+                     std::unique_ptr<Variable> &&to,
+                     std::unique_ptr<VarDeclaration> &&result) {
+    appendChild(std::move(prompt));
     appendChild(std::move(to));
     appendChild(std::move(result));
   }
-  const FormatNode &getPrompt() const { return *static_cast<FormatNode *>(children[0].get()); }
-  const Variable &getTo() const { return *static_cast<Variable *>(children[1].get()); }
-  const VarDeclaration &getResult() const { return *static_cast<VarDeclaration *>(children[2].get()); }
+  const FormatNode &getPrompt() const {
+    return *static_cast<FormatNode *>(children[0].get());
+  }
+  const Variable &getTo() const {
+    return *static_cast<Variable *>(children[1].get());
+  }
+  const VarDeclaration &getResult() const {
+    return *static_cast<VarDeclaration *>(children[2].get());
+  }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;

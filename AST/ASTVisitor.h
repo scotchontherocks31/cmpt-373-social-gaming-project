@@ -10,11 +10,18 @@
 
 namespace AST {
 
+
 class DSLValue;
 
-class Communication {
+class Communicator {
+
 public:
-  void sendGlobalMessage(std::string &message) {
+  virtual void sendGlobalMessage(std::string message) = 0;
+};
+
+class PrintCommunicator : public Communicator {
+public:
+  void sendGlobalMessage(std::string message) override {
     std::cout << message << std::endl;
   }
 
@@ -89,6 +96,7 @@ private:
   std::map<Lexeme, DSLValue> bindings;
 
 public:
+  Environment() : parent{nullptr} {}
   explicit Environment(Environment *parent) : parent{parent} {}
   DSLValue &getValue(const Lexeme &lexeme) noexcept { return bindings[lexeme]; }
   void removeBinding(const Lexeme &lexeme) noexcept {
@@ -134,11 +142,11 @@ private:
 // and Rules
 class Interpreter : public ASTVisitor {
 public:
-  Interpreter(Environment &&env, Communication &communication)
-      : environment{std::move(env)}, communication{communication} {}
+  Interpreter(Environment &&env, Communicator &communicator)
+      : environment{std::move(env)}, communicator{communicator} {}
 
 private:
-  virtual coro::Task<> visitHelper(GlobalMessage &node) {
+  coro::Task<> visitHelper(GlobalMessage &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -146,7 +154,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(FormatNode &node) {
+  coro::Task<> visitHelper(FormatNode &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -154,7 +162,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(InputText &node) {
+  coro::Task<> visitHelper(InputText &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -162,7 +170,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(Variable &node) {
+  coro::Task<> visitHelper(Variable &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -170,7 +178,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(VarDeclaration &node) {
+  coro::Task<> visitHelper(VarDeclaration &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -178,7 +186,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(Rules &node) {
+  coro::Task<> visitHelper(Rules &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -186,7 +194,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(ParallelFor &node) {
+  coro::Task<> visitHelper(ParallelFor &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -202,7 +210,7 @@ private:
     auto &&gameNameDSL = environment.getValue(GAME_NAME);
     auto &&gameName = gameNameDSL.get<std::string>();
     auto finalMessage = formatMessage + gameName;
-    communication.sendGlobalMessage(finalMessage);
+    communicator.sendGlobalMessage(std::move(finalMessage));
   };
 
   void visitEnter(FormatNode &node){};
@@ -239,17 +247,9 @@ private:
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
 
-  /*
-  // Need these to create interpreter class in ParserTest.cpp
-  coro::Task<> visitHelper(ParallelFor &) override { co_return; };
-  coro::Task<> visitHelper(Rules &) override { co_return; };
-  coro::Task<> visitHelper(Variable &) override { co_return; };
-  coro::Task<> visitHelper(VarDeclaration &) override { co_return; };
-*/
-
 private:
   Environment environment;
-  Communication &communication;
+  Communicator &communicator;
 };
 
 // TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
@@ -260,7 +260,7 @@ public:
   Printer(std::ostream &out) : out{out} {}
 
 private:
-  virtual coro::Task<> visitHelper(GlobalMessage &node) {
+  coro::Task<> visitHelper(GlobalMessage &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -268,7 +268,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(FormatNode &node) {
+  coro::Task<> visitHelper(FormatNode &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -276,7 +276,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(InputText &node) {
+  coro::Task<> visitHelper(InputText &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -284,7 +284,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(Rules &node) {
+  coro::Task<> visitHelper(Rules &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -292,7 +292,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(Variable &node) {
+  coro::Task<> visitHelper(Variable &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -300,7 +300,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(VarDeclaration &node) {
+  coro::Task<> visitHelper(VarDeclaration &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -308,7 +308,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  virtual coro::Task<> visitHelper(ParallelFor &node) {
+  coro::Task<> visitHelper(ParallelFor &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -318,19 +318,24 @@ private:
   }
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
-  void visitEnter(FormatNode &node) { out << "(FormatNode \""<<node.getFormat()<<"\""; };
+  void visitEnter(FormatNode &node) {
+    out << "(FormatNode \"" << node.getFormat() << "\" ";
+  };
   void visitLeave(FormatNode &node) { out << ")"; };
   void visitEnter(InputText &node) { out << "(InputText "; };
   void visitLeave(InputText &node) { out << ")"; };
   void visitEnter(Rules &node) { out << "(Rules "; };
   void visitLeave(Rules &node) { out << ")"; };
-  void visitEnter(Variable &node) { out << "(Variable "; };
+  void visitEnter(Variable &node) {
+    out << "(Variable \"" << node.getLexeme() << "\" ";
+  };
   void visitLeave(Variable &node) { out << ")"; };
-  void visitEnter(VarDeclaration &node) { out << "(VarDeclaration "; };
+  void visitEnter(VarDeclaration &node) {
+    out << "(VarDeclaration \"" << node.getLexeme() << "\" ";
+  };
   void visitLeave(VarDeclaration &node) { out << ")"; };
   void visitEnter(ParallelFor &node) { out << "(ParallelFor "; };
   void visitLeave(ParallelFor &node) { out << ")"; };
-
 
 private:
   std::ostream &out;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ASTVisitor.h"
 #include "Room.h"
 #include <list>
 #include <map>
@@ -7,7 +8,6 @@
 
 class GameServer;
 class GameManager;
-struct DecoratedMessage;
 
 /*
 TODO: Consider making message context aware so that a random message
@@ -24,19 +24,21 @@ struct PlayerMessage {
   std::string message;
 };
 
-class GameHandler {
+class GameInstance : public AST::Communicator {
 public:
-  GameHandler(Room &room, GameServer &server);
+  GameInstance(Room &room, GameServer &server);
+  void loadGame(AST::AST &ast, AST::Environment env = AST::Environment{});
+  void runGame();
+  bool isRunning() { return !gameTask.isDone(); }
 
   /// Only allow new message to be queued when the game requests it.
   /// Returns false if fails to queue message.
-  bool queueMessage(const DecoratedMessage &message);
+  bool queueMessage(const User &user, std::string message);
 
   /// Send ouput message to a player
   void sendToPlayer(const Player &player, std::string message);
 
-  /// Send output message to all players in the room
-  void sendToAllPlayers(std::string message);
+  void sendGlobalMessage(std::string message) override;
 
   /// Get messages from a player.
   /// Returns empty deque if no message is available.
@@ -55,4 +57,5 @@ private:
   std::map<int, userid> playerIdMapping;
   std::map<userid, int> reversePlayerIdMapping;
   std::list<PlayerMessage> inboundMessageQueue;
+  coro::Task<> gameTask;
 };
