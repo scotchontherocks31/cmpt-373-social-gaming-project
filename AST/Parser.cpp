@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include "ASTVisitor.h"
 #include <assert.h>
 
 namespace AST {
@@ -9,18 +10,19 @@ std::unique_ptr<Rules> JSONToASTParser::parseRules(const Json &json) {
 
   auto rulePtr = std::make_unique<Rules>();
   for (const auto &rule : json) {
-    std::cout << rule.dump(4) << std::endl;
-    rulePtr->appendChild(parseRule(rule));
+    auto &&x = parseRule(rule);
+    rulePtr->appendChild(std::move(x));
   }
   return rulePtr;
 }
 
 std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
-
   if (json["rule"] == "global-message") {
     return parseGlobalMessage(json);
   } else if (json["rule"] == "parallelfor") {
     return parseParallelFor(json);
+  } else {
+    assert("rule not implemented yet");
   }
 }
 
