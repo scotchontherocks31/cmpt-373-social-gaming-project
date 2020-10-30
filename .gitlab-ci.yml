@@ -9,6 +9,10 @@ build:
     script:
         - cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -H. -B./build -G "Unix Makefiles"
         - cmake --build ./build
+    artifacts:
+        expire_in: 10 mins
+        paths:
+            - build/*
 
 lint:
     stage: test
@@ -19,5 +23,7 @@ lint:
 
 test:
     stage: test
+    dependencies: 
+        - build
     script:
         - ./build/bin/runAllTests
