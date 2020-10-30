@@ -11,6 +11,6 @@ set_target_properties(runAllTests
 )
 
 
-target_link_libraries(runAllTests gtest gmock gtest_main AST )
+target_link_libraries(runAllTests gtest gmock gtest_main AST  )
 
 add_test(NAME AllTests COMMAND runAllTests)

@@ -8,19 +8,16 @@
 #include <task.h>
 #include <variant>
 
-// using namespace AST;
+
 using namespace testing;
 
-class MockCommunicator : public AST::Communicator {
-public:
-  MOCK_METHOD(void, sendGlobalMessage, (std::string message), (override));
-};
+
 
 TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
   auto enviro = AST::Environment{nullptr};
-  MockCommunicator comm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(enviro), comm};
+  AST::PrintCommunicator printComm{};
+  AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
 
   std::unique_ptr<AST::GlobalMessage> mess =
       std::make_unique<AST::GlobalMessage>(
@@ -46,8 +43,8 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
 TEST(ASTprinter, ParallelForandInput) {
 
   auto enviro = AST::Environment{nullptr};
-  MockCommunicator comm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(enviro), comm};
+  AST::PrintCommunicator printComm{};
+  AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
 
   std::unique_ptr<AST::InputText> in = std::make_unique<AST::InputText>(
       std::make_unique<AST::FormatNode>(std::string{"How are you"}),
