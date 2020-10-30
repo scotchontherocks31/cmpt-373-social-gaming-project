@@ -8,10 +8,7 @@
 #include <task.h>
 #include <variant>
 
-
 using namespace testing;
-
-
 
 TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
