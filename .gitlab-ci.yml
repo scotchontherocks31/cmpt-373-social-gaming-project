@@ -19,7 +19,5 @@ lint:
 
 test:
     stage: test
-    dependencies:
-        - build
     script:
         - ./build/bin/runAllTests
