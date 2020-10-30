@@ -4,6 +4,7 @@
 #include "Room.h"
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 
 class GameServer;
@@ -58,4 +59,5 @@ private:
   std::map<userid, int> reversePlayerIdMapping;
   std::list<PlayerMessage> inboundMessageQueue;
   coro::Task<> gameTask;
+  std::unique_ptr<AST::ASTVisitor> interpreter;
 };
