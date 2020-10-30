@@ -12,6 +12,14 @@ build:
 
 lint:
     stage: test
+    dependencies: []
     script:
         - apt-get update && apt-get install -y clang-format
         - find . -path ./build -prune -false -o -type f \( -name *.cpp -o -name *.h \) | xargs clang-format -style=llvm -dry-run -Werror
+
+test:
+    stage: test
+    dependencies:
+        - build
+    script:
+        - ./build/bin/runAllTests
