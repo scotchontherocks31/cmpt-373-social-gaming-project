@@ -7,7 +7,6 @@
 #include <string>
 #include <task.h>
 #include <vector>
-
 namespace AST {
 
 class ASTVisitor;
@@ -48,6 +47,7 @@ class FormatNode : public ASTNode { // parser complete
 public:
   explicit FormatNode(std::string format) : format{std::move(format)} {}
   const std::string &getFormat() const { return format; }
+  // {player.name}
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -83,6 +83,7 @@ public:
   // TODO: Add types to check validity (eg. list vs bool)
   explicit Variable(std::string lexeme) : lexeme{std::move(lexeme)} {}
   const std::string &getLexeme() const { return lexeme; }
+  //expression node for "to" : players
 
 private:
   std::string lexeme;
@@ -135,6 +136,75 @@ public:
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
+
+
+class Operand : public ASTNode{
+  public:
+    Operand(std::string operandName){}
+  private:
+    std::string operandName;  
+    //find the passed-in operand
+}
+
+class UnaryOperation : public ASTNode{
+  
+  public:
+    UnaryOperation(std::unique_ptr<UnaryOperation>&& operand, std::string operator){}
+  private:
+    Operand operandSingle;
+    std::string operator;
+}
+
+//string cannot convert to operator
+//create a map that binds a string to an operator?
+class BinaryOperation : public ASTNode{
+  
+  public:
+    BinaryOperation(std::unique_ptr<Operand>&& opLeft,
+                   std::unique_ptr<Operand>&& opRight,
+                   std::string operator) {
+      //call an overloaded operator based on these
+    }
+  private:
+    Operand operandLeft;  
+    Operand operandRight;
+    std::string operator;     
+}
+
+class Operation : public ASTNode{
+  public:
+    Operation(std::unique_ptr<UnaryOperation> &&unaryOperator){
+      operation(std::move(unaryOperator));
+    }
+    Operation(std::unique_ptr<BinaryOperation> &&BinaryOperator){
+      operation(std::move(binaryOperator));
+    }
+  private:
+    operationType type;
+    std::unique_ptr<ASTNode> operation;
+}
+
+// configuration.Rounds.upfrom(1) requires object/function call... 
+// Any node that can use expression like above has expression node
+// 1. seperate "configuration" and "rounds" to left and right operand (This will happen in the parser)
+// 2. Construct operands with "configuration" and "rounds"
+// 3. construct binaryOperator node with the two operands and given operator
+// 4. put the binaryOperator node inside Expression node stack
+// 5. (configuration.Rounds) inserted, which returns the Rounds
+// 7. since we have Rounds now we do the same for Rounds.upfrom(1)
+// 6. (Rounds.upfrom(1)) inserted, executes the function upfrom(1)
+// The environment carries this down to whoever uses it. so they can just use it
+// 
+class Expression : public ASTNode {
+  public:
+    Expression(std::unique_ptr<UniversalOperator> &&operator){
+      //insert operator in operators vector
+    }
+  private:
+    std::vector<UniversalOperator> operations; //vector that can hold the nested operations. 
+    //getexpression = pop the entire stack and execute the operators and return. 
+    
+}
 
 class AST {
 public:
