@@ -12,7 +12,7 @@ build:
     artifacts:
         expire_in: 10 mins
         paths:
-            - build/*
+            - build/
 
 lint:
     stage: test
