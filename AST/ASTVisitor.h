@@ -4,6 +4,7 @@
 #include "ASTNode.h"
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <string>
 #include <task.h>
 #include <variant>
@@ -291,29 +292,36 @@ private:
     visitLeave(node);
     co_return;
   }
-  void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
+  void visitEnter(GlobalMessage &node) { out << "(GlobalMessage"; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(FormatNode &node) {
-    out << "(FormatNode \"" << node.getFormat() << "\" ";
+    out << "(FormatNode \"" << node.getFormat() << "\"";
   };
   void visitLeave(FormatNode &node) { out << ")"; };
-  void visitEnter(InputText &node) { out << "(InputText "; };
+  void visitEnter(InputText &node) { out << "(InputText"; };
   void visitLeave(InputText &node) { out << ")"; };
-  void visitEnter(Rules &node) { out << "(Rules "; };
+  void visitEnter(Rules &node) { out << "(Rules"; };
   void visitLeave(Rules &node) { out << ")"; };
   void visitEnter(Variable &node) {
-    out << "(Variable \"" << node.getLexeme() << "\" ";
+    out << "(Variable\"" << node.getLexeme() << "\"";
   };
   void visitLeave(Variable &node) { out << ")"; };
   void visitEnter(VarDeclaration &node) {
-    out << "(VarDeclaration \"" << node.getLexeme() << "\" ";
+    out << "(VarDeclaration\"" << node.getLexeme() << "\"";
   };
   void visitLeave(VarDeclaration &node) { out << ")"; };
-  void visitEnter(ParallelFor &node) { out << "(ParallelFor "; };
+  void visitEnter(ParallelFor &node) { out << "(ParallelFor"; };
   void visitLeave(ParallelFor &node) { out << ")"; };
 
-private:
   std::ostream &out;
+
+public:
+  std::string returnOutput() {
+    std::stringstream newStream;
+    newStream << out.rdbuf();
+    std::string myString = newStream.str();
+    return myString;
+  }
 };
 
 } // namespace AST

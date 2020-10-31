@@ -22,18 +22,16 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
   auto root = AST::AST(std::move(mess));
 
-  // capture print
-  testing::internal::CaptureStdout();
+  std::stringstream stream;
+  AST::Printer printer = AST::Printer{stream};
 
-  AST::Printer printer = AST::Printer{std::cout};
   auto task = root.accept(printer);
   while (task.resume()) {
   }
 
-  // retrieve print
-  std::string output = testing::internal::GetCapturedStdout();
+  std::string answer = "(GlobalMessage(FormatNode \"Message One\"))";
+  std::string output = printer.returnOutput();
 
-  std::string answer = "(GlobalMessage (FormatNode \"Message One\" ))";
   EXPECT_EQ(output, answer);
 }
 
@@ -64,20 +62,18 @@ TEST(ASTprinter, ParallelForandInput) {
   auto root = AST::AST(std::move(par));
 
   // capture print
-  testing::internal::CaptureStdout();
-
-  AST::Printer printer = AST::Printer{std::cout};
+  std::stringstream stream;
+  AST::Printer printer = AST::Printer{stream};
   auto task = root.accept(printer);
   while (task.resume()) {
   }
 
   // retrieve print
-  std::string output = testing::internal::GetCapturedStdout();
+  std::string output = printer.returnOutput();
 
   std::string answer =
-      "(ParallelFor (Variable \"players\" )(VarDeclaration \"player\" )(Rules "
-      "(GlobalMessage (FormatNode \"Message One\" ))(InputText (FormatNode "
-      "\"How are you\" )(Variable \"player\" )(VarDeclaration \"response\" "
-      "))))";
+      "(ParallelFor(Variable\"players\")(VarDeclaration\"player\")(Rules("
+      "GlobalMessage(FormatNode \"Message One\"))(InputText(FormatNode \"How "
+      "are you\")(Variable\"player\")(VarDeclaration\"response\"))))";
   EXPECT_EQ(output, answer);
 }
