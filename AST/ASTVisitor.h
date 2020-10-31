@@ -3,12 +3,16 @@
 
 #include "ASTNode.h"
 #include <iostream>
+#include <algorithm>
 #include <map>
 #include <string>
 #include <task.h>
 #include <variant>
+#include <json.hpp>
 
 namespace AST {
+
+using Json = nlohmann::json;
 
 class Communicator {
 public:
@@ -44,6 +48,29 @@ public:
   template <DSLType T>
   DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {}
   DSLValue() noexcept = default;
+  DSLValue(Json &json) noexcept {
+      if (json.is_null()) {
+          value = std::monostate{};
+      } else if (json.is_boolean()) {
+          value = json.get<bool>();
+      } else if (json.is_number()) {
+          value = json.get<int>();
+      } else if (json.is_string()) {
+          value = json.get<std::string>();
+      } else if (json.is_array()) {
+          List list(static_cast<size_t>(json.size()));
+          std::transform(json.begin(), json.end(), list.begin(), [](auto &x) {DSLValue{x};});
+          value = std::move(list);
+      } else if (json.is_object()) {
+          Map map;
+          std::transform(json.items().begin(), json.items().end(), std::inserter(map, map.end()),
+                  [](auto &x) { return std::make_pair(x.key(), DSLValue{x.value()}); });
+          value = std::move(map);
+      } else {
+          assert("json is of unknown type");
+          value = std::monostate{};
+      }
+  }
   DSLValue(const DSLValue &other) noexcept { this->value = other.value; }
   DSLValue(DSLValue &&other) noexcept { this->value = std::move(other.value); }
   template <DSLType T> T &get() { return std::get<T>(value); }
@@ -51,6 +78,25 @@ public:
   template <DSLType T> DSLValue &operator=(T &&a) noexcept {
     value = std::forward<T>(a);
     return *this;
+  }
+  DSLValue &operator=(const Json &json) noexcept {
+      if (json.is_null()) {
+          value = std::monostate{};
+      } else if (json.is_boolean()) {
+          value = json.get<bool>();
+      } else if (json.is_number()) {
+          value = json.get<int>();
+      } else if (json.is_string()) {
+          value = json.get<std::string>();
+      } else if (json.is_array()) {
+          List list(static_cast<size_t>(json.size()));
+          value = list;
+      } else if (json.is_object()) {
+      } else {
+          assert("json is of unknown type");
+          value = std::monostate{};
+      }
+      return *this;
   }
   DSLValue &operator=(const DSLValue &other) noexcept {
     this->value = other.value;
