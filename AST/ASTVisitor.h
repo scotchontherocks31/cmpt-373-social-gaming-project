@@ -210,17 +210,12 @@ private:
   void visitLeave(VarDeclaration &node){};
 
   coro::Task<> visitEnter(Rules &node) {
-    auto rules = node.getChildren();
 
-    std::deque<coro::Task<>> tasks;
-    for (auto &&rule : rules) {
-      tasks.push_back(rule->accept(*this));
-    }
-
-    for (coro::Task<> &ruleTask : tasks) {
-      do {
-        co_await ruleTask;
-      } while (not ruleTask.isDone());
+    for (auto &&child : node.getChildren()) {
+      auto task = child->accept(*this);
+      while (not task.isDone()) {
+        co_await task;
+      }
     }
   };
   void visitLeave(Rules &node){};
