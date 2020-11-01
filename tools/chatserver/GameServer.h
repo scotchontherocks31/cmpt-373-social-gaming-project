@@ -29,7 +29,7 @@ public:
     LEAVE,
     LIST,
     INFO,
-    WHISPER,
+    GAME,
     UNKNOWN
   };
 
@@ -51,6 +51,8 @@ private:
   void onDisconnect(Connection c);
   void processMessages();
   std::string processCommand(User &user, std::string rawCommand);
+  std::string processGameCommand(const User &user,
+                                 std::vector<std::string> &tokens);
   User &getUser(Connection connection) { return users.at(connection.id); }
   void flush();
 };

@@ -2,7 +2,6 @@
 #define AST_VISITOR_H
 
 #include "ASTNode.h"
-#include <deque>
 #include <iostream>
 #include <map>
 #include <string>
@@ -11,9 +10,14 @@
 
 namespace AST {
 
-class Communication {
+class Communicator {
 public:
-  void sendGlobalMessage(std::string &message) {
+  virtual void sendGlobalMessage(std::string message) = 0;
+};
+
+class PrintCommunicator : public Communicator {
+public:
+  void sendGlobalMessage(std::string message) override {
     std::cout << message << std::endl;
   }
 };
@@ -84,6 +88,7 @@ private:
   std::map<Lexeme, DSLValue> bindings;
 
 public:
+  Environment() : parent{nullptr} {}
   explicit Environment(Environment *parent) : parent{parent} {}
   DSLValue &getValue(const Lexeme &lexeme) noexcept { return bindings[lexeme]; }
   void removeBinding(const Lexeme &lexeme) noexcept {
@@ -129,8 +134,8 @@ private:
 // and Rules
 class Interpreter : public ASTVisitor {
 public:
-  Interpreter(Environment &&env, Communication &communication)
-      : environment{std::move(env)}, communication{communication} {}
+  Interpreter(Environment &&env, Communicator &communicator)
+      : environment{std::move(env)}, communicator{communicator} {}
 
 private:
   coro::Task<> visitHelper(GlobalMessage &node) override {
@@ -157,7 +162,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  coro::Task<> visitHelper(Variable &node) override {
+  coro::Task<> visitHelper(Variable &node) final {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -174,7 +179,13 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(Rules &node) override {
-    co_await visitEnter(node);
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      auto task = child->accept(*this);
+      while (not task.isDone()) {
+        co_await task;
+      }
+    }
     visitLeave(node);
     co_return;
   }
@@ -190,11 +201,7 @@ private:
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
     auto &&formatMessage = formatMessageNode.getFormat();
-    const std::string GAME_NAME = "Game Name";
-    auto &&gameNameDSL = environment.getValue(GAME_NAME);
-    auto &&gameName = gameNameDSL.get<std::string>();
-    auto finalMessage = formatMessage;
-    communication.sendGlobalMessage(finalMessage);
+    communicator.sendGlobalMessage(formatMessage);
   };
 
   void visitEnter(FormatNode &node){};
@@ -225,7 +232,7 @@ private:
 
 private:
   Environment environment;
-  Communication &communication;
+  Communicator &communicator;
 };
 
 // TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
