@@ -32,23 +32,24 @@ namespace AST {
 
 std::function<bool(const DSLValue &x, const DSLValue &y)>
 DSLValue::getCompareLambda(const DSLValue &value) const noexcept {
+  using ReturnType = std::function<bool(const DSLValue &x, const DSLValue &y)>;
   return std::visit(
-      overloaded{[](const std::string &discard) {
+      overloaded{[](const std::string &discard) -> ReturnType {
                    return [](const DSLValue &x, const DSLValue &y) {
                      return x.get<std::string>() < y.get<std::string>();
                    };
                  },
-                 [](const double &discard) {
+                 [](const double &discard) -> ReturnType {
                    return [](const DSLValue &x, const DSLValue &y) {
                      return x.get<double>() < y.get<double>();
                    };
                  },
-                 [](const int &discard) {
+                 [](const int &discard) -> ReturnType {
                    return [](const DSLValue &x, const DSLValue &y) {
                      return x.get<double>() < y.get<double>();
                    };
                  },
-                 [](const auto &invalid) {
+                 [](const auto &invalid) -> ReturnType {
                    return [](const DSLValue &x, const DSLValue &y) {
                      return false;
                    };
@@ -68,7 +69,7 @@ DSLValue::DSLValue(const Json &json) noexcept {
   } else if (json.is_array()) {
     List list(static_cast<size_t>(json.size()));
     std::transform(json.begin(), json.end(), list.begin(),
-                   [](auto &x) { DSLValue{x}; });
+                   [](const auto &x) { return DSLValue{x}; });
     value = std::make_shared<List>(std::move(list));
   } else if (json.is_object()) {
     Map map;
@@ -112,8 +113,10 @@ List &DSLValue::sort(const std::string &key) noexcept {
   }
   assert(list[0].getType() == Type::MAP);
   auto keyAvailable =
-      std::all_of(list.begin(), list.end(),
-                  [&key](const Map &map) { return map.contains(key); });
+      std::all_of(list.begin(), list.end(), [&key](const DSLValue &dsl) {
+        const Map &map = dsl.get<Map>();
+        return map.contains(key);
+      });
   assert(keyAvailable);
   auto convert = [&](const DSLValue &x) -> const DSLValue & {
     return x.at(key);
@@ -138,6 +141,7 @@ List &DSLValue::discard(size_t i) noexcept {
     return list;
   }
   list.erase(list.begin() + list.size() - i, list.end());
+  return list;
 }
 
 } // namespace AST

@@ -49,26 +49,24 @@ public:
   DSLValue(Map &&map) noexcept : value{std::make_shared<Map>(std::move(map))} {}
   DSLValue() noexcept = default;
   DSLValue(const Json &json) noexcept;
-  DSLValue(DSLValue &other) noexcept = default;
-  DSLValue(DSLValue &&other) noexcept = default;
-  template <DSLType T> T &get() noexcept { return std::get<T>(value); }
-  template <> List &get() noexcept {
-    return *std::get<std::shared_ptr<List>>(value);
+  DSLValue(const DSLValue &other) noexcept { value = other.value; }
+  DSLValue(DSLValue &&other) noexcept { value = std::move(other.value); }
+  template <BaseType T> T &get() noexcept { return std::get<T>(value); }
+  template <ListOrMapType T> T &get() noexcept {
+    return *std::get<std::shared_ptr<T>>(value);
   }
-  template <> Map &get() noexcept {
-    return *std::get<std::shared_ptr<Map>>(value);
-  }
-  template <DSLType T> const T &get() const noexcept {
+  template <BaseType T> const T &get() const noexcept {
     return std::get<T>(value);
   }
-  template <> const List &get() const noexcept {
-    return *std::get<std::shared_ptr<List>>(value);
+  template <ListOrMapType T> const T &get() const noexcept {
+    return *std::get<std::shared_ptr<T>>(value);
   }
-  template <> const Map &get() const noexcept {
-    return *std::get<std::shared_ptr<Map>>(value);
-  }
-  template <DSLType T> DSLValue &operator=(T &&a) noexcept {
+  template <BaseType T> DSLValue &operator=(T &&a) noexcept {
     value = std::forward<T>(a);
+    return *this;
+  }
+  template <ListOrMapType T> DSLValue &operator=(T &&a) noexcept {
+    value = std::make_shared<T>(std::forward<T>(a));
     return *this;
   }
   DSLValue &operator=(const DSLValue &other) noexcept {

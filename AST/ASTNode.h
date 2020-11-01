@@ -23,7 +23,7 @@ public:
     return returnValue;
   }
   const ASTNode &getParent() const { return *parent; }
-  void setParent(ASTNode *parent) { parent = parent; }
+  void setParent(ASTNode *parent) { this->parent = parent; }
   coro::Task<> accept(ASTVisitor &visitor) {
     auto coroutine = acceptHelper(visitor);
     while (not coroutine.isDone()) {
