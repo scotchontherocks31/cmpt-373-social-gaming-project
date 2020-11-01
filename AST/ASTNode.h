@@ -84,6 +84,7 @@ public:
   explicit Variable(std::string lexeme) : lexeme{std::move(lexeme)} {}
   const std::string &getLexeme() const { return lexeme; }
   //expression node for "to" : players
+  //overload here
 
 private:
   std::string lexeme;
@@ -138,63 +139,70 @@ private:
 };
 
 
-class Operand : public ASTNode{
+//---
+enum class OperatorType {
+      DOT = 1,
+      EQUALS
+    };
+
+const std::map<std::string , OperatorType> opMap =
+  {
+    {".", OperatorType::DOT},
+    {"==", OperatorType::EQUALS}
+  };
+//---
+
+class Operator : public ASTNode{
   public:
-    Operand(std::string operandName){}
+    Operator(std::string operatorString){
+      operatorType = opMap(operatorString);
+    }
+    const OperatorType &getOperatorType(){ return operatorType; }
   private:
-    std::string operandName;  
-    //find the passed-in operand
+    OperatorType operatorType;
+
 }
 
 class UnaryOperation : public ASTNode{
   
   public:
-    UnaryOperation(std::unique_ptr<UnaryOperation>&& operand, std::string operator){}
-  private:
-    Operand operandSingle;
-    std::string operator;
+    UnaryOperation(std::unique_ptr<Variable>&& operand,
+                   std::unique_ptr<Operator>&& operator){
+      appendChild(std::move(operand));
+      appendChild(std::move(operator));
+    }
+    const Variable &getOperand() const {
+      return *static_cast<Variable *>(children[0].get());
+    }
+    const Variable &getOperator() const {
+      return *static_cast<Operator *>(children[1].get());
+    }
+  
 }
 
 //string cannot convert to operator, create a map that binds a string to an operator?
 class BinaryOperation : public ASTNode{
   
   public:
-    BinaryOperation(std::unique_ptr<Operand>&& opLeft,
-                   std::unique_ptr<Operand>&& opRight,
-                   std::string operator) {
-      //overloaded operators here
+    BinaryOperation(std::unique_ptr<Variable>&& operandLeft,
+                    std::unique_ptr<Variable>&& operandRight,
+                    std::unique_ptr<Operator>&& operator) {  
+      appendChild(std::move(operandLeft));
+      appendChild(std::move(operandRight));
+      appendChild(std::move(operator));          
     }
-  private:
-    Operand operandLeft;  
-    Operand operandRight;
-    std::string operator;     
+     
+    const Variable &getOperandLeft() const {
+      return *static_cast<Variable *>(children[0].get());
+    }
+    const Variable &getOperandRight() const {
+      return *static_cast<Variable *>(children[1].get());
+    }
+    const Operator &getOperator() const {
+      return *static_cast<Operator *>(children[2].get());
+    }
 }
 
-class Operation : public ASTNode{
-  public:
-    Operation(std::unique_ptr<UnaryOperation> &&unaryOperation){
-      operation(std::move(unaryOperation));
-    }
-    Operation(std::unique_ptr<BinaryOperation> &&BinaryOperation){
-      operation(std::move(binaryOperation));
-    }
-    const ASTNode &getOperation(){
-      return *operation;
-    }
-  private:
-    operationType type;
-    std::unique_ptr<ASTNode> operation;
-}
-
-class Expression : public ASTNode {
-  public:
-    Expression(){}
-    addOperation(std::unique_ptr<Operation> &&operator){
-      appendChild(std::move(variable));
-    }
-  private:
-    virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
-}
 
 class AST {
 public:

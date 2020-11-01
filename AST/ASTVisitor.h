@@ -118,6 +118,9 @@ public:
   coro::Task<> visit(Rules &node);
   coro::Task<> visit(ParallelFor &node);
   coro::Task<> visit(InputText &node);
+  coro::Task<> visit(Operator &node);
+  coro::Task<> visit(BinaryOperation &node);
+  coro::Task<> visit(UnaryOperation &node);
   virtual ~ASTVisitor() = default;
 
 private:
@@ -128,6 +131,9 @@ private:
   virtual coro::Task<> visitHelper(Variable &) = 0;
   virtual coro::Task<> visitHelper(VarDeclaration &) = 0;
   virtual coro::Task<> visitHelper(InputText &) = 0;
+  virtual coro::Task<> visitHelper(Operator &) = 0;
+  virtual coro::Task<> visitHelper(BinaryOperation &) = 0;
+  virtual coro::Task<> visitHelper(UnaryOperation &) = 0;
 };
 
 // TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
@@ -197,6 +203,30 @@ private:
     visitLeave(node);
     co_return;
   }
+  coro::Task<> visitHelper(Operator &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  coro::Task<> visitHelper(BinaryOperation &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+  coro::Task<> visitHelper(UnaryOperation &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
@@ -221,6 +251,25 @@ private:
 
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
+
+  void visitEnter(Operator &node){};
+  void visitLeave(Operator &node){};
+
+  void visitEnter(BinaryOperation &node){};
+  void visitLeave(BinaryOperation &node){
+    const auto &operandLeft = environment.getValue(node.getOperandLeft().getLexeme());
+    const auto &operandRight= environment.getValue(node.getOperandRight().getLexeme());
+    const auto &operatortype = node.getOperator();
+    if(operatorType == OperatorType::DOT){
+      operandLeft.operandRight; //now overload it somewhere!
+    }
+  };
+
+  void visitEnter(UnaryOperation &node){};
+  void visitLeave(UnaryOperation &node){}{
+    const auto &operand = environment.getValue(node.getOperand().getLexeme());
+  }
+
 
 private:
   Environment environment;

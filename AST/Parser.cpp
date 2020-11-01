@@ -68,44 +68,13 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
   return std::make_unique<Variable>(json["list"]);
 }
 
-std::unique_ptr<Operand> JSONToASTParser::parseOperand(std::string operand){
-  //For now, just make it work with single binary operation in format node
-  return std::make_unique<Operand>(operand);
-}
-
-std::unique_ptr<UnaryOperation> JSONToASTParser::parseUnaryOperation(std::string operator, std::string operandSingle){
-  return std::make_unique<UnaryOperation>(operator, 
-                                          std::move( std::make_unique<Operand>(operandSingle); ))
-}
-
-std::unique_ptr<BinaryOperation> JSONToASTParser::parseBinaryOperation(std::string operator, std::string operandLeft , std::string operandRight){
-  return std::make_unique<UnaryOperation>(operator, 
-                                          std::move( std::make_unique<Operand>(operandLeft), 
-                                          std::move( std::make_unique<Operand>(operandRight); )
-}
-
-std::unique_ptr<Operation> JSONToASTParser::parseOperation(std::string operation){
-  //parse the given operations
-  std::vector<parsedOperation>
-
-  //if one operand
-  //return std::make_unique<UnaryOperation>(operator, operandSingle);
-
-  //if two operand 
-  return std::make_unique<BinaryOperation>(operator, operandLeft, operandRight);
-}
-
-std::unique_ptr<Expression> JSONToASTParser::parseExpression(std::string operations){
-  // e.g. operations = player.name.food.drink.color
-  // parse player.name, name.food , food.drink , drink.color in Operation node seperately in that order 
-  // append the operation node as a child in that order (4 childs total in the example)
-
-  // Ask about: Do we need multiple operation node inside expression node?
-  // Because the return type can vary from string to list to, etc
-
-
-  //for each operation...
-  std::make_unique<Expression>( std::move( std::make_unique<Operation>(operation)) )
+std::unique_ptr<UnaryOperation> JSONToASTParser::parseUnaryOperation(){
   
 }
+
+std::unique_ptr<BinaryOperation> JSONToASTParser::parseBinaryOperation(){
+  
+}
+
+
 } // namespace AST
