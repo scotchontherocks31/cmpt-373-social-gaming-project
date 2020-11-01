@@ -10,14 +10,15 @@ bool listUnitype(List &list, auto &&convert) noexcept {
   if (list.size() == 0) {
     return true;
   }
-  return std::ranges::all_of(
-      list, [&](auto &x) { return convert(x).getType() == convert(list[0]).getType(); });
+  return std::ranges::all_of(list, [&](auto &x) {
+    return convert(x).getType() == convert(list[0]).getType();
+  });
 }
 
 List &sortChecker(DSLValue &dsl) noexcept {
   assert(dsl.getType() == DSLValue::Type::LIST);
   List &list = dsl.get<List>();
-  auto identity = [](const auto &x) { return x; };
+  auto identity = [](DSLValue &x) { return x; };
   if (!listUnitype(list, identity)) {
     assert("list not unitype");
     return list;
@@ -68,13 +69,13 @@ DSLValue::DSLValue(const Json &json) noexcept {
     List list(static_cast<size_t>(json.size()));
     std::transform(json.begin(), json.end(), list.begin(),
                    [](auto &x) { DSLValue{x}; });
-    value = std::move(list);
+    value = std::make_shared<List>(std::move(list));
   } else if (json.is_object()) {
     Map map;
     std::transform(
         json.items().begin(), json.items().end(), std::inserter(map, map.end()),
         [](auto &x) { return std::make_pair(x.key(), DSLValue{x.value()}); });
-    value = std::move(map);
+    value = std::make_shared<Map>(std::move(map));
   } else {
     assert("json is of unknown type");
     value = std::monostate{};
@@ -83,20 +84,21 @@ DSLValue::DSLValue(const Json &json) noexcept {
 
 DSLValue::Type DSLValue::getType() const noexcept {
   return std::visit(
-      overloaded{[](const List &discard) { return Type::LIST; },
-                 [](const Map &discard) { return Type::MAP; },
-                 [](const std::string &discard) { return Type::STRING; },
-                 [](const bool &discard) { return Type::BOOLEAN; },
-                 [](const double &list) { return Type::NUMBER; },
-                 [](const int &list) { return Type::NUMBER; },
-                 [](const std::monostate &list) { return Type::NIL; }},
-      this->value);
+      overloaded{
+          [](const std::shared_ptr<List> &discard) { return Type::LIST; },
+          [](const std::shared_ptr<Map> &discard) { return Type::MAP; },
+          [](const std::string &discard) { return Type::STRING; },
+          [](const bool &discard) { return Type::BOOLEAN; },
+          [](const double &list) { return Type::NUMBER; },
+          [](const int &list) { return Type::NUMBER; },
+          [](const std::monostate &list) { return Type::NIL; }},
+      value);
 }
 
 List &DSLValue::sort() noexcept {
   auto &list = sortChecker(*this);
   if (list.size() == 0) {
-      return list;
+    return list;
   }
   auto compare = getCompareLambda(list[0]);
   std::ranges::sort(list, compare);
@@ -106,20 +108,36 @@ List &DSLValue::sort() noexcept {
 List &DSLValue::sort(const std::string &key) noexcept {
   auto &list = sortChecker(*this);
   if (list.size() == 0) {
-      return list;
+    return list;
   }
   assert(list[0].getType() == Type::MAP);
-  auto keyAvailable = std::all_of(list.begin(), list.end(), 
-          [&key](const Map &map) { return map.contains(key); });
+  auto keyAvailable =
+      std::all_of(list.begin(), list.end(),
+                  [&key](const Map &map) { return map.contains(key); });
   assert(keyAvailable);
-  auto convert = [&](const DSLValue &x) { return x.at(key); };
+  auto convert = [&](const DSLValue &x) -> const DSLValue & {
+    return x.at(key);
+  };
   auto sameEmbeddedType = listUnitype(list, convert);
   assert(sameEmbeddedType);
   auto compare = getCompareLambda(convert(list[0]));
   std::ranges::sort(list, [&](const auto &x, const auto &y) {
-          return compare(convert(x), convert(y));
-          });
+    return compare(convert(x), convert(y));
+  });
   return list;
+}
+
+List &DSLValue::discard(size_t i) noexcept {
+  assert(getType() == DSLValue::Type::LIST);
+  auto &list = get<List>();
+  if (list.size() == 0) {
+    return list;
+  }
+  if (i >= list.size()) {
+    list.clear();
+    return list;
+  }
+  list.erase(list.begin() + list.size() - i, list.end());
 }
 
 } // namespace AST

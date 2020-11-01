@@ -4,6 +4,7 @@
 #include <json.hpp>
 #include <map>
 #include <random>
+#include <set>
 #include <variant>
 #include <vector>
 
@@ -15,30 +16,57 @@ using Map = std::map<std::string, DSLValue>;
 using Json = nlohmann::json;
 
 template <typename T>
-concept DSLType =
+concept BaseType =
     std::is_convertible<T, bool>::value ||
     std::is_convertible<T, std::string>::value ||
-    std::is_convertible<T, int>::value ||
-    std::is_convertible<T, double>::value ||
-    std::is_convertible<T, List>::value || std::is_convertible<T, Map>::value;
+    std::is_convertible<T, int>::value || std::is_convertible<T, double>::value;
+
+template <typename T>
+concept DSLType = BaseType<T> || std::is_convertible<T, List>::value ||
+                  std::is_convertible<T, Map>::value;
+
+template <typename T> concept ListType = std::is_convertible<T, List>::value;
+
+template <typename T> concept MapType = std::is_convertible<T, Map>::value;
+
+template <typename T> concept ListOrMapType = ListType<T> || MapType<T>;
 
 class DSLValue {
 private:
   using InternalType =
-      std::variant<std::monostate, bool, std::string, int, double, List, Map>;
+      std::variant<std::monostate, bool, std::string, int, double,
+                   std::shared_ptr<List>, std::shared_ptr<Map>>;
   InternalType value;
 
 public:
   enum class Type { LIST, MAP, BOOLEAN, NUMBER, STRING, NIL };
-  template <DSLType T>
+  template <BaseType T>
   DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {}
+  DSLValue(const List &list) noexcept : value{std::make_shared<List>(list)} {}
+  DSLValue(List &&list) noexcept
+      : value{std::make_shared<List>(std::move(list))} {}
+  DSLValue(const Map &map) noexcept : value{std::make_shared<Map>(map)} {}
+  DSLValue(Map &&map) noexcept : value{std::make_shared<Map>(std::move(map))} {}
   DSLValue() noexcept = default;
   DSLValue(const Json &json) noexcept;
-  DSLValue(const DSLValue &other) noexcept { this->value = other.value; }
-  DSLValue(DSLValue &&other) noexcept { this->value = std::move(other.value); }
-  template <DSLType T> T &get() { return std::get<T>(value); }
-  template <DSLType T> const T &get() const { return std::get<T>(value); }
-  template <DSLType T> T *get_if() noexcept { return std::get_if<T>(&value); }
+  DSLValue(DSLValue &other) noexcept = default;
+  DSLValue(DSLValue &&other) noexcept = default;
+  template <DSLType T> T &get() noexcept { return std::get<T>(value); }
+  template <> List &get() noexcept {
+    return *std::get<std::shared_ptr<List>>(value);
+  }
+  template <> Map &get() noexcept {
+    return *std::get<std::shared_ptr<Map>>(value);
+  }
+  template <DSLType T> const T &get() const noexcept {
+    return std::get<T>(value);
+  }
+  template <> const List &get() const noexcept {
+    return *std::get<std::shared_ptr<List>>(value);
+  }
+  template <> const Map &get() const noexcept {
+    return *std::get<std::shared_ptr<Map>>(value);
+  }
   template <DSLType T> DSLValue &operator=(T &&a) noexcept {
     value = std::forward<T>(a);
     return *this;
@@ -100,6 +128,8 @@ public:
   getCompareLambda(const DSLValue &value) const noexcept;
   List &sort() noexcept;
   List &sort(const std::string &key) noexcept;
+  List &discard(size_t) noexcept;
+  // TODO: Implement Deal and ask for specifications on the side effects of deal
 };
 
 } // namespace AST
