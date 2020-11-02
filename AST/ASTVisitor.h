@@ -261,7 +261,8 @@ private:
     const auto &operandRight= environment.getValue(node.getOperandRight().getLexeme());
     const auto &operatortype = node.getOperator();
     if(operatorType == OperatorType::DOT){
-      operandLeft.operandRight; //now overload it somewhere!
+      operandLeft.operandRight; //now overload it somewhere?
+      //operandLeft.dotVariable(operandRight); //Maybe do this instead?
     }
   };
 

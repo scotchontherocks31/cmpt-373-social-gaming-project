@@ -141,14 +141,25 @@ private:
 
 //---
 enum class OperatorType {
-      DOT = 1,
-      EQUALS
+      //---Binary Operator---
+      DOT = 1,      // Player.name
+      EQUALS,       // Player.name == Joe
+      DOTUPFROM,    // Rounds.upfrom(1)
+      DOTSIZE,      // Players.size
+      DOTCONTAINS,  // Players.contains("Joe")
+      //---Unary Operator---
+      NOT,          // !players.elements.weapon.contains(weapon.name)
+      BRACKET,      // {round}
     };
 
 const std::map<std::string , OperatorType> opMap =
   {
     {".", OperatorType::DOT},
-    {"==", OperatorType::EQUALS}
+    {"==", OperatorType::EQUALS},
+    {"upfrom", OperatorType::DOTUPFROM},
+    {"size", OperatorType::DOTSIZE},
+    {"contains", OperatorType::DOTCONTAINS},
+    {"!", OperatorType::NOT},
   };
 //---
 
