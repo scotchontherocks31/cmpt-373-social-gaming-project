@@ -180,13 +180,7 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(Rules &node) override {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      auto task = child->accept(*this);
-      while (not task.isDone()) {
-        co_await task;
-      }
-    }
+    co_await visitEnter(node);
     visitLeave(node);
     co_return;
   }
@@ -217,7 +211,15 @@ private:
   void visitEnter(VarDeclaration &node){};
   void visitLeave(VarDeclaration &node){};
 
-  void visitEnter(Rules &node){};
+  coro::Task<> visitEnter(Rules &node) {
+
+    for (auto &&child : node.getChildren()) {
+      auto task = child->accept(*this);
+      while (not task.isDone()) {
+        co_await task;
+      }
+    }
+  };
   void visitLeave(Rules &node){};
 
   void visitEnter(ParallelFor &node){};
