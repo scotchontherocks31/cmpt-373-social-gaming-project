@@ -179,13 +179,7 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(Rules &node) override {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      auto task = child->accept(*this);
-      while (not task.isDone()) {
-        co_await task;
-      }
-    }
+    co_await visitEnter(node);
     visitLeave(node);
     co_return;
   }
