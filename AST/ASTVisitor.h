@@ -260,9 +260,8 @@ private:
     const auto &operandLeft = environment.getValue(node.getOperandLeft().getLexeme());
     const auto &operandRight= environment.getValue(node.getOperandRight().getLexeme());
     const auto &operatortype = node.getOperator();
-    if(operatorType == OperatorType::DOT){
-      operandLeft.operandRight; //now overload it somewhere?
-      //operandLeft.dotVariable(operandRight); //Maybe do this instead?
+    if(operatorType == OperatorType::DOT){  //map it
+      //
     }
   };
 

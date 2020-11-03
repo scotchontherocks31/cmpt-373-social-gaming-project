@@ -84,7 +84,6 @@ public:
   explicit Variable(std::string lexeme) : lexeme{std::move(lexeme)} {}
   const std::string &getLexeme() const { return lexeme; }
   //expression node for "to" : players
-  //overload here
 
 private:
   std::string lexeme;
@@ -171,6 +170,7 @@ class Operator : public ASTNode{
     const OperatorType &getOperatorType(){ return operatorType; }
   private:
     OperatorType operatorType;
+    virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 
 }
 
@@ -188,7 +188,8 @@ class UnaryOperation : public ASTNode{
     const Variable &getOperator() const {
       return *static_cast<Operator *>(children[1].get());
     }
-  
+  private:
+    virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 }
 
 //string cannot convert to operator, create a map that binds a string to an operator?
@@ -212,6 +213,8 @@ class BinaryOperation : public ASTNode{
     const Operator &getOperator() const {
       return *static_cast<Operator *>(children[2].get());
     }
+  private:
+    virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 }
 
 
