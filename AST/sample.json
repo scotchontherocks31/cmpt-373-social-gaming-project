@@ -8,6 +8,14 @@
         }
     },
 
+    "constants": {
+        "weapons": [
+          { "name": "Rock",     "beats": "Scissors"},
+          { "name": "Paper",    "beats": "Rock"},
+          { "name": "Scissors", "beats": "Paper"}
+        ]
+    },
+    
     "rules": [
         {
             "rule": "parallelfor",
@@ -28,3 +36,6 @@
         }   
     ]
 }
+
+
+

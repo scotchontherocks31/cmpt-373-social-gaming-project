@@ -255,19 +255,53 @@ private:
   void visitEnter(Operator &node){};
   void visitLeave(Operator &node){};
 
+  template<typename L, typename V>
+  bool contains(L list, V lookForValue){
+    return std::ranges::any_of(list.begin(), list.end(), [](V value){
+      return lookForValue == value;
+    });
+  }
+
   void visitEnter(BinaryOperation &node){};
   void visitLeave(BinaryOperation &node){
-    const auto &operandLeft = environment.getValue(node.getOperandLeft().getLexeme());
-    const auto &operandRight= environment.getValue(node.getOperandRight().getLexeme());
+    //environment.getValue(VaribleNode.getLexme()) returns DSLVaue;
+    //DSLValue.get returns the data 
+    // If we had Player.name , 
+    // Now, operandLeft contains Player Variable Node?
+    // Perhaps we dont need the DSL Value of operandLeft, we just need child?
+
+    //in Player.name , we get the child of Player with Environment
+    //in Weapons.name , we get the name of EVERY weapon.
+    // List vs nonList
+  
+    //const auto &operandLeft = ( environment.getValue(node.getOperandLeft().getLexeme()) ).get(); //player
+    //const auto &operandRight= ( environment.getValue(node.getOperandRight().getLexeme()) ).get(); //name, but how does it know it is player's name
+
+    const auto &operandLeft = node.getOperandLeft().getLexeme();
+    const auto &operandRight = node.getOperandRight().getLexeme();
+
+    //Dont worry about list vs singular for now. Templatize it later
     const auto &operatortype = node.getOperator();
-    if(operatorType == OperatorType::DOT){  //map it
-      //
+    switch(operatortype){
+      case OperatorType::DOT:
+        const auto &value = Environment.getValue(operandLeft + operandRight).get();
+        break;
+      case OperatorType::DOTCONTAINS: //players.elements.weapon.contains(weapon.name)
+        contains( Environment.getValue(operandLeft).get() , Environment.getValue(operandLeft).get() );
+        break;
+      case OperatorType::EQUALS:
+        Environment.getValue(operandLeft).get() == Environment.getValue(operandRight.get()
+        break;
+      default:
+        break;
     }
+    
   };
 
   void visitEnter(UnaryOperation &node){};
   void visitLeave(UnaryOperation &node){}{
     const auto &operand = environment.getValue(node.getOperand().getLexeme());
+    const auto &operatortype = node.getOperator();
   }
 
 
