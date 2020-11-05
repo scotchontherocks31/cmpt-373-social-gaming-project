@@ -162,7 +162,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  coro::Task<> visitHelper(Variable &node) override {
+  coro::Task<> visitHelper(Variable &node) final {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -181,7 +181,10 @@ private:
   coro::Task<> visitHelper(Rules &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
+      auto task = child->accept(*this);
+      while (not task.isDone()) {
+        co_await task;
+      }
     }
     visitLeave(node);
     co_return;
@@ -197,17 +200,9 @@ private:
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
-<<<<<<< HEAD
-    const std::string &mess = formatMessageNode.getFormat();
-    communication.sendGlobalMessage(mess);
-=======
     auto &&formatMessage = formatMessageNode.getFormat();
-    const std::string GAME_NAME = "Game Name";
-    auto &&gameNameDSL = environment.getValue(GAME_NAME);
-    auto &&gameName = gameNameDSL.get<std::string>();
-    auto finalMessage = formatMessage + gameName;
-    communicator.sendGlobalMessage(std::move(finalMessage));
->>>>>>> develop
+
+    communicator.sendGlobalMessage(formatMessage);
   };
 
   void visitEnter(FormatNode &node){};
