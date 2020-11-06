@@ -6,8 +6,6 @@ namespace AST {
 
 AST JSONToASTParser::parseHelper() { return AST{parseRules(json[0]["rules"])}; }
 
-AST JSONToASTParser::parseHelperConfig() { return AST{parseConfiguration(json[0]["configuration"])}; }
-
 std::unique_ptr<Rules> JSONToASTParser::parseRules(const Json &json) {
 
   auto rulePtr = std::make_unique<Rules>();
@@ -62,22 +60,4 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
 
   return std::make_unique<Variable>(json["list"]);
 }
-
-
-// ------------
-// return  Environment with players component and all starter DSL values
-void JSONToASTParser::parseConfiguration(const Json &json) {
-
-  // auto rulePtr = std::make_unique<Rules>();
-  // for (const auto &rule : json) {
-  //   auto &&x = parseRule(rule);
-  //   rulePtr->appendChild(std::move(x));
-  // }
-  return; //rulePtr;
-}
-
-
-
-
-
 } // namespace AST

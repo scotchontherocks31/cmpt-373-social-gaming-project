@@ -22,11 +22,8 @@ std::pair<AST::AST *, bool> GameManager::createGame(std::string name,
   if (games.count(name)) {
     return {&games.at(name), false};
   }
-  //auto config = Configurator{json}
   auto parser = AST::JSONToASTParser(std::move(json));
-  // pass it along ast like this :{parser.parse(), config.parse()}
-  // config.parse() will return environment instance
-  auto [it, inserted] = games.insert({std::move(name), parser.parse()}); 
+  auto [it, inserted] = games.insert({std::move(name), parser.parse()});
   return {&it->second, inserted};
 }
 
