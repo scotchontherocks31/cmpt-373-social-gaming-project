@@ -86,6 +86,7 @@ private:
   Environment *parent;
   std::unique_ptr<Environment> child;
   std::map<Lexeme, DSLValue> bindings;
+  //player component std::map<*Player, Player>
 
 public:
   Environment() : parent{nullptr} {}

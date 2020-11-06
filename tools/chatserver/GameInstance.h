@@ -28,7 +28,8 @@ struct PlayerMessage {
 class GameInstance : public AST::Communicator {
 public:
   GameInstance(Room &room, GameServer &server);
-  void loadGame(AST::AST &ast, AST::Environment env = AST::Environment{});
+  // will not need to instantiate the  environment here. It will be passed in 
+  void loadGame(AST::AST &ast, AST::Environment env = AST::Environment{}); 
   void runGame();
   bool isRunning() { return !gameTask.isDone(); }
 
