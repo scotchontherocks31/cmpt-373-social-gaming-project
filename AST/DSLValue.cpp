@@ -1,147 +1,177 @@
 #include "DSLValue.h"
 #include <functional>
+#include <iostream>
+#include <ranges>
+
+using namespace std;
 
 namespace {
 using namespace AST;
-template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-bool listUnitype(List &list, auto &&convert) noexcept {
-  if (list.size() == 0) {
+struct MutableAt {
+  const string &key;
+  explicit MutableAt(const string &key) noexcept : key{key} {};
+  using returnType = optional<reference_wrapper<DSLValue>>;
+
+  auto operator()(Map &map) noexcept -> returnType {
+    auto it = map.find(key);
+    return (it == map.end()) ? nullopt : returnType{it->second};
+  }
+  auto operator()(auto &&discard) noexcept -> returnType { return nullopt; }
+};
+
+struct At {
+  const string &key;
+  explicit At(const string &key) noexcept : key{key} {};
+  using returnType = optional<reference_wrapper<const DSLValue>>;
+
+  auto operator()(const Map &map) noexcept -> returnType {
+    auto it = map.find(key);
+    return (it == map.end()) ? nullopt : returnType{it->second};
+  }
+  auto operator()(const auto &discard) noexcept -> returnType {
+    return nullopt;
+  }
+};
+
+struct MutableListIndex {
+  size_t index;
+  explicit MutableListIndex(size_t index) : index{index} {};
+  using returnType = optional<reference_wrapper<DSLValue>>;
+
+  auto operator()(List &list) noexcept -> returnType {
+    return index < list.size() ? returnType{list[index]} : nullopt;
+  }
+  auto operator()(auto &&discard) noexcept -> returnType { return nullopt; }
+};
+
+struct ListIndex {
+  size_t index;
+  explicit ListIndex(size_t index) : index{index} {};
+  using returnType = optional<reference_wrapper<const DSLValue>>;
+
+  auto operator()(const List &list) noexcept -> returnType {
+    return index < list.size() ? returnType{list[index]} : nullopt;
+  }
+  auto operator()(const auto &discard) noexcept -> returnType {
+    return nullopt;
+  }
+};
+
+struct Size {
+  explicit Size() = default;
+
+  auto operator()(const Map &map) noexcept -> size_t { return map.size(); }
+  auto operator()(const List &list) noexcept -> size_t { return list.size(); }
+  auto operator()(const auto &discard) noexcept -> size_t { return 0; }
+};
+
+struct Slice {
+  const string &key;
+  explicit Slice(const string &key) : key{key} {};
+  using returnType = optional<DSLValue>;
+
+  auto operator()(const Map &map) noexcept -> returnType {
+    auto it = map | ranges::views::filter([this](const auto &x) {
+                return x.first == key;
+              }) |
+              ranges::views::transform([](const auto &x) { return x.second; });
+    DSLValue returnValue = List{it.begin(), it.end()};
+    return (returnValue.size() == map.size()) ? returnType{returnValue}
+                                              : nullopt;
+  }
+  auto operator()(const auto &discard) noexcept -> returnType {
+    return nullopt;
+  }
+};
+
+struct Extend {
+  explicit Extend() = default;
+
+  auto operator()(List &to, List &from) noexcept {
+    ranges::move(from, to.end());
+  }
+  auto operator()(auto &&x, auto &&y) noexcept { return; }
+};
+
+struct Reverse {
+  explicit Reverse() = default;
+
+  auto operator()(List &list) noexcept { ranges::reverse(list); }
+  auto operator()(auto &&discard) noexcept { return; }
+};
+
+struct Shuffle {
+  explicit Shuffle() = default;
+
+  auto operator()(List &list) noexcept {
+    std::random_device rd;
+    std::mt19937 generate{rd()};
+    ranges::shuffle(list, generate);
+    return;
+  }
+  auto operator()(auto &&discard) noexcept { return; }
+};
+
+bool isUniType(const List &list) noexcept {
+  if (list.size() <= 1) {
     return true;
   }
-  return std::ranges::all_of(list, [&](auto &x) {
-    return convert(x).getType() == convert(list[0]).getType();
+  const auto &firstElement = list[0];
+  return ranges::all_of(list, [&firstElement](const auto &y) {
+    return isSameType(firstElement, y);
   });
 }
 
-List &sortChecker(DSLValue &dsl) noexcept {
-  assert(dsl.getType() == DSLValue::Type::LIST);
-  List &list = dsl.get<List>();
-  auto identity = [](DSLValue &x) { return x; };
-  if (!listUnitype(list, identity)) {
-    assert("list not unitype");
-    return list;
+struct Sort {
+  explicit Sort() = default;
+
+  auto operator()(List &list) noexcept {
+    if (not isUniType(list)) {
+      return;
+    }
   }
-  return list;
-}
+};
 
 } // namespace
 
 namespace AST {
 
-std::function<bool(const DSLValue &x, const DSLValue &y)>
-DSLValue::getCompareLambda(const DSLValue &value) const noexcept {
-  using ReturnType = std::function<bool(const DSLValue &x, const DSLValue &y)>;
-  return std::visit(
-      overloaded{[](const std::string &discard) -> ReturnType {
-                   return [](const DSLValue &x, const DSLValue &y) {
-                     return x.get<std::string>() < y.get<std::string>();
-                   };
-                 },
-                 [](const double &discard) -> ReturnType {
-                   return [](const DSLValue &x, const DSLValue &y) {
-                     return x.get<double>() < y.get<double>();
-                   };
-                 },
-                 [](const int &discard) -> ReturnType {
-                   return [](const DSLValue &x, const DSLValue &y) {
-                     return x.get<double>() < y.get<double>();
-                   };
-                 },
-                 [](const auto &invalid) -> ReturnType {
-                   return [](const DSLValue &x, const DSLValue &y) {
-                     return false;
-                   };
-                 }},
-      value.value);
+optional<reference_wrapper<DSLValue>>
+DSLValue::operator[](const string &key) noexcept {
+  return unaryOperation(MutableAt{key});
 }
 
-DSLValue::DSLValue(const Json &json) noexcept {
-  if (json.is_null()) {
-    value = std::monostate{};
-  } else if (json.is_boolean()) {
-    value = json.get<bool>();
-  } else if (json.is_number()) {
-    value = json.get<int>();
-  } else if (json.is_string()) {
-    value = json.get<std::string>();
-  } else if (json.is_array()) {
-    List list(static_cast<size_t>(json.size()));
-    std::transform(json.begin(), json.end(), list.begin(),
-                   [](const auto &x) { return DSLValue{x}; });
-    value = std::make_shared<List>(std::move(list));
-  } else if (json.is_object()) {
-    Map map;
-    std::transform(
-        json.items().begin(), json.items().end(), std::inserter(map, map.end()),
-        [](auto &x) { return std::make_pair(x.key(), DSLValue{x.value()}); });
-    value = std::make_shared<Map>(std::move(map));
-  } else {
-    assert("json is of unknown type");
-    value = std::monostate{};
-  }
+optional<reference_wrapper<const DSLValue>>
+DSLValue::at(const std::string &key) const noexcept {
+  return unaryOperation(At(key));
 }
 
-DSLValue::Type DSLValue::getType() const noexcept {
-  return std::visit(
-      overloaded{
-          [](const std::shared_ptr<List> &discard) { return Type::LIST; },
-          [](const std::shared_ptr<Map> &discard) { return Type::MAP; },
-          [](const std::string &discard) { return Type::STRING; },
-          [](const bool &discard) { return Type::BOOLEAN; },
-          [](const double &list) { return Type::NUMBER; },
-          [](const int &list) { return Type::NUMBER; },
-          [](const std::monostate &list) { return Type::NIL; }},
-      value);
+optional<reference_wrapper<DSLValue>>
+DSLValue::operator[](size_t index) noexcept {
+  return unaryOperation(MutableListIndex{index});
 }
 
-List &DSLValue::sort() noexcept {
-  auto &list = sortChecker(*this);
-  if (list.size() == 0) {
-    return list;
-  }
-  auto compare = getCompareLambda(list[0]);
-  std::ranges::sort(list, compare);
-  return list;
-};
-
-List &DSLValue::sort(const std::string &key) noexcept {
-  auto &list = sortChecker(*this);
-  if (list.size() == 0) {
-    return list;
-  }
-  assert(list[0].getType() == Type::MAP);
-  auto keyAvailable =
-      std::all_of(list.begin(), list.end(), [&key](const DSLValue &dsl) {
-        const Map &map = dsl.get<Map>();
-        return map.contains(key);
-      });
-  assert(keyAvailable);
-  auto convert = [&](const DSLValue &x) -> const DSLValue & {
-    return x.at(key);
-  };
-  auto sameEmbeddedType = listUnitype(list, convert);
-  assert(sameEmbeddedType);
-  auto compare = getCompareLambda(convert(list[0]));
-  std::ranges::sort(list, [&](const auto &x, const auto &y) {
-    return compare(convert(x), convert(y));
-  });
-  return list;
+optional<reference_wrapper<const DSLValue>>
+DSLValue::operator[](size_t index) const noexcept {
+  return unaryOperation(ListIndex{index});
 }
 
-List &DSLValue::discard(size_t i) noexcept {
-  assert(getType() == DSLValue::Type::LIST);
-  auto &list = get<List>();
-  if (list.size() == 0) {
-    return list;
-  }
-  if (i >= list.size()) {
-    list.clear();
-    return list;
-  }
-  list.erase(list.begin() + list.size() - i, list.end());
-  return list;
+optional<DSLValue>
+DSLValue::createSlice(const std::string &key) const noexcept {
+  return unaryOperation(Slice{key});
 }
+
+size_t DSLValue::size() const noexcept { return unaryOperation(Size{}); }
+
+void extend(DSL auto &&to, DSL auto &&from) noexcept {
+  to.binaryOperation(from, Extend{});
+}
+
+void reverse(DSL auto &&dsl) noexcept { dsl.unaryOperation(Reverse{}); }
+
+void shuffle(DSL auto &&dsl) noexcept { dsl.unaryOperation(Shuffle{}); }
+
+void sort(DSL auto &&dsl) noexcept { dsl.unaryOperation(Sort{}); }
 
 } // namespace AST

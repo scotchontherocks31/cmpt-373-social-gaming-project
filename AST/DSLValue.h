@@ -3,17 +3,22 @@
 
 #include <json.hpp>
 #include <map>
+#include <optional>
 #include <random>
 #include <set>
+#include <type_traits>
 #include <variant>
 #include <vector>
 
 namespace AST {
 
+using Json = nlohmann::json;
+
 class DSLValue;
+
 using List = std::vector<DSLValue>;
 using Map = std::map<std::string, DSLValue>;
-using Json = nlohmann::json;
+struct Nil {};
 
 template <typename T>
 concept BaseType =
@@ -25,48 +30,64 @@ template <typename T>
 concept DSLType = BaseType<T> || std::is_convertible<T, List>::value ||
                   std::is_convertible<T, Map>::value;
 
-template <typename T> concept ListType = std::is_convertible<T, List>::value;
+template <typename T>
+concept DSL = std::is_same_v<DSLValue, std::remove_cvref_t<T>>;
 
-template <typename T> concept MapType = std::is_convertible<T, Map>::value;
+template <typename F, typename... Types>
+concept BoundedUnaryOperation = requires(F &&f, Types &&... types) {
+  (std::invoke(std::forward<F>(f), std::forward<Types>(types)), ...);
+};
 
-template <typename T> concept ListOrMapType = ListType<T> || MapType<T>;
+template <typename F, typename Type1, typename... Types2>
+requires requires(F &&f, Type1 &&type, Types2 &&... types) {
+  (std::invoke(std::forward<F>(f), std::forward<Type1>(type),
+               std::forward<Types2>(types)),
+   ...);
+}
+constexpr inline void NestedApply(F &&f, Type1 &&type, Types2 &&... types) {
+  return;
+}
+
+template <typename F, typename... Types1>
+concept BoundedSymmetricBinaryOperation = requires(F &&f, Types1 &&... types1,
+                                                   Types1 &&... types2) {
+  (NestedApply(f, std::forward<Types1>(types1),
+               std::forward<Types1>(types2)...),
+   ...);
+};
+
+template <typename F>
+concept UnaryDSLOperation =
+    BoundedUnaryOperation<F, std::monostate, bool, int, double, std::string,
+                          List, Map>;
+
+template <typename F>
+concept BinaryDSLOperation =
+    BoundedSymmetricBinaryOperation<F, std::monostate, bool, int, double,
+                                    std::string, List, Map>;
+
+template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 class DSLValue {
 private:
   using InternalType =
-      std::variant<std::monostate, bool, std::string, int, double,
-                   std::shared_ptr<List>, std::shared_ptr<Map>>;
+      std::variant<std::monostate, bool, std::string, int, double, List, Map>;
   InternalType value;
 
 public:
   enum class Type { LIST, MAP, BOOLEAN, NUMBER, STRING, NIL };
-  template <BaseType T>
-  DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {}
-  DSLValue(const List &list) noexcept : value{std::make_shared<List>(list)} {}
-  DSLValue(List &&list) noexcept
-      : value{std::make_shared<List>(std::move(list))} {}
-  DSLValue(const Map &map) noexcept : value{std::make_shared<Map>(map)} {}
-  DSLValue(Map &&map) noexcept : value{std::make_shared<Map>(std::move(map))} {}
+
+  // Constructors
+  template <DSLType T>
+  DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {};
   DSLValue() noexcept = default;
+  // TODO : implement
   DSLValue(const Json &json) noexcept;
   DSLValue(const DSLValue &other) noexcept { value = other.value; }
   DSLValue(DSLValue &&other) noexcept { value = std::move(other.value); }
-  template <BaseType T> T &get() noexcept { return std::get<T>(value); }
-  template <ListOrMapType T> T &get() noexcept {
-    return *std::get<std::shared_ptr<T>>(value);
-  }
-  template <BaseType T> const T &get() const noexcept {
-    return std::get<T>(value);
-  }
-  template <ListOrMapType T> const T &get() const noexcept {
-    return *std::get<std::shared_ptr<T>>(value);
-  }
-  template <BaseType T> DSLValue &operator=(T &&a) noexcept {
+  template <DSLType T> DSLValue &operator=(T &&a) noexcept {
     value = std::forward<T>(a);
-    return *this;
-  }
-  template <ListOrMapType T> DSLValue &operator=(T &&a) noexcept {
-    value = std::make_shared<T>(std::forward<T>(a));
     return *this;
   }
   DSLValue &operator=(const DSLValue &other) noexcept {
@@ -85,50 +106,49 @@ public:
     *this = DSLValue{json};
     return *this;
   }
-  const DSLValue &at(const std::string &key) const noexcept {
-    const Map &map = get<Map>();
-    return map.at(key);
+  template <UnaryDSLOperation F> auto unaryOperation(F &&f) {
+    auto map = overloaded{[&f](auto &x) { return f(x); }};
+    return std::visit(map, value);
   }
-  DSLValue &operator[](const std::string &key) noexcept {
-    Map &map = get<Map>();
-    return map[key];
+  template <UnaryDSLOperation F> auto unaryOperation(F &&f) const {
+    auto map = overloaded{[&f](const auto &x) { return f(x); }};
+    return std::visit(map, value);
   }
-  DSLValue &operator[](size_t index) noexcept {
-    List &list = get<List>();
-    return list[index];
+  template <DSL U, BinaryDSLOperation F>
+  auto binaryOperation(U &&other, F &&f) {
+    auto map = overloaded{[&f, &other](auto &x) {
+      auto innerMap = overloaded{[&f, &x](auto &y) { return f(x, y); }};
+      return std::visit(innerMap, other.value);
+    }};
+    return std::visit(map, value);
   }
-  List createKeyList(const std::string &key) noexcept {
-    List returnList;
-    Map map = get<Map>();
-    std::ranges::transform(map, std::back_inserter(returnList),
-                           [](auto &x) { return x.second; });
-    return returnList;
+  template <DSL U, BinaryDSLOperation F>
+  auto binaryOperation(const U &other, F &&f) const {
+    auto map = overloaded{[&f, &other](const auto &x) {
+      auto innerMap = overloaded{[&f, &x](const auto &y) { return f(x, y); }};
+      return std::visit(innerMap, other.value);
+    }};
+    return std::visit(map, value);
   }
-  List &extend(List &other) noexcept {
-    List &list = get<List>();
-    std::move(other.begin(), other.end(), std::back_inserter(other));
-    return list;
-  }
-  List &reverse() noexcept {
-    List &list = get<List>();
-    std::ranges::reverse(list);
-    return list;
-  }
-  List &shuffle() noexcept {
-    List &list = get<List>();
-    std::random_device rd;
-    std::mt19937 generator(rd());
-    std::ranges::shuffle(list, generator);
-    return list;
-  }
-  Type getType() const noexcept;
-  std::function<bool(const DSLValue &x, const DSLValue &y)>
-  getCompareLambda(const DSLValue &value) const noexcept;
-  List &sort() noexcept;
-  List &sort(const std::string &key) noexcept;
-  List &discard(size_t) noexcept;
-  // TODO: Implement Deal and ask for specifications on the side effects of deal
+  std::optional<std::reference_wrapper<const DSLValue>>
+  at(const std::string &key) const noexcept;
+  std::optional<std::reference_wrapper<DSLValue>>
+  operator[](const std::string &key) noexcept;
+  std::optional<std::reference_wrapper<DSLValue>>
+  operator[](size_t index) noexcept;
+  std::optional<std::reference_wrapper<const DSLValue>>
+  operator[](size_t index) const noexcept;
+  std::optional<DSLValue> createSlice(const std::string &key) const noexcept;
+  size_t size() const noexcept;
 };
+
+bool isSameType(DSL auto &&x, DSL auto &&y) noexcept;
+void extend(DSL auto &&to, DSL auto &&from) noexcept;
+void reverse(DSL auto &&dsl) noexcept;
+void shuffle(DSL auto &&dsl) noexcept;
+void sort(DSL auto &&dsl) noexcept;
+void sort(DSL auto &&dsl, const std::string &key) noexcept;
+// TODO : implement deal, sort, discard
 
 } // namespace AST
 
