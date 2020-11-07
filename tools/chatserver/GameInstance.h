@@ -28,7 +28,7 @@ struct PlayerMessage {
 class GameInstance : public AST::Communicator {
 public:
   GameInstance(Room &room, GameServer &server);
-  void loadGame(AST::AST &ast, AST::Environment env = AST::Environment{});
+  void loadGame(AST::AST &ast, AST::Environment env = AST::Environment{} );
   void runGame();
   bool isRunning() { return !gameTask.isDone(); }
 

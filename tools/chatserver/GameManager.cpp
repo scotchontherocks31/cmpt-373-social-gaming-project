@@ -17,14 +17,21 @@ GameInstance &GameManager::getGameInstance(const User &user) {
   return it->second;
 }
 
-std::pair<AST::AST *, bool> GameManager::createGame(std::string name,
-                                                    std::string json) {
-  if (games.count(name)) {
-    return {&games.at(name), false};
-  }
-  auto parser = AST::JSONToASTParser(std::move(json));
-  auto [it, inserted] = games.insert({std::move(name), parser.parse()});
-  return {&it->second, inserted};
+//std::pair<std::pair<AST::AST,AST::Environment>, bool> 
+void GameManager::createGame(std::string name, std::string json) {
+  // if (games.count(name)) {
+  //   return {games.at(name), false};
+  // }
+  //auto config = AST::Configurator{json};
+  auto config = AST::Configurator{std::string{"{\"configuration\":{\"name\":\"Rock,Paper,Scissors\",\"playercount\":{\"min\":2,\"max\":4},\"audience\":false,\"setup\":{\"Rounds\":10}},\"rules\":[{\"rule\":\"parallelfor\",\"list\":\"players\",\"element\":\"player\",\"rules\":[{\"rule\":\"global-message\",\"value\":\"heyguys\"}]}]}"}};
+  auto parser = AST::JSONToASTParser(std::string{"{\"configuration\":{\"name\":\"Rock,Paper,Scissors\",\"playercount\":{\"min\":2,\"max\":4},\"audience\":false,\"setup\":{\"Rounds\":10}},\"rules\":[{\"rule\":\"parallelfor\",\"list\":\"players\",\"element\":\"player\",\"rules\":[{\"rule\":\"global-message\",\"value\":\"heyguys\"}]}]}"});
+
+  std::pair<AST::AST,AST::Environment> gamePair(parser.parse(), config.createEnvironment()); 
+  
+  //auto [it, inserted] = 
+  games.insert({std::move(name), gamePair});
+ 
+  return; // {it->second, inserted};
 }
 
 void GameManager::dispatch(const User &user, std::string message) {

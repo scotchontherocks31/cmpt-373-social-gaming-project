@@ -49,6 +49,41 @@ private:
   std::unique_ptr<ParallelFor> parseParallelFor(const Json &);
 };
 
+
+class Configurator{
+  public:
+	Configurator(std::string json) : json{nlohmann::json::parse(std::move(json))}{
+    //initialize the json
+
+  }
+  Environment createEnvironment(){  //(const Json &json) {
+
+
+  auto config = json[0]["configuration"];
+  std::cout<<"NAME IS "<<config["name"]<<std::endl;
+  std::cout<<"rounds is "<<config["setup"]["Rounds"]<<std::endl;
+  
+  auto enviro = Environment{nullptr};
+  int roundsInt = config["setup"]["Rounds"];
+  DSLValue rounds{roundsInt};
+  enviro.setBinding(std::string{"Rounds"}, rounds);
+  return enviro;
+}
+
+  // Environment getEnvironment(){
+  //   // parse json
+  //   // create DSL
+  //   // create env
+  //   // insert dsl in env
+  //   // return env
+  // }
+  private:
+    const Json json;
+    int playerMin;
+    int playerMax;
+};
+
+
 } // namespace AST
 
 #endif
