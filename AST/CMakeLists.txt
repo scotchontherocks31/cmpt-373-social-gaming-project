@@ -1,4 +1,4 @@
-add_library(AST ASTNode.cpp ASTVisitor.cpp Parser.cpp)
+add_library(AST ASTNode.cpp ASTVisitor.cpp Parser.cpp DSLValue.cpp)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/sample.json
      DESTINATION ${CMAKE_BINARY_DIR})
