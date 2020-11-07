@@ -1,8 +1,8 @@
 #ifndef AST_DSLVALUE_H
 #define AST_DSLVALUE_H
 
-#include <json.hpp>
 #include <compare>
+#include <json.hpp>
 #include <map>
 #include <optional>
 #include <random>
