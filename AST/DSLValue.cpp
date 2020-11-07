@@ -90,6 +90,7 @@ struct Extend {
 
   auto operator()(List &to, List &from) noexcept {
     ranges::move(from, to.end());
+    from.clear();
   }
   auto operator()(auto &&x, auto &&y) noexcept { return; }
 };
@@ -123,14 +124,93 @@ bool isUniType(const List &list) noexcept {
   });
 }
 
+bool isSortableList(const List &list) noexcept {
+  if (list.size() <= 1) {
+    return false;
+  }
+  const auto &firstElement = list[0];
+  return isSortableType(firstElement);
+}
+
 struct Sort {
   explicit Sort() = default;
 
   auto operator()(List &list) noexcept {
-    if (not isUniType(list)) {
+    if (not isUniType(list) or not isSortableList(list)) {
       return;
     }
+    ranges::sort(list);
   }
+  auto operator()(auto &&discard) noexcept { return; }
+};
+
+struct SameType {
+  explicit SameType() = default;
+
+  template <typename T> auto operator()(const T &x, const T &y) noexcept {
+    return true;
+  }
+  auto operator()(const auto &x, const auto &y) noexcept { return false; }
+};
+
+struct SortableType {
+  explicit SortableType() = default;
+
+  auto operator()(const Map &map) noexcept { return false; }
+  auto operator()(const List &list) noexcept { return false; }
+  auto operator()(const monostate &mono) noexcept { return false; }
+  auto operator()(const auto &discard) noexcept { return true; }
+};
+
+bool keysExist(const List &list, const std::string &key) {
+  auto it = list | ranges::views::transform(
+                       [&key](const auto &x) { return x.at(key); });
+  return all_of(it.begin(), it.end(),
+                [](const auto &x) { return x.has_value(); });
+}
+
+struct SortWithKey {
+  const string &key;
+  explicit SortWithKey(const string &key) noexcept : key{key} {}
+
+  auto operator()(List &list) noexcept {
+    if (not isUniType(list) or not keysExist(list, key)) {
+      return;
+    }
+    ranges::sort(list, [this](const auto &x, const auto &y) {
+      return *(x.at(key)) < *(y.at(key));
+    });
+  }
+  auto operator()(auto &&discard) noexcept { return; }
+};
+
+struct Discard {
+  size_t count;
+  explicit Discard(size_t count) noexcept : count{count} {};
+
+  auto operator()(List &list) noexcept {
+    if (count == 0) {
+      return;
+    }
+    count = (count >= list.size()) ? list.size() : count;
+    list.erase(list.end() - count, list.end());
+  }
+  auto operator()(auto &&discard) noexcept { return; }
+};
+
+struct Deal {
+  size_t count;
+  explicit Deal(size_t count) noexcept : count{count} {};
+
+  auto operator()(List &to, List &from) noexcept {
+    if (count == 0) {
+      return;
+    }
+    count = (count >= from.size()) ? from.size() : count;
+    move(from.end() - count, from.end(), to.end());
+    from.erase(from.end() - count, from.end());
+  }
+  auto operator()(auto &&x, auto &&y) noexcept { return; }
 };
 
 } // namespace
@@ -163,15 +243,52 @@ DSLValue::createSlice(const std::string &key) const noexcept {
 }
 
 size_t DSLValue::size() const noexcept { return unaryOperation(Size{}); }
-
 void extend(DSL auto &&to, DSL auto &&from) noexcept {
   to.binaryOperation(from, Extend{});
 }
-
-void reverse(DSL auto &&dsl) noexcept { dsl.unaryOperation(Reverse{}); }
-
-void shuffle(DSL auto &&dsl) noexcept { dsl.unaryOperation(Shuffle{}); }
-
-void sort(DSL auto &&dsl) noexcept { dsl.unaryOperation(Sort{}); }
+void reverse(DSL auto &&x) noexcept { x.unaryOperation(Reverse{}); }
+void shuffle(DSL auto &&x) noexcept { x.unaryOperation(Shuffle{}); }
+void sort(DSL auto &&x) noexcept { x.unaryOperation(Sort{}); }
+void sort(DSL auto &&x, const std::string &key) noexcept {
+  x.unaryOperation(SortWithKey{key});
+}
+bool isSameType(const DSLValue &x, const DSLValue &y) noexcept {
+  return x.binaryOperation(y, SameType{});
+}
+bool isSortableType(const DSLValue &x) noexcept {
+  return x.unaryOperation(SortableType{});
+}
+void discard(DSL auto &&x, size_t count) noexcept {
+  return x.unaryOperation(Discard{count});
+}
+void deal(DSL auto &&from, DSL auto &&to, size_t count) noexcept {
+  return to.binaryOperation(Deal{count});
+}
+DSLValue::DSLValue(const Json &json) noexcept {
+  if (json.is_null()) {
+    value = std::monostate{};
+  } else if (json.is_boolean()) {
+    value = json.get<bool>();
+  } else if (json.is_number()) {
+    value = json.get<double>();
+  } else if (json.is_string()) {
+    value = json.get<std::string>();
+  } else if (json.is_array()) {
+    List list;
+    list.reserve(static_cast<size_t>(json.size()));
+    std::transform(json.begin(), json.end(), back_inserter(list),
+                   [](const auto &x) { return DSLValue{x}; });
+    value = std::move(list);
+  } else if (json.is_object()) {
+    Map map;
+    std::transform(
+        json.items().begin(), json.items().end(), std::inserter(map, map.end()),
+        [](auto &x) { return std::make_pair(x.key(), DSLValue{x.value()}); });
+    value = std::move(map);
+  } else {
+    assert("json is of unknown type");
+    value = std::monostate{};
+  }
+}
 
 } // namespace AST

@@ -2,6 +2,7 @@
 #define AST_DSLVALUE_H
 
 #include <json.hpp>
+#include <compare>
 #include <map>
 #include <optional>
 #include <random>
@@ -82,7 +83,6 @@ public:
   template <DSLType T>
   DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {};
   DSLValue() noexcept = default;
-  // TODO : implement
   DSLValue(const Json &json) noexcept;
   DSLValue(const DSLValue &other) noexcept { value = other.value; }
   DSLValue(DSLValue &&other) noexcept { value = std::move(other.value); }
@@ -90,30 +90,36 @@ public:
     value = std::forward<T>(a);
     return *this;
   }
+
   DSLValue &operator=(const DSLValue &other) noexcept {
     if (this != &other) {
       this->value = other.value;
     }
     return *this;
   }
+
   DSLValue &operator=(DSLValue &&other) noexcept {
     if (this != &other) {
       this->value = std::move(other.value);
     }
     return *this;
   }
+
   DSLValue &operator=(const Json &json) noexcept {
     *this = DSLValue{json};
     return *this;
   }
+
   template <UnaryDSLOperation F> auto unaryOperation(F &&f) {
     auto map = overloaded{[&f](auto &x) { return f(x); }};
     return std::visit(map, value);
   }
+
   template <UnaryDSLOperation F> auto unaryOperation(F &&f) const {
     auto map = overloaded{[&f](const auto &x) { return f(x); }};
     return std::visit(map, value);
   }
+
   template <DSL U, BinaryDSLOperation F>
   auto binaryOperation(U &&other, F &&f) {
     auto map = overloaded{[&f, &other](auto &x) {
@@ -122,6 +128,7 @@ public:
     }};
     return std::visit(map, value);
   }
+
   template <DSL U, BinaryDSLOperation F>
   auto binaryOperation(const U &other, F &&f) const {
     auto map = overloaded{[&f, &other](const auto &x) {
@@ -130,25 +137,36 @@ public:
     }};
     return std::visit(map, value);
   }
+
   std::optional<std::reference_wrapper<const DSLValue>>
   at(const std::string &key) const noexcept;
+
   std::optional<std::reference_wrapper<DSLValue>>
   operator[](const std::string &key) noexcept;
+
   std::optional<std::reference_wrapper<DSLValue>>
   operator[](size_t index) noexcept;
+
   std::optional<std::reference_wrapper<const DSLValue>>
   operator[](size_t index) const noexcept;
+
   std::optional<DSLValue> createSlice(const std::string &key) const noexcept;
   size_t size() const noexcept;
+
+  friend std::partial_ordering
+  operator<=>(const DSLValue &x, const DSLValue &y) noexcept = default;
+  friend bool operator==(const DSLValue &x, const DSLValue &y) = default;
 };
 
-bool isSameType(DSL auto &&x, DSL auto &&y) noexcept;
+bool isSortableType(const DSLValue &x) noexcept;
+bool isSameType(const DSLValue &x, const DSLValue &y) noexcept;
 void extend(DSL auto &&to, DSL auto &&from) noexcept;
-void reverse(DSL auto &&dsl) noexcept;
-void shuffle(DSL auto &&dsl) noexcept;
-void sort(DSL auto &&dsl) noexcept;
-void sort(DSL auto &&dsl, const std::string &key) noexcept;
-// TODO : implement deal, sort, discard
+void reverse(DSL auto &&x) noexcept;
+void shuffle(DSL auto &&x) noexcept;
+void sort(DSL auto &&x) noexcept;
+void sort(DSL auto &&x, const std::string &key) noexcept;
+void discard(DSL auto &&x, size_t count) noexcept;
+void deal(DSL auto &&from, DSL auto &&to, size_t count) noexcept;
 
 } // namespace AST
 
