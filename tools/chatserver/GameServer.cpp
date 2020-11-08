@@ -138,7 +138,7 @@ void GameServer::processMessages() {
     // Check if message is a command (e.g. /create)
     if (message.text[0] == '/') {
       isBroadcast = false;
-      std::cout<<"message.text.substr(1)"<<message.text.substr(1)<<std::endl;
+      //std::cout<<"message.text.substr(1)"<<message.text.substr(1)<<std::endl;
       output = processCommand(user, message.text.substr(1));
     } else {
       // If not a command then just output a message
@@ -159,7 +159,6 @@ void GameServer::processMessages() {
 std::string GameServer::processCommand(User &user, std::string rawCommand) {
   std::ostringstream output;
   // tokenize command
-  std::cout<<"rawCommand is "<<rawCommand<<std::endl;
   auto tokens = tokenizeCommand(std::move(rawCommand));
   auto command = matchCommand(tokens[0]);
 
@@ -248,8 +247,7 @@ std::string GameServer::processGameCommand(const User &user,
     } else {
       auto &instance = gameManager.getGameInstance(user);
       output << "Starting game \"" << tokens[2] << "\"\n";
-      std::cout<<"object type is "<<typeid((gameManager.getGame(tokens[2])).second).name()<<std::endl;
-      instance.loadGame((gameManager.getGame(tokens[2])).first);
+      instance.loadGame((gameManager.getGame(tokens[2])).first,(gameManager.getGame(tokens[2])).second);
       instance.runGame();
     }
   } else if (tokens[1] == "clean") {

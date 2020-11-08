@@ -195,6 +195,7 @@ private:
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
     auto &&formatMessage = formatMessageNode.getFormat();
+    
     communicator.sendGlobalMessage(formatMessage);
   };
 

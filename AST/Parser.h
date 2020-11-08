@@ -54,33 +54,61 @@ class Configurator{
   public:
 	Configurator(std::string json) : json{nlohmann::json::parse(std::move(json))}{
     //initialize the json
-
   }
   Environment createEnvironment(){  //(const Json &json) {
-
-
   auto config = json[0]["configuration"];
   std::cout<<"NAME IS "<<config["name"]<<std::endl;
-  std::cout<<"rounds is "<<config["setup"]["Rounds"]<<std::endl;
+  
+  //const std::map<userid, User *> &getMembers() const { return members; }
   
   auto enviro = Environment{nullptr};
   int roundsInt = config["setup"]["Rounds"];
   DSLValue rounds{roundsInt};
   enviro.setBinding(std::string{"Rounds"}, rounds);
+
+  
+  // add the current members into the game
+
+  
+  //add variables and constants
+    // need to recursively create DSL values
+ 
+  std::cout<<json.dump(4)<<std::endl;
+  auto constants = json[0]["constants"];
+  auto weaponsJson = constants["weapons"];
+  std::map<std::string,std::string> weapons;
+  std::string name ;
+  std::string beats;
+
+  for(auto weapon:weaponsJson){
+    std::cout<<weapon["name"]<<std::endl;
+    name = weapon["name"];
+    beats = weapon["beats"];
+    weapons.insert({std::move(name),std::move(beats)});
+  }
+  std::cout<<"paper?"<<weapons["Scissors"]<<std::endl;
+  
+
   return enviro;
 }
 
-  // Environment getEnvironment(){
-  //   // parse json
-  //   // create DSL
-  //   // create env
-  //   // insert dsl in env
-  //   // return env
-  // }
+
+void parseConstants(const Json &constJson){
+  // if map or list recursively parse
+  // else return DSL; int, string, bool, ect
+  // everthing needs to be DSL values?
+  
+}
+std::pair<int,int> getPlayerCount(){
+    auto config = json[0]["configuration"];
+    auto playerMax = config["player count"]["max"];
+    auto playerMin = config["player count"]["min"];
+    return {playerMin,playerMax};
+}
+
+
   private:
     const Json json;
-    int playerMin;
-    int playerMax;
 };
 
 

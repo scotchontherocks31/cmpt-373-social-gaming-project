@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ASTVisitor.h"
+#include "Parser.h"
 #include "Room.h"
 #include <list>
 #include <map>
@@ -28,7 +29,7 @@ struct PlayerMessage {
 class GameInstance : public AST::Communicator {
 public:
   GameInstance(Room &room, GameServer &server);
-  void loadGame(AST::AST &ast, AST::Environment env = AST::Environment{} );
+  void loadGame(AST::AST &ast, AST::Configurator &config);
   void runGame();
   bool isRunning() { return !gameTask.isDone(); }
 

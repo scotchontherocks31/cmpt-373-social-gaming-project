@@ -49,8 +49,11 @@ bool GameInstance::queueMessage(const User &user, std::string message) {
   inboundMessageQueue.push_back({&player, std::move(message)});
   return true;
 }
-
-void GameInstance::loadGame(AST::AST &ast, AST::Environment env = AST::Environment{} {
+// pass in configurator instead of environment. Room to get members. Pass into method to create Environment
+void GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
+  auto players = this->getPlayers();
+  AST::Environment env = config.createEnvironment();
+  //const std::map<userid, User *> &getMembers() const { return members; }
   (this->interpreter).reset();
   this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
   gameTask = ast.accept(*(this->interpreter));
