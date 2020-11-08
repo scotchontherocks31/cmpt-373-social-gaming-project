@@ -55,24 +55,46 @@ class Configurator{
 	Configurator(std::string json) : json{nlohmann::json::parse(std::move(json))}{
     //initialize the json
   }
-  Environment createEnvironment(){  //(const Json &json) {
+  Environment createEnvironment(std::vector<std::pair<int,std::string>> players){  
   auto config = json[0]["configuration"];
   std::cout<<"NAME IS "<<config["name"]<<std::endl;
   
   //const std::map<userid, User *> &getMembers() const { return members; }
   
   auto enviro = Environment{nullptr};
-  int roundsInt = config["setup"]["Rounds"];
-  DSLValue rounds{roundsInt};
-  enviro.setBinding(std::string{"Rounds"}, rounds);
+  // int roundsInt = config["setup"]["Rounds"];
+  // DSLValue rounds{roundsInt};
+  // enviro.setBinding(std::string{"Rounds"}, rounds);
+
+  DSLValue setUp{config["set-up"]};
+  enviro.setBinding("configuration", setUp);
 
   
   // add the current members into the game
+  // have vector<int,std::string> (id and name)
+  /*
+  std::vector<std::pair<int, std::string>> myVec (1, std::make_pair(0, "joe"));
 
-  
+   for (auto i = myVec.begin(); i != myVec.end(); ++i) 
+        std::cout << i->first << " "; 
+  */
+
+
+
   //add variables and constants
     // need to recursively create DSL values
- 
+
+  /*
+  auto constants = json[0]["constants"];
+  DSLValue weapons{constants[0]};
+  enviro.setBinding("weapons",weapons );
+  */
+
+
+
+  // auto config = json[0]["variables"];
+  // for variables
+ /*
   std::cout<<json.dump(4)<<std::endl;
   auto constants = json[0]["constants"];
   auto weaponsJson = constants["weapons"];
@@ -87,7 +109,7 @@ class Configurator{
     weapons.insert({std::move(name),std::move(beats)});
   }
   std::cout<<"paper?"<<weapons["Scissors"]<<std::endl;
-  
+  */
 
   return enviro;
 }

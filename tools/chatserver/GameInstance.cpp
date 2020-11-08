@@ -52,7 +52,9 @@ bool GameInstance::queueMessage(const User &user, std::string message) {
 // pass in configurator instead of environment. Room to get members. Pass into method to create Environment
 void GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
   auto players = this->getPlayers();
-  AST::Environment env = config.createEnvironment();
+  auto playersTran = players  | std::views::transform([](Player player){ return std::pair<int,std::string>{player.id,player.name} ; });
+  std::vector<std::pair<int,std::string>> playersInfo(playersTran.begin(),playersTran.end());
+  AST::Environment env = config.createEnvironment(playersInfo);
   //const std::map<userid, User *> &getMembers() const { return members; }
   (this->interpreter).reset();
   this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
