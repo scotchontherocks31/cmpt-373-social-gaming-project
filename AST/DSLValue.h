@@ -67,9 +67,6 @@ concept BinaryDSLOperation =
     BoundedSymmetricBinaryOperation<F, std::monostate, bool, int, double,
                                     std::string, List, Map>;
 
-template <class... Ts> struct overloaded { using Ts::operator()...; };
-template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
 class DSLValue {
 private:
   using InternalType =
