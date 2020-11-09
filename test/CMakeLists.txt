@@ -3,6 +3,7 @@ enable_testing()
 add_executable(runAllTests
     ASTTests.cpp
     DSLValueTest.cpp
+    ExpressionParseTest.cpp
 )
 
 set_target_properties(runAllTests 
