@@ -2,6 +2,7 @@
 #include <functional>
 #include <iostream>
 #include <ranges>
+#include <sstream>
 
 using namespace std;
 
@@ -213,6 +214,52 @@ struct Deal {
   auto operator()(auto &&x, auto &&y) noexcept { return; }
 };
 
+ostream &join(auto begin, auto end, ostream &os, string separator,
+              auto transform) {
+  if (begin != end) {
+    os << transform(*begin);
+    ++begin;
+  }
+  for (; begin != end; ++begin) {
+    os << separator << transform(*begin);
+  }
+  return os;
+}
+
+struct Print {
+  ostream &os;
+  explicit Print(ostream &os) : os{os} {}
+
+  auto operator()(const Map &map) -> ostream & {
+    os << "{";
+    join(map.begin(), map.end(), os, ", ", [](const auto &x) {
+      stringstream ss;
+      ss << x.first << ": " << x.second;
+      return ss.str();
+    });
+    os << "}";
+    return os;
+  }
+  auto operator()(const List &list) -> ostream & {
+    os << "[";
+    join(list.begin(), list.end(), os, ", ", [](const auto &x) { return x; });
+    os << "]";
+    return os;
+  }
+  auto operator()(monostate x) -> ostream & {
+    os << "nil";
+    return os;
+  }
+  auto operator()(const string &x) -> ostream & {
+    os << "\"" << x << "\"";
+    return os;
+  }
+  auto operator()(const auto &x) -> ostream & {
+    os << x;
+    return os;
+  }
+};
+
 } // namespace
 
 namespace AST {
@@ -264,12 +311,17 @@ void discard(DSL auto &&x, size_t count) noexcept {
 void deal(DSL auto &&from, DSL auto &&to, size_t count) noexcept {
   return to.binaryOperation(Deal{count});
 }
+ostream &operator<<(ostream &os, const DSLValue &x) noexcept {
+  return x.unaryOperation(Print{os});
+}
 DSLValue::DSLValue(const Json &json) noexcept {
   if (json.is_null()) {
     value = std::monostate{};
   } else if (json.is_boolean()) {
     value = json.get<bool>();
-  } else if (json.is_number()) {
+  } else if (json.is_number_integer()) {
+    value = json.get<int>();
+  } else if (json.is_number_float()) {
     value = json.get<double>();
   } else if (json.is_string()) {
     value = json.get<std::string>();
