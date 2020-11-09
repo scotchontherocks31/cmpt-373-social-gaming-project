@@ -22,14 +22,14 @@ using Map = std::map<std::string, DSLValue>;
 struct Nil {};
 
 template <typename T>
-concept BaseType =
-    std::is_convertible<T, bool>::value ||
-    std::is_convertible<T, std::string>::value ||
-    std::is_convertible<T, int>::value || std::is_convertible<T, double>::value;
+concept BaseType = std::is_same_v<std::remove_cvref_t<T>, bool> ||
+                   std::is_same_v<std::remove_cvref_t<T>, std::string> ||
+                   std::is_same_v<std::remove_cvref_t<T>, int> ||
+                   std::is_same_v<std::remove_cvref_t<T>, double>;
 
 template <typename T>
-concept DSLType = BaseType<T> || std::is_convertible<T, List>::value ||
-                  std::is_convertible<T, Map>::value;
+concept DSLType = BaseType<T> || std::is_same_v<std::remove_cvref_t<T>, List> ||
+                  std::is_same_v<std::remove_cvref_t<T>, Map>;
 
 template <typename T>
 concept DSL = std::is_same_v<DSLValue, std::remove_cvref_t<T>>;
@@ -67,7 +67,7 @@ concept BinaryDSLOperation =
     BoundedSymmetricBinaryOperation<F, std::monostate, bool, int, double,
                                     std::string, List, Map>;
 
-template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <class... Ts> struct overloaded { using Ts::operator()...; };
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 class DSLValue {
@@ -80,10 +80,10 @@ public:
   enum class Type { LIST, MAP, BOOLEAN, NUMBER, STRING, NIL };
 
   // Constructors
-  template <DSLType T>
-  DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {};
   DSLValue() noexcept = default;
   DSLValue(const Json &json) noexcept;
+  template <DSLType T>
+  DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {};
   DSLValue(const DSLValue &other) noexcept { value = other.value; }
   DSLValue(DSLValue &&other) noexcept { value = std::move(other.value); }
   template <DSLType T> DSLValue &operator=(T &&a) noexcept {
@@ -110,32 +110,22 @@ public:
     return *this;
   }
 
-  template <UnaryDSLOperation F> auto unaryOperation(F &&f) {
-    auto map = overloaded{[&f](auto &x) { return f(x); }};
-    return std::visit(map, value);
+  template <UnaryDSLOperation F> decltype(auto) unaryOperation(F &&f) {
+    return std::visit(f, value);
   }
 
-  template <UnaryDSLOperation F> auto unaryOperation(F &&f) const {
-    auto map = overloaded{[&f](const auto &x) { return f(x); }};
-    return std::visit(map, value);
-  }
-
-  template <DSL U, BinaryDSLOperation F>
-  auto binaryOperation(U &&other, F &&f) {
-    auto map = overloaded{[&f, &other](auto &x) {
-      auto innerMap = overloaded{[&f, &x](auto &y) { return f(x, y); }};
-      return std::visit(innerMap, other.value);
-    }};
-    return std::visit(map, value);
+  template <UnaryDSLOperation F> decltype(auto) unaryOperation(F &&f) const {
+    return std::visit(f, value);
   }
 
   template <DSL U, BinaryDSLOperation F>
-  auto binaryOperation(const U &other, F &&f) const {
-    auto map = overloaded{[&f, &other](const auto &x) {
-      auto innerMap = overloaded{[&f, &x](const auto &y) { return f(x, y); }};
-      return std::visit(innerMap, other.value);
-    }};
-    return std::visit(map, value);
+  decltype(auto) binaryOperation(U &&other, F &&f) {
+    return std::visit(f, value, other.value);
+  }
+
+  template <DSL U, BinaryDSLOperation F>
+  decltype(auto) binaryOperation(const U &other, F &&f) const {
+    return std::visit(f, value, other.value);
   }
 
   std::optional<std::reference_wrapper<const DSLValue>>
@@ -155,7 +145,6 @@ public:
 
   friend std::partial_ordering
   operator<=>(const DSLValue &x, const DSLValue &y) noexcept = default;
-  friend bool operator==(const DSLValue &x, const DSLValue &y) = default;
 };
 
 bool isSortableType(const DSLValue &x) noexcept;
@@ -167,6 +156,7 @@ void sort(DSL auto &&x) noexcept;
 void sort(DSL auto &&x, const std::string &key) noexcept;
 void discard(DSL auto &&x, size_t count) noexcept;
 void deal(DSL auto &&from, DSL auto &&to, size_t count) noexcept;
+std::ostream &operator<<(std::ostream &os, const DSLValue &x) noexcept;
 
 } // namespace AST
 
