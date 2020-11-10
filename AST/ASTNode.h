@@ -7,6 +7,7 @@
 #include <string>
 #include <task.h>
 #include <vector>
+#include <map>
 namespace AST {
 
 class ASTVisitor;
@@ -151,7 +152,9 @@ enum class OperatorType {
       BRACKET,      // {round}
     };
 
-const std::map<std::string , OperatorType> opMap =
+
+/*
+const extern std::map<std::string , OperatorType> operatorMap =
   {
     {".", OperatorType::DOT},
     {"==", OperatorType::EQUALS},
@@ -159,38 +162,38 @@ const std::map<std::string , OperatorType> opMap =
     {"size", OperatorType::DOTSIZE},
     {"contains", OperatorType::DOTCONTAINS},
     {"!", OperatorType::NOT},
-  };
-//---
+};
+*/
 
 class Operator : public ASTNode{
   public:
     Operator(std::string operatorString){
-      operatorType = opMap(operatorString);
+      //operatorType = opMap[operatorString]; //the map gives
     }
-    const OperatorType &getOperatorType(){ return operatorType; }
+    const OperatorType &getOperatorType() const { return operatorType; }
   private:
     OperatorType operatorType;
     virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 
-}
+};
 
 class UnaryOperation : public ASTNode{
   
   public:
     UnaryOperation(std::unique_ptr<Variable>&& operand,
-                   std::unique_ptr<Operator>&& operator){
+                   std::unique_ptr<Operator>&& rator){
       appendChild(std::move(operand));
-      appendChild(std::move(operator));
+      appendChild(std::move(rator));
     }
     const Variable &getOperand() const {
       return *static_cast<Variable *>(children[0].get());
     }
-    const Variable &getOperator() const {
+    const Operator &getOperator() const {
       return *static_cast<Operator *>(children[1].get());
     }
   private:
     virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
-}
+};
 
 //string cannot convert to operator, create a map that binds a string to an operator?
 class BinaryOperation : public ASTNode{
@@ -198,10 +201,10 @@ class BinaryOperation : public ASTNode{
   public:
     BinaryOperation(std::unique_ptr<Variable>&& operandLeft,
                     std::unique_ptr<Variable>&& operandRight,
-                    std::unique_ptr<Operator>&& operator) {  
+                    std::unique_ptr<Operator>&& rator) {  
       appendChild(std::move(operandLeft));
       appendChild(std::move(operandRight));
-      appendChild(std::move(operator));          
+      appendChild(std::move(rator));          
     }
      
     const Variable &getOperandLeft() const {
@@ -215,7 +218,7 @@ class BinaryOperation : public ASTNode{
     }
   private:
     virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
-}
+};
 
 
 class AST {

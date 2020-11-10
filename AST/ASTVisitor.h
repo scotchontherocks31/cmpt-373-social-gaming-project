@@ -3,6 +3,7 @@
 
 #include "ASTNode.h"
 #include "DSLValue.h"
+#include "Operations.h"
 #include <algorithm>
 #include <iostream>
 #include <json.hpp>
@@ -207,42 +208,45 @@ private:
   void visitLeave(Operator &node){};
 
   template<typename L, typename V>
-  bool contains(L list, V lookForValue){
-    return std::ranges::any_of(list.begin(), list.end(), [](V value){
-      return lookForValue == value;
-    });
+  bool contains(std::vector<L> list, V lookForValue){
+    return std::ranges::any_of(list.begin(), list.end(), lookForValue);
   }
 
   void visitEnter(BinaryOperation &node){};
   void visitLeave(BinaryOperation &node){
-    //environment.getValue(VaribleNode.getLexme()) returns DSLVaue;
-    //DSLValue.get returns the data 
-    // If we had Player.name , 
-    // Now, operandLeft contains Player Variable Node?
-    // Perhaps we dont need the DSL Value of operandLeft, we just need child?
-
-    //in Player.name , we get the child of Player with Environment
-    //in Weapons.name , we get the name of EVERY weapon.
+    //in Weapons.name , name of EVERY weapon.
     // List vs nonList
   
-    //const auto &operandLeft = ( environment.getValue(node.getOperandLeft().getLexeme()) ).get(); //player
-    //const auto &operandRight= ( environment.getValue(node.getOperandRight().getLexeme()) ).get(); //name, but how does it know it is player's name
+    const auto &operandLeft = node.getOperandLeft();
+    const auto &operandRight = node.getOperandRight();
+    const OperatorType &operatortype = node.getOperator().getOperatorType();
 
-    const auto &operandLeft = node.getOperandLeft().getLexeme();
-    const auto &operandRight = node.getOperandRight().getLexeme();
-
-    //Dont worry about list vs singular for now. Templatize it later
-    const auto &operatortype = node.getOperator();
+    // 
     switch(operatortype){
       case OperatorType::DOT:
-        const auto &value = Environment.getValue(operandLeft + operandRight).get();
-        break;
-      case OperatorType::DOTCONTAINS: //players.elements.weapon.contains(weapon.name)
-        contains( Environment.getValue(operandLeft).get() , Environment.getValue(operandLeft).get() );
-        break;
+      {
+        if(typeid(operandLeft) == typeid(Variable)){
+          //player.element = player[element]
+          DSLValue &value = environment.getValue(operandLeft.getLexeme()); //only works for top DLSvalue
+          value[operandRight.getLexeme()];
+        } else{
+          dotOperation(operandLeft , operandRight)
+        }
+        break; 
+      }
       case OperatorType::EQUALS:
-        Environment.getValue(operandLeft).get() == Environment.getValue(operandRight.get()
+      {
+        // e.g. (winners.size == players.size) == false
+        // Expression == Variable
+        // Variable == Variable
+        // Variable == 5
+        // Variable == "hello"
+        // Variable == true
+        // While variable can be all these things too, the user can just do (Player.name == "Jamie")
+        //(environment.getValue(operandLeft) == environment.getValue(operandRight));
+        // 
         break;
+      }
       default:
         break;
     }
@@ -250,10 +254,10 @@ private:
   };
 
   void visitEnter(UnaryOperation &node){};
-  void visitLeave(UnaryOperation &node){}{
-    const auto &operand = environment.getValue(node.getOperand().getLexeme());
-    const auto &operatortype = node.getOperator();
-  }
+  void visitLeave(UnaryOperation &node){
+    //const auto &operand = environment.getValue(node.getOperand().getLexeme());
+    //const auto &operatortype = node.getOperator();
+  };
 
 
 private:
