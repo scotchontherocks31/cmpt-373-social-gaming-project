@@ -17,22 +17,14 @@ GameInstance &GameManager::getGameInstance(const User &user) {
   return it->second;
 }
 
-//std::pair<std::pair<AST::AST,AST::Environment>, bool> 
-void GameManager::createGame(std::string name, std::string json) {
-  // if (games.count(name)) {
-  //   return {games.at(name), false};
-  // }
-  //auto config = AST::Configurator{json};
-  auto config = AST::Configurator{std::string{"{\"configuration\":{\"name\":\"Rock,Paper,Scissors\",\"playercount\":{\"min\":2,\"max\":4},\"audience\":false,\"setup\":{\"Rounds\":10}},\"constants\":{\"weapons\":[{\"name\":\"Rock\",\"beats\":\"Scissors\"},{\"name\":\"Paper\",\"beats\":\"Rock\"},{\"name\":\"Scissors\",\"beats\":\"Paper\"}], \"name\": \"Nick\" },\"variables\":{\"winners\":[]},\"per-player\":{\"wins\":420},\"per-audience\":{},\"rules\":[{\"rule\":\"parallelfor\",\"list\":\"players\",\"element\":\"player\",\"rules\":[{\"rule\":\"global-message\",\"value\":\"heyguys\"}]}]}"}};
-  auto parser = AST::JSONToASTParser(std::string{"{\"configuration\":{\"name\":\"Rock,Paper,Scissors\",\"playercount\":{\"min\":2,\"max\":4},\"audience\":false,\"setup\":{\"Rounds\":10}},\"constants\":{\"weapons\":[{\"name\":\"Rock\",\"beats\":\"Scissors\"},{\"name\":\"Paper\",\"beats\":\"Rock\"},{\"name\":\"Scissors\",\"beats\":\"Paper\"}], \"name\": \"Nick\" },\"variables\":{\"winners\":[]},\"per-player\":{\"wins\":420},\"per-audience\":{},\"rules\":[{\"rule\":\"parallelfor\",\"list\":\"players\",\"element\":\"player\",\"rules\":[{\"rule\":\"global-message\",\"value\":\"heyguys\"}]}]}"});
+bool GameManager::createGame(std::string name, std::string json) {
 
-  std::pair<AST::AST,AST::Configurator> gamePair(parser.parse(), config); 
-  
-  
-  //auto [it, inserted] = 
-  games.insert({std::move(name), std::move(gamePair)});
- 
-  return; // {it->second, inserted};
+  auto config = AST::Configurator{json};
+  auto parser = AST::JSONToASTParser{json};
+  std::pair<AST::AST, AST::Configurator> gamePair(parser.parse(), config);
+  auto [it, inserted] = games.insert({std::move(name), std::move(gamePair)});
+
+  return inserted;
 }
 
 void GameManager::dispatch(const User &user, std::string message) {

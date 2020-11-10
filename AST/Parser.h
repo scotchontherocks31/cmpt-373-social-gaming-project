@@ -50,109 +50,63 @@ private:
   std::unique_ptr<ParallelFor> parseParallelFor(const Json &);
 };
 
+class Configurator {
+public:
+  Configurator(std::string json)
+      : json{nlohmann::json::parse(std::move(json))} {}
+  Environment createEnvironment(auto players) {
+    auto config = json[0]["configuration"];
+    auto enviro = Environment{nullptr};
+    DSLValue setUp{config["setup"]};
+    enviro.setBinding("configuration", setUp);
 
-class Configurator{
-  public:
-	Configurator(std::string json) : json{nlohmann::json::parse(std::move(json))}{
-    //initialize the json
-  }
-  Environment createEnvironment(auto players){  
-  auto config = json[0]["configuration"];
-  std::cout<<"NAME IS "<<config["name"]<<std::endl;
-    
-  auto enviro = Environment{nullptr};
-  // int roundsInt = config["setup"]["Rounds"];
-  // DSLValue rounds{roundsInt};
-  // enviro.setBinding(std::string{"Rounds"}, rounds);
-
-  //std::cout<<json.dump(4)<<std::endl;
-  std::cout<<"okaay\n"<<(config["setup"]).dump(4)<<std::endl;
-  DSLValue setUp{config["setup"]};
-  enviro.setBinding("configuration", setUp);
-
-  
-  // add the current members into the game
-  // have vector<int,std::string> (id and name)
-  
-  // std::vector<std::pair<int, std::string>> myVec (1, std::make_pair(0, "joe"));
-   auto perPlayer = json[0]["per-player"];
-   std::stringstream playerJson;
-   Json playerJsonObj;
-   for (auto i = players.begin(); i != players.end(); ++i){
-      std::cout <<"next player id : "<< i->first <<"nammme is: "<<i->second<<" \n";
+    // add the current members into the game
+    auto perPlayer = json[0]["per-player"];
+    std::stringstream playerJson;
+    Json playerJsonObj;
+    for (auto i = players.begin(); i != players.end(); ++i) {
       playerJson.str("");
-      playerJson << "{\"id\":"<<i->first<<",\"name\":\""<<i->second<<"\"";//,";
+      playerJson << "{\"id\":" << i->first << ",\"name\":\"" << i->second
+                 << "\""; //,";
       for (Json::iterator it = perPlayer.begin(); it != perPlayer.end(); ++it) {
-        playerJson << ",\""<<it.key()<<"\":"<<it.value()<<",";
+        playerJson << ",\"" << it.key() << "\":" << it.value() << ",";
       }
-      playerJson.seekp(-1,playerJson.cur); playerJson << '}';
-      auto playerJsonStr = playerJson.str();
-      playerJsonObj = Json::parse(playerJsonStr);
+      playerJson.seekp(-1, playerJson.cur);
+      playerJson << '}';
+      playerJsonObj = Json::parse(playerJson.str());
       enviro.setBinding(i->second, DSLValue{playerJsonObj});
-      
+    }
 
-   }
+    // add constants
+    Json constants = json[0]["constants"];
+    for (Json::iterator it = constants.begin(); it != constants.end(); ++it) {
+      enviro.setBinding(it.key(), it.value());
+    }
 
-    const std::string playerName = "106721347374288";
-    auto &&playerDSL = enviro.getValue(playerName);
-    //const Map &map
-    std::cout<<"testing player:  "<<playerDSL<<std::endl;
-    //std::cout<<"should be id 1:  "<<playerDSL["id"]<<std::endl;
-    //auto &&playerMap = playerDSL.get<std::map>();
-   
-    //std::cout<<"testing player :  "<<playerMap["name"]<<std::endl;
-
-      
-
-  //add constants
-
-  
-  Json constants = json[0]["constants"];
-
-  //std::cout<<constants.dump(4)<<std::endl;
-
-  for (Json::iterator it = constants.begin(); it != constants.end(); ++it) {
-    std::cout << it.key() << " : " << it.value() << "\n";
-    enviro.setBinding(it.key(), it.value());
+    // add variables
+    Json variables = json[0]["variables"];
+    for (Json::iterator it = variables.begin(); it != variables.end(); ++it) {
+      enviro.setBinding(it.key(), it.value());
+    }
+    return enviro;
   }
 
-  // testing constants
-  const std::string weap = "weapons";
-    auto &&weapDSL = enviro.getValue(weap);
-
-    std::cout<<"testing weap:  "<<weapDSL<<std::endl;
-
-  // add variables
-  Json variables = json[0]["variables"];
-  for (Json::iterator it = variables.begin(); it != variables.end(); ++it) {
-    std::cout << it.key() << " : " << it.value() << "\n";
-    enviro.setBinding(it.key(), it.value());
-  }
-  
-
-
-  return enviro;
-}
-
-
-void parseConstants(const Json &constJson){
-  // if map or list recursively parse
-  // else return DSL; int, string, bool, ect
-  // everthing needs to be DSL values?
-  
-}
-std::pair<int,int> getPlayerCount(){
+  std::pair<int, int> getPlayerCount() {
     auto config = json[0]["configuration"];
     auto playerMax = config["player count"]["max"];
     auto playerMin = config["player count"]["min"];
-    return {playerMin,playerMax};
-}
+    return {playerMin, playerMax};
+  }
 
+  bool hasAudience() {
+    auto config = json[0]["configuration"];
+    auto audience = config["audience"];
+    return audience;
+  }
 
-  private:
-    const Json json;
+private:
+  const Json json;
 };
-
 
 } // namespace AST
 
