@@ -70,7 +70,6 @@ TEST(ASTprinter, ParallelForandInput) {
 
   // retrieve print
   std::string output = printer.returnOutput();
-
   std::string answer =
       "(ParallelFor(Variable\"players\")(VarDeclaration\"player\")(Rules("
       "GlobalMessage(FormatNode \"Message One\"))(InputText(FormatNode \"How "
