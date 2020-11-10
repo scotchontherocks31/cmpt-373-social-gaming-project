@@ -52,9 +52,27 @@ std::vector<std::string> tokenizeCommand(std::string command) {
   return tokens;
 }
 
+std::map<string, GameServer::Command>  initializeCommandMap() {
+  std::map<string, GameServer::Command> strToCommandMap;
+  strToCommandMap["quit"] = GameServer::Command::QUIT;
+  strToCommandMap["shutdown"] = GameServer::Command::SHUTDOWN;
+  strToCommandMap["create"] = GameServer::Command::CREATE;
+  strToCommandMap["join"] = GameServer::Command::JOIN;
+  strToCommandMap["leave"] = GameServer::Command::LEAVE;
+  strToCommandMap["list"] = GameServer::Command::LIST;
+  strToCommandMap["info"] = GameServer::Command::INFO;
+  strToCommandMap["game"] = GameServer::Command::GAME;
+
+  return strToCommandMap;
+}
+
 GameServer::Command matchCommand(const std::string &command) {
+  if (strToCommandMap.find(command) == std::map::end) {
+    return GameServer::Command::UNKNOWN;
+  }
+  return strToCommandMap[command];
   // TODO: Use std::variant and std::visit to decouple these commands.
-  if (command == "quit") {
+  /*if (command == "quit") {
     return GameServer::Command::QUIT;
   }
   if (command == "shutdown") {
@@ -78,15 +96,16 @@ GameServer::Command matchCommand(const std::string &command) {
   if (command == "game") {
     return GameServer::Command::GAME;
   }
-  return GameServer::Command::UNKNOWN;
+  return GameServer::Command::UNKNOWN;*/
 }
 
 GameServer::GameServer(unsigned short port, std::string httpMessage)
     : server(
           port, std::move(httpMessage),
           [this](Connection c) { this->onConnect(c); },
-          [this](Connection c) { this->onDisconnect(c); }),
-      roomManager(), gameManager(*this, roomManager) {}
+          [this](Connection c) { this->onDisconnect(c); }
+          ),
+      roomManager(), gameManager(*this, roomManager), strToCommandMap(initializeCommandMap()) {}
 
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";

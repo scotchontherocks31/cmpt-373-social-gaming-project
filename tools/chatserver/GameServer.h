@@ -46,6 +46,7 @@ private:
   std::map<userid, User> users;
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
+  std::map<string, GameServer::Command> strToCommandMap;
   bool running = false;
   void onConnect(Connection c);
   void onDisconnect(Connection c);
