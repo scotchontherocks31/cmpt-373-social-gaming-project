@@ -90,7 +90,7 @@ class Environment {
 public:
   using Lexeme = std::string;
 
-private:
+private:~
   Environment *parent;
   std::unique_ptr<Environment> child;
   std::map<Lexeme, DSLValue> bindings;
@@ -216,20 +216,16 @@ private:
   void visitLeave(FormatNode &node){};
 
   void visitEnter(InputText &node){};
-  //A lot of help from Sarb
+  //A lot of help from Sarb and Ard 
   void visitLeave(InputText &node){
     const auto &prompt = node.getPrompt();
-    //const std::string &format = prompt.getFormat(); //guess it is extra here
-    const auto &variableNode = node.getTo(); // in order to the string you have use getLexeme() on the the variable node class
-    const auto player = environment.getValue(variableNode.getLexeme());//takes Player info from environment (mocked for now)
-    // player will have id/obj of that player (or already has but on a different branch)
-    auto &&resultVar = node.getResult();
-    auto &&result = communication.playerInput(prompt, player); //suppose to send gloada message about the palyer for the gameInstance class
-    //auto &&resultName = result.getLexeme(); // because we need string of varable name //do we?
-    
-    // result should be DSL value I think.
-    if (result.getLexeme() == NULL) {
-    	std::__n4861::suspend_always{};
+    const auto &&resultVar = node.getResult();
+    const auto &&variableNode = node.getTo(); 
+    const auto &&player = environment.getValue(variableNode.getLexeme());
+    const auto &&result = communication.playerInput(prompt, player);
+    while (result.getLexeme() == NULL) {
+    	suspend_always{};
+      const auto &&result = communication.playerInput(prompt, player);
     }
   	environment.setBinding(resultVar.getLexeme(), player);
   }
