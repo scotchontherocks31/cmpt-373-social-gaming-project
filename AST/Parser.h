@@ -5,6 +5,7 @@
 #include "ASTVisitor.h"
 #include "json.hpp"
 #include <memory>
+#include <sstream>
 using Json = nlohmann::json;
 
 namespace AST {
@@ -55,61 +56,80 @@ class Configurator{
 	Configurator(std::string json) : json{nlohmann::json::parse(std::move(json))}{
     //initialize the json
   }
-  Environment createEnvironment(std::vector<std::pair<int,std::string>> players){  
+  Environment createEnvironment(auto players){  
   auto config = json[0]["configuration"];
   std::cout<<"NAME IS "<<config["name"]<<std::endl;
-  
-  //const std::map<userid, User *> &getMembers() const { return members; }
-  
+    
   auto enviro = Environment{nullptr};
   // int roundsInt = config["setup"]["Rounds"];
   // DSLValue rounds{roundsInt};
   // enviro.setBinding(std::string{"Rounds"}, rounds);
 
-  DSLValue setUp{config["set-up"]};
+  //std::cout<<json.dump(4)<<std::endl;
+  std::cout<<"okaay\n"<<(config["setup"]).dump(4)<<std::endl;
+  DSLValue setUp{config["setup"]};
   enviro.setBinding("configuration", setUp);
 
   
   // add the current members into the game
   // have vector<int,std::string> (id and name)
-  /*
-  std::vector<std::pair<int, std::string>> myVec (1, std::make_pair(0, "joe"));
+  
+  // std::vector<std::pair<int, std::string>> myVec (1, std::make_pair(0, "joe"));
+   auto perPlayer = json[0]["per-player"];
+   std::stringstream playerJson;
+   Json playerJsonObj;
+   for (auto i = players.begin(); i != players.end(); ++i){
+      std::cout <<"next player id : "<< i->first <<"nammme is: "<<i->second<<" \n";
+      playerJson.str("");
+      playerJson << "{\"id\":"<<i->first<<",\"name\":\""<<i->second<<"\"";//,";
+      for (Json::iterator it = perPlayer.begin(); it != perPlayer.end(); ++it) {
+        playerJson << ",\""<<it.key()<<"\":"<<it.value()<<",";
+      }
+      playerJson.seekp(-1,playerJson.cur); playerJson << '}';
+      auto playerJsonStr = playerJson.str();
+      playerJsonObj = Json::parse(playerJsonStr);
+      enviro.setBinding(i->second, DSLValue{playerJsonObj});
+      
 
-   for (auto i = myVec.begin(); i != myVec.end(); ++i) 
-        std::cout << i->first << " "; 
-  */
+   }
 
+    const std::string playerName = "106721347374288";
+    auto &&playerDSL = enviro.getValue(playerName);
+    //const Map &map
+    std::cout<<"testing player:  "<<playerDSL<<std::endl;
+    //std::cout<<"should be id 1:  "<<playerDSL["id"]<<std::endl;
+    //auto &&playerMap = playerDSL.get<std::map>();
+   
+    //std::cout<<"testing player :  "<<playerMap["name"]<<std::endl;
 
+      
 
-  //add variables and constants
-    // need to recursively create DSL values
+  //add constants
 
-  /*
-  auto constants = json[0]["constants"];
-  DSLValue weapons{constants[0]};
-  enviro.setBinding("weapons",weapons );
-  */
+  
+  Json constants = json[0]["constants"];
 
+  //std::cout<<constants.dump(4)<<std::endl;
 
-
-  // auto config = json[0]["variables"];
-  // for variables
- /*
-  std::cout<<json.dump(4)<<std::endl;
-  auto constants = json[0]["constants"];
-  auto weaponsJson = constants["weapons"];
-  std::map<std::string,std::string> weapons;
-  std::string name ;
-  std::string beats;
-
-  for(auto weapon:weaponsJson){
-    std::cout<<weapon["name"]<<std::endl;
-    name = weapon["name"];
-    beats = weapon["beats"];
-    weapons.insert({std::move(name),std::move(beats)});
+  for (Json::iterator it = constants.begin(); it != constants.end(); ++it) {
+    std::cout << it.key() << " : " << it.value() << "\n";
+    enviro.setBinding(it.key(), it.value());
   }
-  std::cout<<"paper?"<<weapons["Scissors"]<<std::endl;
-  */
+
+  // testing constants
+  const std::string weap = "weapons";
+    auto &&weapDSL = enviro.getValue(weap);
+
+    std::cout<<"testing weap:  "<<weapDSL<<std::endl;
+
+  // add variables
+  Json variables = json[0]["variables"];
+  for (Json::iterator it = variables.begin(); it != variables.end(); ++it) {
+    std::cout << it.key() << " : " << it.value() << "\n";
+    enviro.setBinding(it.key(), it.value());
+  }
+  
+
 
   return enviro;
 }

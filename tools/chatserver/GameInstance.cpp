@@ -54,6 +54,7 @@ void GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
   auto players = this->getPlayers();
   auto playersTran = players  | std::views::transform([](Player player){ return std::pair<int,std::string>{player.id,player.name} ; });
   std::vector<std::pair<int,std::string>> playersInfo(playersTran.begin(),playersTran.end());
+  
   AST::Environment env = config.createEnvironment(playersInfo);
   //const std::map<userid, User *> &getMembers() const { return members; }
   (this->interpreter).reset();
