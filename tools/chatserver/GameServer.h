@@ -47,7 +47,7 @@ private:
   std::map<userid, User> users;
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
-  std::map<string, Command> strToCommandMap;
+  std::map<std::string, Command> strToCommandMap;
   std::map<Command, std::function> commandToFunctionMap;
   bool running = false;
   void onConnect(Connection c);

@@ -54,8 +54,8 @@ std::vector<std::string> tokenizeCommand(std::string command) {
   return tokens;
 }
 
-std::map<string, GameServer::Command>  initializeCommandMap() {
-  std::map<string, GameServer::Command> strToCommandMap;
+std::map<std::string, GameServer::Command>  initializeCommandMap() {
+  std::map<std::string, GameServer::Command> strToCommandMap;
   strToCommandMap["quit"] = GameServer::Command::QUIT;
   strToCommandMap["shutdown"] = GameServer::Command::SHUTDOWN;
   strToCommandMap["create"] = GameServer::Command::CREATE;
