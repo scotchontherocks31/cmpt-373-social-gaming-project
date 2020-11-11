@@ -10,6 +10,7 @@
 using networking::Connection;
 using networking::Message;
 using networking::Server;
+using functionType = std::ostringstream(User, std::vector<std::string>);
 
 /// Tokenize raw command string.
 ///
@@ -151,20 +152,20 @@ void GameServer::processMessages() {
   }
 }
 
-std::map<GameServer::Command, std::function>  initializeFunctionMap() {
+std::map<GameServer::Command, std::function<functionType>>  initializeFunctionMap() {
   std::ostringstream output; //for the output from the function bellow
-  std::function<std::ostringstream> quitFunc = [](User &user, std::vector<std::string> token) { //some functions don't need the inputs, however all of them take it for convinience of the user
+  std::function<functionType> quitFunc = [](User &user, std::vector<std::string> token) { //some functions don't need the inputs, however all of them take it for convinience of the user
     server.disconnect(user.connection);
     output << "Server disconnected";
     return output;
   };
-  std::function<std::ostringstream> shutdownFunc = [](User &user, std::vector<std::string> token) {
+  std::function<functionType> shutdownFunc = [](User &user, std::vector<std::string> token) {
     std::cout << "Shutting down.\n";
     running = false;
     output << "Shutting down";
     return output;
   };
-  std::function<std::ostringstream> createFunc = [](User &user, std::vector<std::string> token) {
+  std::function<functionType> createFunc = [](User &user, std::vector<std::string> token) {
     auto [roomPtr, created] =
         roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
     if (created) {
@@ -174,7 +175,7 @@ std::map<GameServer::Command, std::function>  initializeFunctionMap() {
     }
     return output;
   };
-  std::function<std::ostringstream> joinFunc = [](User &user, std::vector<std::string> token) {
+  std::function<functionType> joinFunc = [](User &user, std::vector<std::string> token) {
     if (tokens.size() >= 2) {
       if (roomManager.putUserToRoom(user, tokens[1])) {
         output << "Joining room \""
@@ -186,27 +187,27 @@ std::map<GameServer::Command, std::function>  initializeFunctionMap() {
     else output << "Token size is less than 2!";
     return output;
   };
-  std::function<std::ostringstream> leaveFunc = [](User &user, std::vector<std::string> token) {
+  std::function<functionType> leaveFunc = [](User &user, std::vector<std::string> token) {
     roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
     output << "Leaving room \"" << roomManager.getRoomFromUser(user).getName() << "\"...\n";
     return output;
   };
-  std::function<std::ostringstream> listFunc = [](User &user, std::vector<std::string> token) {
+  std::function<functionType> listFunc = [](User &user, std::vector<std::string> token) {
     output << roomManager.listRoomsInfo();
     return output;
   };
-  std::function<std::ostringstream> infoFunc = [](User &user, std::vector<std::string> token) {
+  std::function<functionType> infoFunc = [](User &user, std::vector<std::string> token) {
     auto &room = roomManager.getRoomFromUser(user);
     output << "Your name is: " << user.name << "\n"
            << "You are in room: " << room.getName() << " ("
            << room.getCurrentSize() << "/" << room.getCapacity() << ")\n";
     return output;
   };
-  std::function<std::ostringstream> gameFunc = [](User &user, std::vector<std::string> token) {
+  std::function<functionType> gameFunc = [](User &user, std::vector<std::string> token) {
     output << processGameCommand(user, tokens);
   };
 
-  std::map<GameServer::Command, std::function<std::ostringstream(User, std::vector<std::string>)>> commandToFunctionMap;
+  std::map<GameServer::Command, std::function<functionType>> commandToFunctionMap;
   commandToFunctionMap[GameServer::Command::QUIT] = quitFunc;
   commandToFunctionMap[GameServer::Command::SHUTDOWN] = shutdownFunc;
   commandToFunctionMap[GameServer::Command::CREATE] = createFunc;
