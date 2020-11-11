@@ -55,7 +55,8 @@ public:
   Configurator(std::string json)
       : json{nlohmann::json::parse(std::move(json))} {}
 
-  Environment createEnvironment(std::vector<std::pair<int, std::string>> players);
+  Environment
+  createEnvironment(std::vector<std::pair<int, std::string>> players);
   std::pair<int, int> getPlayerCount();
   bool hasAudience();
 
