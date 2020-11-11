@@ -51,6 +51,8 @@ private:
   std::map<std::string, Command> strToCommandMap;
   std::map<GameServer::Command, std::function<functionType>> commandToFunctionMap;
   bool running = false;
+  std::map<std::string, GameServer::Command>  initializeCommandMap();
+  std::map<GameServer::Command, std::function<functionType>>  initializeFunctionMap();
   void onConnect(Connection c);
   void onDisconnect(Connection c);
   void processMessages();
@@ -59,4 +61,5 @@ private:
                                  std::vector<std::string> &tokens);
   User &getUser(Connection connection) { return users.at(connection.id); }
   void flush();
+
 };
