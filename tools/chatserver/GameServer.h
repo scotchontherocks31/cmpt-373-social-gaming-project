@@ -47,8 +47,8 @@ private:
   std::map<userid, User> users;
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
-  std::map<string, GameServer::Command> strToCommandMap;
-  std::map<GameServer::Command, std::function> commandToFunctionMap;
+  std::map<string, Command> strToCommandMap;
+  std::map<Command, std::function> commandToFunctionMap;
   bool running = false;
   void onConnect(Connection c);
   void onDisconnect(Connection c);
