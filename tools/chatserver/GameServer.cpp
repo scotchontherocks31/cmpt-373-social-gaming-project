@@ -206,7 +206,7 @@ std::map<GameServer::Command, std::function>  initializeFunctionMap() {
     output << processGameCommand(user, tokens);
   };
 
-  std::map<GameServer::Command, std::function> commandToFunctionMap;
+  std::map<GameServer::Command, std::function<std::ostringstream(User, std::vector<std::string>)>> commandToFunctionMap;
   commandToFunctionMap[GameServer::Command::QUIT] = quitFunc;
   commandToFunctionMap[GameServer::Command::SHUTDOWN] = shutdownFunc;
   commandToFunctionMap[GameServer::Command::CREATE] = createFunc;

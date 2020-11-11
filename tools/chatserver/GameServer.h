@@ -48,7 +48,7 @@ private:
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
   std::map<std::string, Command> strToCommandMap;
-  std::map<Command, std::function> commandToFunctionMap;
+  std::map<GameServer::Command, std::function<std::ostringstream(User, std::vector<std::string>)>> commandToFunctionMap;
   bool running = false;
   void onConnect(Connection c);
   void onDisconnect(Connection c);
