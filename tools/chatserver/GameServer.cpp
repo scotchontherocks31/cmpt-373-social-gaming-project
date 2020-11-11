@@ -81,7 +81,8 @@ GameServer::GameServer(unsigned short port, std::string httpMessage)
           [this](Connection c) { this->onConnect(c); },
           [this](Connection c) { this->onDisconnect(c); }
           ),
-      roomManager(), gameManager(*this, roomManager), strToCommandMap(initializeCommandMap()) {}
+      roomManager(), gameManager(*this, roomManager),
+      strToCommandMap(initializeCommandMap()), commandToFunctionMap(initializeFunctionMap()) ) {}
 
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";
@@ -152,18 +153,18 @@ void GameServer::processMessages() {
 
 std::map<GameServer::Command, std::function>  initializeFunctionMap() {
   std::ostringstream output; //for the output from the function bellow
-  std::function<std::ostringstream> quitFunc = []() {
+  std::function<std::ostringstream> quitFunc = [](User &user, std::vector<std::string> token) { //some functions don't need the inputs, however all of them take it for convinience of the user
     server.disconnect(user.connection);
     output << "Server disconnected";
     return output;
   };
-  std::function<std::ostringstream> shutdownFunc = []() {
+  std::function<std::ostringstream> shutdownFunc = [](User &user, std::vector<std::string> token) {
     std::cout << "Shutting down.\n";
     running = false;
     output << "Shutting down";
     return output;
   };
-  std::function<std::ostringstream> createFunc = []() {
+  std::function<std::ostringstream> createFunc = [](User &user, std::vector<std::string> token) {
     auto [roomPtr, created] =
         roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
     if (created) {
@@ -173,7 +174,7 @@ std::map<GameServer::Command, std::function>  initializeFunctionMap() {
     }
     return output;
   };
-  std::function<std::ostringstream> joinFunc = []() {
+  std::function<std::ostringstream> joinFunc = [](User &user, std::vector<std::string> token) {
     if (tokens.size() >= 2) {
       if (roomManager.putUserToRoom(user, tokens[1])) {
         output << "Joining room \""
@@ -185,45 +186,48 @@ std::map<GameServer::Command, std::function>  initializeFunctionMap() {
     else output << "Token size is less than 2!";
     return output;
   };
-  std::function<std::ostringstream> leaveFunc = []() {
+  std::function<std::ostringstream> leaveFunc = [](User &user, std::vector<std::string> token) {
     roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
     output << "Leaving room \"" << roomManager.getRoomFromUser(user).getName() << "\"...\n";
     return output;
   };
-  std::function<std::ostringstream> listFunc = []() {
+  std::function<std::ostringstream> listFunc = [](User &user, std::vector<std::string> token) {
     output << roomManager.listRoomsInfo();
     return output;
   };
-  std::function<std::ostringstream> infoFunc = []() {
+  std::function<std::ostringstream> infoFunc = [](User &user, std::vector<std::string> token) {
     auto &room = roomManager.getRoomFromUser(user);
     output << "Your name is: " << user.name << "\n"
            << "You are in room: " << room.getName() << " ("
            << room.getCurrentSize() << "/" << room.getCapacity() << ")\n";
     return output;
   };
-  std::function<std::ostringstream> gameFunc = []() {
+  std::function<std::ostringstream> gameFunc = [](User &user, std::vector<std::string> token) {
     output << processGameCommand(user, tokens);
   };
 
   std::map<GameServer::Command, std::function> commandToFunctionMap;
-  commandToFunctionMap[GameServer::Command::QUIT] = ;
-  commandToFunctionMap[GameServer::Command::SHUTDOWN] = ;
-  commandToFunctionMap[GameServer::Command::CREATE] = ;
-  commandToFunctionMap[GameServer::Command::JOIN] = ;
-  commandToFunctionMap[GameServer::Command::LEAVE] = ;
-  commandToFunctionMap[GameServer::Command::LIST] = ;
-  commandToFunctionMap[GameServer::Command::INFO] = ;
-  commandToFunctionMap[GameServer::Command::GAME] = ;
+  commandToFunctionMap[GameServer::Command::QUIT] = quitFunc;
+  commandToFunctionMap[GameServer::Command::SHUTDOWN] = shutdownFunc;
+  commandToFunctionMap[GameServer::Command::CREATE] = createFunc;
+  commandToFunctionMap[GameServer::Command::JOIN] = joinFunc;
+  commandToFunctionMap[GameServer::Command::LEAVE] = leaveFunc;
+  commandToFunctionMap[GameServer::Command::LIST] = listFunc;
+  commandToFunctionMap[GameServer::Command::INFO] = infoFunc;
+  commandToFunctionMap[GameServer::Command::GAME] = gameFunc;
 
   return commandToFunctionMap;
 }
 
 std::string GameServer::processCommand(User &user, std::string rawCommand) {
-  std::ostringstream output;
   // tokenize command
   auto tokens = tokenizeCommand(std::move(rawCommand));
   auto command = matchCommand(tokens[0]);
 
+  std::function func = commandToFunctionMap[command];
+  std::ostringstream output = func(user, token);
+
+  return output.str();
   /*switch (command) {
   case QUIT:
     server.disconnect(user.connection);
