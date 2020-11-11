@@ -6,6 +6,7 @@
 #include <deque>
 #include <map>
 #include <string>
+#include <functional>
 
 using networking::Connection;
 using networking::Message;

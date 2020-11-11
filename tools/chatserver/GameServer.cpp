@@ -5,6 +5,8 @@
 #include <iterator>
 #include <sstream>
 #include <unistd.h>
+#include <map>
+#include <functional>
 using networking::Connection;
 using networking::Message;
 using networking::Server;
@@ -17,7 +19,7 @@ using networking::Server;
 /// Everything after " -- " is considered a token:
 /// json -- {"id": 1, "color": "red"} -> ["json", "{"id": 1, "color": "red"}"]
 std::vector<std::string> tokenizeCommand(std::string command) {
-  constexpr auto WHOLE_STRING_SEPARATOR = " -- ";
+  constexpr auto WHOLE_STRING_SEPARATOR = " -- "; //could it be replaced with just  const?
   std::vector<std::string> tokens;
 
   std::string wholeStr;
@@ -71,32 +73,6 @@ GameServer::Command matchCommand(const std::string &command) {
     return GameServer::Command::UNKNOWN;
   }
   return strToCommandMap[command];
-  // TODO: Use std::variant and std::visit to decouple these commands.
-  /*if (command == "quit") {
-    return GameServer::Command::QUIT;
-  }
-  if (command == "shutdown") {
-    return GameServer::Command::SHUTDOWN;
-  }
-  if (command == "create") {
-    return GameServer::Command::CREATE;
-  }
-  if (command == "join") {
-    return GameServer::Command::JOIN;
-  }
-  if (command == "leave") {
-    return GameServer::Command::LEAVE;
-  }
-  if (command == "list") {
-    return GameServer::Command::LIST;
-  }
-  if (command == "info") {
-    return GameServer::Command::INFO;
-  }
-  if (command == "game") {
-    return GameServer::Command::GAME;
-  }
-  return GameServer::Command::UNKNOWN;*/
 }
 
 GameServer::GameServer(unsigned short port, std::string httpMessage)
@@ -174,13 +150,81 @@ void GameServer::processMessages() {
   }
 }
 
+std::map<GameServer::Command, std::function>  initializeFunctionMap() {
+  std::ostringstream output; //for the output from the function bellow
+  std::function<std::ostringstream> quitFunc = []() {
+    server.disconnect(user.connection);
+    output << "Server disconnected";
+    return output;
+  };
+  std::function<std::ostringstream> shutdownFunc = []() {
+    std::cout << "Shutting down.\n";
+    running = false;
+    output << "Shutting down";
+    return output;
+  };
+  std::function<std::ostringstream> createFunc = []() {
+    auto [roomPtr, created] =
+        roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
+    if (created) {
+      output << "Creating room \"" << roomPtr->getName() << "\"...\n";
+    } else {
+      output << "Room already existed.\n";
+    }
+    return output;
+  };
+  std::function<std::ostringstream> joinFunc = []() {
+    if (tokens.size() >= 2) {
+      if (roomManager.putUserToRoom(user, tokens[1])) {
+        output << "Joining room \""
+               << roomManager.getRoomFromUser(user).getName() << "\"...\n";
+      } else {
+        output << "Failed to join room.";
+      }
+    }
+    else output << "Token size is less than 2!";
+    return output;
+  };
+  std::function<std::ostringstream> leaveFunc = []() {
+    roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
+    output << "Leaving room \"" << roomManager.getRoomFromUser(user).getName() << "\"...\n";
+    return output;
+  };
+  std::function<std::ostringstream> listFunc = []() {
+    output << roomManager.listRoomsInfo();
+    return output;
+  };
+  std::function<std::ostringstream> infoFunc = []() {
+    auto &room = roomManager.getRoomFromUser(user);
+    output << "Your name is: " << user.name << "\n"
+           << "You are in room: " << room.getName() << " ("
+           << room.getCurrentSize() << "/" << room.getCapacity() << ")\n";
+    return output;
+  };
+  std::function<std::ostringstream> gameFunc = []() {
+    output << processGameCommand(user, tokens);
+  };
+
+  std::map<GameServer::Command, std::function> commandToFunctionMap;
+  commandToFunctionMap[GameServer::Command::QUIT] = ;
+  commandToFunctionMap[GameServer::Command::SHUTDOWN] = ;
+  commandToFunctionMap[GameServer::Command::CREATE] = ;
+  commandToFunctionMap[GameServer::Command::JOIN] = ;
+  commandToFunctionMap[GameServer::Command::LEAVE] = ;
+  commandToFunctionMap[GameServer::Command::LIST] = ;
+  commandToFunctionMap[GameServer::Command::INFO] = ;
+  commandToFunctionMap[GameServer::Command::GAME] = ;
+
+  return commandToFunctionMap;
+}
+
 std::string GameServer::processCommand(User &user, std::string rawCommand) {
   std::ostringstream output;
   // tokenize command
   auto tokens = tokenizeCommand(std::move(rawCommand));
   auto command = matchCommand(tokens[0]);
 
-  switch (command) {
+  /*switch (command) {
   case QUIT:
     server.disconnect(user.connection);
     break;
@@ -242,7 +286,7 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
     output << "Command \'" << tokens[0] << "\" is not yet implemented.";
     break;
   }
-  return output.str();
+  return output.str();*/
 }
 
 std::string GameServer::processGameCommand(const User &user,
