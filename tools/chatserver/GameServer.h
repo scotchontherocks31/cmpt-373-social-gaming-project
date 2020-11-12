@@ -32,10 +32,13 @@ public:
     LIST,
     INFO,
     GAME,
-    UNKNOWN,
-    CRT, //Stands for CREATE, but the CREATE creates conflicts with something, so...
+    UNKNOWN
+  };
+  enum GameCommand {
+    CREATE, 
     START,
-    CLEAN
+    CLEAN,
+    UNKNOWN
   };
 
   GameServer(unsigned short port, std::string httpMessage);
@@ -52,9 +55,12 @@ private:
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
   std::map<std::string, GameServer::Command> strToCommandMap;
+  std::map<std::string, GameServer::Command> strToGameCommandMap;
   std::map<GameServer::Command, std::function<functionType>> commandToFunctionMap;
+  std::map<GameServer::Command, std::function<functionType>> commandToGameFunctionMap;
   bool running = false;
   std::map<GameServer::Command, std::function<functionType>>  initializeFunctionMap();
+  std::map<GameServer::Command, std::function<functionType>>  initializeGameFunctionMap();
   void onConnect(Connection c);
   void onDisconnect(Connection c);
   void processMessages();
@@ -67,10 +73,11 @@ private:
 };
 
 class GameCommands {
-  private:
+  public:
     //std::map<std::string, GameServer::Command> strToCommandMap;
     std::map<std::string, GameServer::Command>  initializeCommandMap();
-  public:
-    std::map<std::string, GameServer::Command> getMap();
-    void add(std::string, GameServer::Command);
+    std::map<std::string, GameServer::GCommand>  initializeGameCommandMap();
+  //public: //TODO is it even required?
+    //std::map<std::string, GameServer::Command> getMap();
+    //void add(std::string, GameServer::Command);
 };
