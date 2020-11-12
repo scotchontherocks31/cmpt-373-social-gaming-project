@@ -11,5 +11,5 @@ set_target_properties(AST
 target_include_directories(AST INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 target_link_libraries(AST 
-    task json
+    task json PEGParser
 )

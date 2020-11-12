@@ -1,13 +1,8 @@
-// C++ program for expression tree
-#include<bits/stdc++.h>
-using namespace std;
+#include <peg_parser/generator.h>
 
-// The initial code from https://www.geeksforgeeks.org/expression-tree/
+#include <cmath>
+#include <iostream>
+#include <unordered_map>
+#include <vector>
 
-parseExpression(std::string){
-    // BinaryOperation(left, right, operator)
-    // !players.elements.weapon =
-    // BinaryOperation(players , elements, dot)
-    // BinaryOperation(prevOperation, weapon)
-    // UnaryOperation(prevOperation, dot)
-}
+std::vector<std::string> parseExpression(std::string str);

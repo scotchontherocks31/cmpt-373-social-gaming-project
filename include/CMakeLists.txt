@@ -15,3 +15,11 @@ FetchContent_Declare(
   GIT_TAG release-1.10.0
 )
 FetchContent_MakeAvailable(googletest)
+
+include(FetchContent)
+FetchContent_Declare(
+  PEGParser
+  GIT_REPOSITORY https://github.com/TheLartians/PEGParser.git
+  GIT_TAG v2.0
+)
+FetchContent_MakeAvailable(PEGParser)
