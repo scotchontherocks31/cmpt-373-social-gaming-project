@@ -10,7 +10,7 @@ build:
         - cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -H. -B./build -G "Unix Makefiles"
         - cmake --build ./build
     artifacts:
-        expire_in: 10 mins
+        expire_in: 30 mins
         paths:
             - build/
 
