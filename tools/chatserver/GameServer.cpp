@@ -246,7 +246,7 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
 
 std::map<std::string, GameServer::Command>  GameCommands::initializeGameCommandMap() {
   std::map<std::string, GameServer::GameCommand> strToGameCommandMap;
-  strToCommandMap["create"] = GameServer::GCommand::CRT;
+  strToCommandMap["create"] = GameServer::GCommand::CREATE_GAME;
   strToCommandMap["start"] = GameServer::GCommand::START;
   strToCommandMap["clean"] = GameServer::GCommand::CLEAN;
 
@@ -285,7 +285,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
 
   std::map<GameServer::GameCommand, std::function<functionType>> commandToGameFunctionMap;
 
-  commandToGameFunctionMap[GameServer::GameCommand::CRT] = createFunc;
+  commandToGameFunctionMap[GameServer::GameCommand::CREATE_GAME] = createFunc;
   commandToGameFunctionMap[GameServer::GameCommand::START] = startFunc;
   commandToGameFunctionMap[GameServer::GameCommand::CLEAN] = cleanFunc;
   return commandGameToFunctionMap;
@@ -293,7 +293,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
 
 GameServer::GameCommand matchGameCommand(const std::string &command) {
   if (GameServer::strToGameCommandMap.find(command) == GameServer::strToGameCommandMap.end) {
-    return GameServer::GameCommand::UNKNOWN;
+    return GameServer::GameCommand::UNKNOWN_GAME;
   }
   return GameServer::strToGameCommandMap[command];
 }

@@ -35,10 +35,10 @@ public:
     UNKNOWN
   };
   enum GameCommand {
-    CREATE, 
+    CREATE_GAME, 
     START,
     CLEAN,
-    UNKNOWN
+    UNKNOWN_GAME
   };
 
   GameServer(unsigned short port, std::string httpMessage);
@@ -74,9 +74,8 @@ private:
 
 class GameCommands {
   public:
-    //std::map<std::string, GameServer::Command> strToCommandMap;
     std::map<std::string, GameServer::Command>  initializeCommandMap();
-    std::map<std::string, GameServer::GCommand>  initializeGameCommandMap();
+    std::map<std::string, GameServer::GameCommand>  initializeGameCommandMap();
   //public: //TODO is it even required?
     //std::map<std::string, GameServer::Command> getMap();
     //void add(std::string, GameServer::Command);
