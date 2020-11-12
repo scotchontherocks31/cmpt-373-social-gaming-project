@@ -72,4 +72,4 @@ class GameCommands {
   public:
     std::map<std::string, GameServer::Command> getMap();
     void add(std::string, GameServer::Command);
-}
+};
