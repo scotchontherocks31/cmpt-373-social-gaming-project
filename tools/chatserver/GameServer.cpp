@@ -10,7 +10,7 @@
 using networking::Connection;
 using networking::Message;
 using networking::Server;
-using functionType = std::ostringstream(User&, std::vector<std::string>&);
+using functionType = (User&, std::vector<std::string>&);
 
 /// Tokenize raw command string.
 ///
@@ -73,10 +73,10 @@ std::map<std::string, GameServer::Command>  GameCommands::initializeCommandMap()
 }
 
 GameServer::Command matchCommand(const std::string &command) {
-  if (strToCommandMap.find(command) == std::map<std::string, GameServer::Command>::end) {
+  if (GameServer::strToCommandMap.find(command) == std::map<std::string, GameServer::Command>::end) {
     return GameServer::Command::UNKNOWN;
   }
-  return strToCommandMap[command];
+  return GameServer::strToCommandMap[command];
 }
 
 GameServer::GameServer(unsigned short port, std::string httpMessage)
@@ -86,7 +86,7 @@ GameServer::GameServer(unsigned short port, std::string httpMessage)
           [this](Connection c) { this->onDisconnect(c); }
           ),
       roomManager(), gameManager(*this, roomManager),
-      strToCommandMap(GameCommands::initializeCommandMap()),
+      strToCommandMap(GameCommands::initializeCommandMap()), //TODO initialize correctly
       commandToFunctionMap(initializeFunctionMap())  {}
 
 void GameServer::onConnect(Connection c) {
@@ -160,7 +160,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
   std::function<functionType> quitFunc = [this](User &user, std::vector<std::string> tokens) { //some functions don't need the inputs, however all of them take it for convinience of the user
     std::string output;
     this->server.disconnect(user.connection);
-    output = "Server KINDA, BUT NOT REALLY disconnected\n";
+    output = "Server disconnected\n";
     return output;
   };
   std::function<functionType> shutdownFunc = [this](User &user, std::vector<std::string> tokens) {

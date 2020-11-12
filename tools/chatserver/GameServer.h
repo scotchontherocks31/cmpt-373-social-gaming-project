@@ -11,7 +11,7 @@
 using networking::Connection;
 using networking::Message;
 using networking::Server;
-using functionType = std::ostringstream(User&, std::vector<std::string>&);
+using functionType = (User&, std::vector<std::string>&);
 
 struct DecoratedMessage {
   const User &user;
