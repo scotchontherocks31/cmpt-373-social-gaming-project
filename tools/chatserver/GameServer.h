@@ -70,6 +70,6 @@ class GameCommands {
     std::map<std::string, GameServer::Command> strToCommandMap;
     std::map<std::string, GameServer::Command>  initializeCommandMap();
   public:
-    std::map<std::string, Command> getMap();
-    void add(std::string, Command);
+    std::map<std::string, GameServer::Command> getMap();
+    void add(std::string, GameServer::Command);
 }

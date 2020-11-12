@@ -386,9 +386,9 @@ void GameServer::sendMessageToRoom(const Room &room, std::string message) {
   }
 }
 
-std::map<std::string, Command> getMap() {
+std::map<std::string, GameServer::Command> getMap() {
   return strToCommandMap;
 }
-void add(std::string key, Command comm) {
+void add(std::string key, GameServer::Command comm) {
   strToCommandMap[key] = comm;
 }
