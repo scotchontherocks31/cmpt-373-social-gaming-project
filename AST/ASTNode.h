@@ -137,9 +137,7 @@ public:
   VarDeclaration &getElementName() const {
     return *static_cast<VarDeclaration *>(children[1].get());
   }
-  Rules &getRules() const {
-    return *static_cast<Rules *>(children[2].get());
-  }
+  Rules &getRules() const { return *static_cast<Rules *>(children[2].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
