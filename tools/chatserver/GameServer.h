@@ -51,6 +51,7 @@ private:
   std::map<userid, User> users;
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
+  std::map<std::string, GameServer::Command> strToCommandMap;
   std::map<GameServer::Command, std::function<functionType>> commandToFunctionMap;
   bool running = false;
   std::map<GameServer::Command, std::function<functionType>>  initializeFunctionMap();
@@ -67,7 +68,7 @@ private:
 
 class GameCommands {
   private:
-    std::map<std::string, GameServer::Command> strToCommandMap;
+    //std::map<std::string, GameServer::Command> strToCommandMap;
     std::map<std::string, GameServer::Command>  initializeCommandMap();
   public:
     std::map<std::string, GameServer::Command> getMap();

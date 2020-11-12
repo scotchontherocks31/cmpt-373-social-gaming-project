@@ -86,7 +86,8 @@ GameServer::GameServer(unsigned short port, std::string httpMessage)
           [this](Connection c) { this->onDisconnect(c); }
           ),
       roomManager(), gameManager(*this, roomManager),
-       commandToFunctionMap(initializeFunctionMap())  {}
+      strToCommandMap(GameCommands::initializeCommandMap()),
+      commandToFunctionMap(initializeFunctionMap())  {}
 
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";
