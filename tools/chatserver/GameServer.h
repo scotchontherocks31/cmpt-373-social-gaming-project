@@ -33,7 +33,7 @@ public:
     INFO,
     GAME,
     UNKNOWN,
-    CREATE,
+    CRT, //Stands for CREATE, but the CREATE creates conflicts with something, so...
     START,
     CLEAN
   };
@@ -67,7 +67,7 @@ private:
 
 class GameCommands {
   private:
-    std::map<std::string, Command> strToCommandMap;
+    std::map<std::string, GameServer::Command> strToCommandMap;
     std::map<std::string, GameServer::Command>  initializeCommandMap();
   public:
     std::map<std::string, Command> getMap();

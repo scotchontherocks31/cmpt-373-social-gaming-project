@@ -65,7 +65,7 @@ std::map<std::string, GameServer::Command>  GameCommands::initializeCommandMap()
   strToCommandMap["list"] = GameServer::Command::LIST;
   strToCommandMap["info"] = GameServer::Command::INFO;
   strToCommandMap["game"] = GameServer::Command::GAME;
-  strToCommandMap["create"] = GameServer::Command::CREATE;
+  strToCommandMap["create"] = GameServer::Command::CRT;
   strToCommandMap["start"] = GameServer::Command::START;
   strToCommandMap["clean"] = GameServer::Command::CLEAN;
 
@@ -255,7 +255,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
   commandToFunctionMap[GameServer::Command::INFO] = infoFunc;
   commandToFunctionMap[GameServer::Command::GAME] = gameFunc;
   commandToFunctionMap[GameServer::Command::LEAVE] = leaveFunc;
-  commandToFunctionMap[GameServer::Command::CREATE] = createFunc;
+  commandToFunctionMap[GameServer::Command::CRT] = createFunc;
   commandToFunctionMap[GameServer::Command::START] = startFunc;
   commandToFunctionMap[GameServer::Command::CLEAN] = cleanFunc;
   return commandToFunctionMap;
