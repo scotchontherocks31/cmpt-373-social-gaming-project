@@ -11,7 +11,7 @@
 using networking::Connection;
 using networking::Message;
 using networking::Server;
-using functionType = std::ostringstream(User, std::vector<std::string>);
+using functionType = std::ostringstream(User&, std::vector<std::string>&);
 
 struct DecoratedMessage {
   const User &user;
@@ -32,7 +32,10 @@ public:
     LIST,
     INFO,
     GAME,
-    UNKNOWN
+    UNKNOWN,
+    CREATE,
+    START,
+    CLEAN
   };
 
   GameServer(unsigned short port, std::string httpMessage);
@@ -48,10 +51,8 @@ private:
   std::map<userid, User> users;
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
-  std::map<std::string, Command> strToCommandMap;
   std::map<GameServer::Command, std::function<functionType>> commandToFunctionMap;
   bool running = false;
-  std::map<std::string, GameServer::Command>  initializeCommandMap();
   std::map<GameServer::Command, std::function<functionType>>  initializeFunctionMap();
   void onConnect(Connection c);
   void onDisconnect(Connection c);
@@ -63,3 +64,12 @@ private:
   void flush();
 
 };
+
+class GameCommands {
+  private:
+    std::map<std::string, Command> strToCommandMap;
+    std::map<std::string, GameServer::Command>  initializeCommandMap();
+  public:
+    std::map<std::string, Command> getMap();
+    void add(std::string, Command);
+}
