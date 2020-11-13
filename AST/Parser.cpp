@@ -9,6 +9,10 @@ AST JSONToASTParser::parseHelper() { return AST{parseRules(json[0]["rules"])}; }
 std::unique_ptr<Rules> JSONToASTParser::parseRules(const Json &json) {
 
   auto rulePtr = std::make_unique<Rules>();
+
+  if(json.empty())
+    return rulePtr;
+  
   for (const auto &rule : json) {
     auto &&x = parseRule(rule);
     rulePtr->appendChild(std::move(x));
@@ -27,23 +31,37 @@ std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
   }
 }
 
-std::unique_ptr<FormatNode> JSONToASTParser::parseFormatNode(const Json &json) {
+std::unique_ptr<FormatNode> JSONToASTParser::parseFormatNode(const std::string &str) {
 
-  return std::make_unique<FormatNode>(json["value"]);
+  return std::make_unique<FormatNode>(std::move(str));
+}
+
+std::unique_ptr<Message> JSONToASTParser::parseMessage(const Json &json){
+
+  auto &&to = parseVarDeclaration(json["to"]);
+  auto &&value = parseFormatNode(json["value"]);
+  return std::make_unique<Message>(std::move(to), std::move(value));
 }
 
 std::unique_ptr<GlobalMessage>
 JSONToASTParser::parseGlobalMessage(const Json &json) {
 
-  auto &&format = parseFormatNode(json);
+  auto &&format = parseFormatNode(json["value"]);
   return std::make_unique<GlobalMessage>(std::move(format));
+}
+
+std::unique_ptr<Scores> JSONToASTParser::parseScores(const Json &json){
+
+  auto &&score = parseIntContainer(json["score"]);
+  auto &&ascending = parseCondition(json["ascending"]);
+  return std::make_unique<Scores>(std::move(score), std::move(ascending));
 }
 
 std::unique_ptr<ParallelFor>
 JSONToASTParser::parseParallelFor(const Json &json) {
 
-  auto &&var = parseVariable(json);
-  auto &&varDec = parseVarDeclaration(json);
+  auto &&var = parseVariable(json["list"]);
+  auto &&varDec = parseVarDeclaration(json["element"]);
   auto &&rules = parseRules(json["rules"]);
 
   return std::make_unique<ParallelFor>(std::move(var), std::move(varDec),
@@ -51,13 +69,216 @@ JSONToASTParser::parseParallelFor(const Json &json) {
 }
 
 std::unique_ptr<VarDeclaration>
-JSONToASTParser::parseVarDeclaration(const Json &json) {
+JSONToASTParser::parseVarDeclaration(const std::string &str) {
 
-  return std::make_unique<VarDeclaration>(json["element"]);
+  return std::make_unique<VarDeclaration>(std::move(str));
 }
 
-std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
+std::unique_ptr<Variable> JSONToASTParser::parseVariable(const std::string &str) {
 
-  return std::make_unique<Variable>(json["list"]);
+  return std::make_unique<Variable>(std::move(str));
+}
+
+std::unique_ptr<Condition> JSONToASTParser::parseCondition(const std::string &str){
+
+  return std::make_unique<Condition>(std::move(str));
+}
+std::unique_ptr<Key> JSONToASTParser::parseKey(const std::string &str){
+
+  return std::make_unique<Key>(std::move(str));
+}
+std::unique_ptr<IntContainer> JSONToASTParser::parseIntContainer(const int &intVal){
+
+  return std::make_unique<IntContainer>(std::move(intVal));
+}
+std::unique_ptr<AllSwitchCases> JSONToASTParser::parseSwitchCases(const Json &json){
+
+  auto casePtr = std::make_unique<AllSwitchCases>();
+  if(json.empty())
+    return casePtr;
+
+  for (const auto &node : json) {
+    auto &&value = parseFormatNode(node["case"]);
+    auto &&rules = parseRule(node["rules"]);
+    auto &&x = std::make_unique<SwitchCase>(std::move(value), std::move(rules));
+    casePtr->appendChild(std::move(x));
+  }
+  return casePtr;
+}
+std::unique_ptr<AllWhenCases> JSONToASTParser::parseWhenCases(const Json &json){
+
+  auto casePtr = std::make_unique<AllWhenCases>();
+  if(json.empty())
+    return casePtr;
+
+  for (const auto &node : json) {
+    auto &&cond = parseCondition(node["condition"]);
+    auto &&rules = parseRule(node["rules"]);
+    auto &&x = std::make_unique<WhenCase>(std::move(cond), std::move(rules));
+    casePtr->appendChild(std::move(x));
+  }
+  return casePtr;
+}
+
+std::unique_ptr<ForEach> JSONToASTParser::parseForEach(const Json &json){
+
+  auto &&var = parseVariable(json["list"]);
+  auto &&varDec = parseVarDeclaration(json["element"]);
+  auto &&rules = parseRules(json["rules"]);
+
+  return std::make_unique<ForEach>(std::move(var), std::move(varDec),
+                                       std::move(rules));
+}
+std::unique_ptr<Loop> JSONToASTParser::parseLoop(const Json &json){
+
+  if(json.contains("until")){
+    auto &&cond = parseCondition(json["until"]);
+    auto &&rules = parseRules(json["rules"]);
+
+    return std::make_unique<Loop>(std::move(cond), std::move(rules));
+  }else{
+    auto &&cond = parseCondition(json["while"]);
+    auto &&rules = parseRules(json["rules"]);
+
+    return std::make_unique<Loop>(std::move(cond), std::move(rules));
+  }
+}
+std::unique_ptr<InParallel> JSONToASTParser::parseInParallel(const Json &json){
+  //may be subject to change to allow coroutines to facilitate the array of rules within
+  auto &&rules = parseRules(json["rules"]);
+
+  return std::make_unique<InParallel>(std::move(rules));
+}
+
+std::unique_ptr<Switch> JSONToASTParser::parseSwitch(const Json &json){
+
+  auto &&value = parseFormatNode(json["value"]);
+  auto &&list = parseVariable(json["list"]);
+  auto &&cases = parseSwitchCases(json["cases"]);
+
+  return std::make_unique<Switch>(std::move(value), std::move(list), std::move(cases));
+}
+
+std::unique_ptr<When> JSONToASTParser::parseWhen(const Json &json){
+
+  auto &&cases = parseWhenCases(json["cases"]);
+
+  return std::make_unique<When>(std::move(cases));
+}
+
+std::unique_ptr<Reverse> JSONToASTParser::parseReverse(const Json &json){
+
+  auto &&list = parseVariable(json["list"]);
+
+  return std::make_unique<Reverse>(std::move(list));
+}
+std::unique_ptr<Extend> JSONToASTParser::parseExtend(const Json &json){
+
+  auto &&target = parseVariable(json["target"]);
+  auto &&list = parseVariable(json["list"]);
+
+  return std::make_unique<Extend>(std::move(target), std::move(list));
+}
+std::unique_ptr<Shuffle> JSONToASTParser::parseShuffle(const Json &json){
+
+  auto &&list = parseVariable(json["list"]);
+
+  return std::make_unique<Shuffle>(std::move(list));
+}
+std::unique_ptr<Sort> JSONToASTParser::parseSort(const Json &json){
+
+  auto &&list = parseVariable(json["list"]);
+  auto sortPointer = std::make_unique<Sort>(std::move(list));
+  if(json.contains("key")){
+    auto&& key = parseKey(json["key"]);
+    sortPointer->addAttribute(std::move(key));
+  }
+
+  return sortPointer;
+}
+std::unique_ptr<Deal> JSONToASTParser::parseDeal(const Json &json){
+
+  auto &&from = parseVariable(json["from"]);
+  auto &&to = parseVariable(json["to"]);
+  auto &&count = parseIntContainer(json["count"]);
+
+  return std::make_unique<Deal>(std::move(from), std::move(to), std::move(count));
+}
+std::unique_ptr<Discard> JSONToASTParser::parseDiscard(const Json &json){
+
+  auto &&from = parseVariable(json["from"]);
+  auto &&count = parseIntContainer(json["count"]);
+
+  return std::make_unique<Discard>(std::move(from), std::move(count));
+}
+
+std::unique_ptr<Add> JSONToASTParser::parseAdd(const Json &json){
+
+  auto &&var = parseVariable(json["to"]);
+  auto &&value = parseIntContainer(json["value"]);
+
+  return std::make_unique<Add>(std::move(var), std::move(value));
+}
+std::unique_ptr<Timer> JSONToASTParser::parseTimer(const Json &json){
+
+  auto &&duration = parseIntContainer(json["duration"]);
+  auto &&mode = parseVariable(json["mode"]);
+  auto &&rules = parseRules(json["rules"]);
+  auto timerPointer = std::make_unique<Timer>(std::move(duration), std::move(mode), std::move(rules));
+
+  if(json.contains("flag")){
+    auto&& flag = parseCondition(json["flag"]);
+    timerPointer->addFlag(std::move(flag));
+  }
+
+  return timerPointer;
+}
+
+std::unique_ptr<InputChoice> JSONToASTParser::parseInputChoice(const Json &json){
+
+  auto &&prompt = parseFormatNode(json["prompt"]);
+  auto &&to = parseVariable(json["to"]);
+  auto &&choices = parseVariable(json["choices"]);
+  auto &&result = parseVarDeclaration(json["result"]);
+
+  auto inputChoicePtr = std::make_unique<InputChoice>(std::move(prompt), std::move(to), std::move(choices), std::move(result));
+
+  if(json.contains("timeout")){
+    auto &&timeout = parseIntContainer(json["timeout"]);
+    inputChoicePtr->addTimeout(std::move(timeout));
+  }
+
+  return inputChoicePtr;
+}
+std::unique_ptr<InputText> JSONToASTParser::parseInputText(const Json &json){
+
+  auto &&prompt = parseFormatNode(json["prompt"]);
+  auto &&to = parseVariable(json["to"]);
+  auto &&result = parseVarDeclaration(json["result"]);
+
+  auto inputTextPtr = std::make_unique<InputText>(std::move(prompt), std::move(to), std::move(result));
+
+  if(json.contains("timeout")){
+    auto &&timeout = parseIntContainer(json["timeout"]);
+    inputTextPtr->addTimeout(std::move(timeout));
+  }
+
+  return inputTextPtr;
+}
+std::unique_ptr<InputVote> JSONToASTParser::parseInputVote(const Json &json){
+
+  auto &&prompt = parseFormatNode(json["prompt"]);
+  auto &&to = parseVariable(json["to"]);
+  auto &&choices = parseVariable(json["choices"]);
+  auto &&result = parseVarDeclaration(json["result"]);
+
+  auto inputVotePtr = std::make_unique<InputVote>(std::move(prompt), std::move(to), std::move(choices), std::move(result));
+
+  if(json.contains("timeout")){
+    auto &&timeout = parseIntContainer(json["timeout"]);
+    inputVotePtr->addTimeout(std::move(timeout));
+  }
+
+  return inputVotePtr;
 }
 } // namespace AST
