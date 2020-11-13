@@ -2,10 +2,13 @@
 #include "GameServer.h"
 #include <algorithm>
 
-GameInstance::GameInstance(Room &room, GameServer &server)
+GameInstance::GameInstance(Room &room, GameServer &server, const User &owner)
     : room{&room}, server{&server} {
   int counter = 0;
   for (auto &[id, user] : room.getMembers()) {
+    if (owner.getId() == id) {
+      ownerId = counter;
+    }
     players.push_back({counter, user->name});
     playerIdMapping.insert({counter, id});
     playerMessageRequest.insert({counter, false});
@@ -16,6 +19,12 @@ GameInstance::GameInstance(Room &room, GameServer &server)
 
 void GameInstance::sendToPlayer(const Player &player, std::string message) {
   auto userId = playerIdMapping.at(player.id);
+  auto &user = room->getMember(userId);
+  server->sendMessageToUser(user, std::move(message));
+}
+
+void GameInstance::sendToOwner(std::string message) {
+  auto userId = playerIdMapping.at(ownerId);
   auto &user = room->getMember(userId);
   server->sendMessageToUser(user, std::move(message));
 }
@@ -35,6 +44,11 @@ GameInstance::receiveFromPlayer(const Player &player) {
   inboundMessageQueue.erase(x, inboundMessageQueue.end());
   playerMessageRequest.at(player.id) = messages.empty();
   return messages;
+}
+
+std::deque<PlayerMessage> GameInstance::receiveFromOwner() {
+  auto &owner = players.at(ownerId);
+  return receiveFromPlayer(owner);
 }
 
 bool GameInstance::queueMessage(const User &user, std::string message) {

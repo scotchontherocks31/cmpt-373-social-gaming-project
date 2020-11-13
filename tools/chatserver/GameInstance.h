@@ -17,7 +17,7 @@ from player doesn't get mixed with an actual response.
 */
 
 struct Player {
-  int id;
+  const int id;
   std::string name;
 };
 
@@ -28,7 +28,7 @@ struct PlayerMessage {
 
 class GameInstance : public AST::Communicator {
 public:
-  GameInstance(Room &room, GameServer &server);
+  GameInstance(Room &room, GameServer &server, const User &owner);
   void loadGame(AST::AST &ast, AST::Configurator &config);
   void runGame();
   bool isRunning() { return !gameTask.isDone(); }
@@ -40,11 +40,15 @@ public:
   /// Send ouput message to a player
   void sendToPlayer(const Player &player, std::string message);
 
+  void sendToOwner(std::string message);
+
   void sendGlobalMessage(std::string message) override;
 
   /// Get messages from a player.
   /// Returns empty deque if no message is available.
   std::deque<PlayerMessage> receiveFromPlayer(const Player &player);
+
+  std::deque<PlayerMessage> receiveFromOwner();
 
   /// Get info about players in the room
   const std::vector<Player> &getPlayers() const { return players; }
@@ -54,6 +58,7 @@ public:
 private:
   Room *room;
   GameServer *server;
+  int ownerId = 0;
   std::map<int, bool> playerMessageRequest;
   std::vector<Player> players;
   std::map<int, userid> playerIdMapping;

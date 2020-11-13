@@ -13,7 +13,7 @@ GameManager::GameManager(GameServer &server, RoomManager &roomManager)
 GameInstance &GameManager::getGameInstance(const User &user) {
   auto &room = roomManager.getRoomFromUser(user);
   auto roomId = room.getId();
-  auto [it, _] = instances.insert({roomId, GameInstance{room, server}});
+  auto [it, _] = instances.insert({roomId, GameInstance{room, server, user}});
   return it->second;
 }
 
