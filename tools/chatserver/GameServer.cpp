@@ -86,7 +86,7 @@ std::map<std::string, GameServer::Command>  GameServer::initializeCommandMap() {
 }
 
 GameServer::Command GameServer::matchCommand(const std::string &command) {
-  if ( strToGameCommandMap.find(command) == strToGameCommandMap.end ) {
+  if (  strToGameCommandMap.contains(command)  ) {
     return GameServer::Command::UNKNOWN;
   }
   return GameServer::strToCommandMap[command];
@@ -331,7 +331,7 @@ GameServer::Command strToGameCommandMapGetCommand(const std::string &command) {
 }*/
 
 GameServer::GameCommand GameServer::matchGameCommand(const std::string &command) {
-  if ( strToGameCommandMap.find(command) == strToGameCommandMap.end ) {
+  if ( strToGameCommandMap.contains(command) ) {
     return GameServer::GameCommand::UNKNOWN_GAME;
   }
   return GameServer::strToGameCommandMap[command];
