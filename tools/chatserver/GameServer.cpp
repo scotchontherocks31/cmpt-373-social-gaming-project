@@ -226,7 +226,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     output = "Your name is: ";
     output.append(")\n"); /*+ user.name + "\n"
            //+ "You are in room: " + room.getName() + " ("
-           //+ room.getCurrentSize() + "/" + room.getCapacity()*/ + //")\n"; //TODO figure out why "+" doesnt work
+           //+ room.getCurrentSize() + "/" + room.getCapacity()*/ //+ //")\n"; //TODO figure out why "+" doesnt work
     return output;
   };  
   std::function<functionType> gameFunc = [this](User &user, std::vector<std::string> &tokens) {
@@ -264,7 +264,7 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
   auto command = matchCommand(tokens[0]);
 
   std::function func = commandToFunctionMap[command];
-  std::ostringstream output << func(user, tokens);
+  std::string output = func(user, tokens);
 
   return output.str();
 }
@@ -345,15 +345,14 @@ GameServer::GameCommand GameServer::matchGameCommand(const std::string &command)
 std::string GameServer::processGameCommand(const User &user,
                                            std::vector<std::string> &tokens) {
   // TODO: rework this to use visitor pattern
-  std::ostringstream output;
   if (tokens.size() < 2) {
     return "Invalid command.\n";
   }
 
   std::function func = commandToGameFunctionMap[command];
-  std::ostringstream output << func(user, tokens);
+  std::string output = func(user, tokens);
 
-  return output.str();
+  return output;
 }
 
 void GameServer::flush() {
