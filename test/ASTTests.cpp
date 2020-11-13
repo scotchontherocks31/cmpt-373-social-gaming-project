@@ -1,8 +1,78 @@
+#include "ASTNode.h"
+#include "ASTVisitor.h"
 #include "gtest/gtest.h"
+
+#include <iostream>
+#include <map>
+#include <string>
+#include <task.h>
+#include <variant>
 
 using namespace testing;
 
-TEST(SampleTests, Simple) {
-  int i = 0;
-  EXPECT_EQ(i, 0);
+TEST(ASTprinter, GlobalMessageWithoutExpression) {
+
+  auto enviro = AST::Environment{nullptr};
+  AST::PrintCommunicator printComm{};
+  AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
+
+  std::unique_ptr<AST::GlobalMessage> mess =
+      std::make_unique<AST::GlobalMessage>(
+          std::make_unique<AST::FormatNode>(std::string{"Message One"}));
+
+  auto root = AST::AST(std::move(mess));
+
+  std::stringstream stream;
+  AST::Printer printer = AST::Printer{stream};
+
+  auto task = root.accept(printer);
+  while (task.resume()) {
+  }
+
+  std::string answer = "(GlobalMessage(FormatNode \"Message One\"))";
+  std::string output = printer.returnOutput();
+
+  EXPECT_EQ(output, answer);
+}
+
+TEST(ASTprinter, ParallelForandInput) {
+
+  auto enviro = AST::Environment{nullptr};
+  AST::PrintCommunicator printComm{};
+  AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
+
+  std::unique_ptr<AST::InputText> in = std::make_unique<AST::InputText>(
+      std::make_unique<AST::FormatNode>(std::string{"How are you"}),
+      std::make_unique<AST::Variable>(std::string{"player"}),
+      std::make_unique<AST::VarDeclaration>(std::string{"response"}));
+
+  std::unique_ptr<AST::GlobalMessage> mess =
+      std::make_unique<AST::GlobalMessage>(
+          std::make_unique<AST::FormatNode>(std::string{"Message One"}));
+
+  std::unique_ptr<AST::Rules> rule = std::make_unique<AST::Rules>();
+  rule->appendChild(std::move(mess));
+  rule->appendChild(std::move(in));
+
+  std::unique_ptr<AST::ParallelFor> par = std::make_unique<AST::ParallelFor>(
+      std::make_unique<AST::Variable>(std::string{"players"}),
+      std::make_unique<AST::VarDeclaration>(std::string{"player"}),
+      std::move(rule));
+
+  auto root = AST::AST(std::move(par));
+
+  // capture print
+  std::stringstream stream;
+  AST::Printer printer = AST::Printer{stream};
+  auto task = root.accept(printer);
+  while (task.resume()) {
+  }
+
+  // retrieve print
+  std::string output = printer.returnOutput();
+  std::string answer =
+      "(ParallelFor(Variable\"players\")(VarDeclaration\"player\")(Rules("
+      "GlobalMessage(FormatNode \"Message One\"))(InputText(FormatNode \"How "
+      "are you\")(Variable\"player\")(VarDeclaration\"response\"))))";
+  EXPECT_EQ(output, answer);
 }
