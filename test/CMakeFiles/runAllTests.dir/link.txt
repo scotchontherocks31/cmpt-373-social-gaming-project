@@ -1,1 +1,0 @@
-/usr/bin/g++   -DGCC=1 -O0 -g -fcoroutines -fsanitize=address,undefined -fno-omit-frame-pointer   CMakeFiles/runAllTests.dir/ASTTests.cpp.o  -o ../bin/runAllTests  ../lib/libgtestd.a ../lib/libgmockd.a ../lib/libgtest_maind.a ../lib/libgtestd.a -lpthread 
