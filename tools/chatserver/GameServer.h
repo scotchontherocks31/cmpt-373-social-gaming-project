@@ -77,7 +77,7 @@ private:
 
 class Mapz {
   public:
-    virtual void initializeMap(std::vector<auto>, std::vector<auto>) = 0;
+    virtual void initializeMap(std::vector<auto> keys, std::vector<auto> values) = 0;
 };
 
 class strToCommandMap : public Mapz {
@@ -87,14 +87,15 @@ class strToCommandMap : public Mapz {
     std::map<std::string, GameServer::Command> getMap() {
       return theMap;
     }
-    void initializeMap(std::vector<std::string> keys, std::vector<GameServer::Command> values) override { //std::vector<auto> keys; std::vector<auto> values
+    void initializeMap(std::vector<auto> keys, std::vector<auto> values) override { //std::vector<auto> keys; std::vector<auto> values
       //std::map<keys.value_type, values.value_type> theMap;
+      if (keys.value_type != std::string || values.value_type != GameServer::Command)
+        return;
       if (keys.size() == values.size()) {
         for (int i = 0; i < keys.size(); i++) {
           theMap[keys[i]] = values[i];
         }
       }
-      //return theMap
     }
 };
 
@@ -105,12 +106,13 @@ class commandToFunctionMap : public Mapz {
     std::map<GameServer::Command, std::function<functionType>> getMap() {
       return theMap;
     }
-    void initializeMap(std::vector<GameServer::Command> keys, std::vector<std::function<functionType>> values) override {
+    void initializeMap(std::vector<auto> keys, std::vector<auto> values) override {
+      if (keys.value_type != GameServer::Command || values.value_type != std::function<functionType>)
+        return;
       if (keys.size() == values.size()) {
         for (int i = 0; i < keys.size(); i++) {
           theMap[keys[i]] = values[i];
         }
       }
-      //return theMap;
     }
 };
