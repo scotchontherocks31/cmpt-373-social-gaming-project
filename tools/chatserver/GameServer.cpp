@@ -63,7 +63,7 @@ GameServer::Command strToCommandMapGetCommand(const std::string &command) {
   return strToCommandMap[command];
 }*/
 
-std::map<std::string, GameServer::Command>  GameCommands::initializeCommandMap() {
+std::map<std::string, GameServer::Command>  GameServer::initializeCommandMap() {
   std::vector<std::string> keys = { "quit",
                                     "shutdown",
                                     "create",
@@ -266,7 +266,7 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
   return output.str();
 }
 
-std::map<std::string, GameServer::Command>  GameCommands::initializeGameCommandMap() {
+std::map<std::string, GameServer::Command>  GameServer::initializeGameCommandMap() {
   std::vector<std::string> keys = { "create",
                                     "start",
                                     "clean"};

@@ -46,7 +46,10 @@ public:
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
   void startRunningLoop();
-
+  std::map<std::string, GameServer::Command>  initializeCommandMap();
+  std::map<std::string, GameServer::Command>  initializeGameCommandMap();
+  std::map<GameServer::Command, std::function<functionType>>  initializeFunctionMap();
+  std::map<GameServer::Command, std::function<functionType>>  initializeGameFunctionMap();
 private:
   Server server;
   RoomManager roomManager;
