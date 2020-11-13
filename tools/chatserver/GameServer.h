@@ -53,7 +53,7 @@ public:
   std::map<GameServer::Command, std::function<functionType>>  initializeGameFunctionMap();
 
   Command matchCommand(const std::string &command);
-  GameCommand matchGameCommand(const std::string &command);
+  Command matchGameCommand(const std::string &command);
 private:
   Server server;
   RoomManager roomManager;
