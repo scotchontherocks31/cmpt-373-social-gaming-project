@@ -47,12 +47,6 @@ public:
   User &getUser(userid id) { return users.at(id); }
   void startRunningLoop();
 
-  /*bool strToCommandMapIsEnded(const std::string &command);
-  Command strToCommandMapGetCommand(const std::string &command);
-  //std::function commandToFunctionMapGetCommand
-
-  bool strToGameCommandMapIsEnded(const std::string &command);
-  Command strToGameCommandMapGetCommand(const std::string &command);*/
 private:
   Server server;
   RoomManager roomManager;
@@ -75,22 +69,21 @@ private:
   void flush();
 };
 
-class Mapz {
-  public:
-    virtual void initializeMap(std::vector<auto> keys, std::vector<auto> values) = 0;
-};
-
-class strToCommandMap : public Mapz {
+class strToCommandMap {
   private:
     std::map<std::string, GameServer::Command> theMap;
   public:
-    std::map<std::string, GameServer::Command> getMap() {
+    virtual void initializeMap(std::vector<std::string> keys, std::vector<GameServer::Command> values) = 0;
+    virtual std::map<std::string, GameServer::Command> getMap() = 0;
+
+};
+
+class englishCommandMap : public strToCommandMap {
+  public:
+    std::map<std::string, GameServer::Command> getMap() override {
       return theMap;
     }
-    void initializeMap(std::vector<auto> keys, std::vector<auto> values) override { //std::vector<auto> keys; std::vector<auto> values
-      //std::map<keys.value_type, values.value_type> theMap;
-      if (keys.value_type != std::string || values.value_type != GameServer::Command)
-        return;
+    void initializeMap(std::vector<std::string> keys, std::vector<GameServer::Command> values) override {
       if (keys.size() == values.size()) {
         for (int i = 0; i < keys.size(); i++) {
           theMap[keys[i]] = values[i];
@@ -99,16 +92,21 @@ class strToCommandMap : public Mapz {
     }
 };
 
-class commandToFunctionMap : public Mapz {
+class commandToFunctionMap {
   private:
     std::map<GameServer::Command, std::function<functionType>> theMap;
+  public:
+    virtual void initializeMap(std::vector<GameServer::Command> keys, std::vector<std::function<functionType>> values) = 0;
+    virtual std::map<GameServer::Command, std::function<functionType>> getMap() = 0;
+
+};
+
+class gameServerFunctions : public commandToFunctionMap {
   public:
     std::map<GameServer::Command, std::function<functionType>> getMap() {
       return theMap;
     }
-    void initializeMap(std::vector<auto> keys, std::vector<auto> values) override {
-      if (keys.value_type != GameServer::Command || values.value_type != std::function<functionType>)
-        return;
+    void initializeMap(std::vector<GameServer::Command> keys, std::vector<std::function<functionType>> values) override {
       if (keys.size() == values.size()) {
         for (int i = 0; i < keys.size(); i++) {
           theMap[keys[i]] = values[i];
