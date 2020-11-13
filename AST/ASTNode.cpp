@@ -3,6 +3,21 @@
 #include "Parser.h"
 
 namespace AST {
+
+coro::Task<> Root::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
+coro::Task<> Setup::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
 coro::Task<> GlobalMessage::acceptHelper(ASTVisitor &visitor) {
   auto coroutine = visitor.visit(*this);
   while (not coroutine.isDone()) {

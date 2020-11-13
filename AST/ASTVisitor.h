@@ -68,6 +68,8 @@ public:
 class ASTVisitor {
 public:
   explicit ASTVisitor() = default;
+  coro::Task<> visit(Root &node);
+  coro::Task<> visit(Setup &node);
   coro::Task<> visit(GlobalMessage &node);
   coro::Task<> visit(FormatNode &node);
   coro::Task<> visit(Variable &node);
@@ -78,6 +80,8 @@ public:
   virtual ~ASTVisitor() = default;
 
 private:
+  virtual coro::Task<> visitHelper(Root &) = 0;
+  virtual coro::Task<> visitHelper(Setup &) = 0;
   virtual coro::Task<> visitHelper(GlobalMessage &) = 0;
   virtual coro::Task<> visitHelper(FormatNode &) = 0;
   virtual coro::Task<> visitHelper(ParallelFor &) = 0;
@@ -95,6 +99,12 @@ public:
       : environment{std::move(env)}, communicator{communicator} {}
 
 private:
+  coro::Task<> visitHelper(Root &node) override {
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+  }
+  coro::Task<> visitHelper(Setup &node) override;
   coro::Task<> visitHelper(GlobalMessage &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {

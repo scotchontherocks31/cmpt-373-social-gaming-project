@@ -9,6 +9,15 @@ using namespace std;
 namespace {
 using namespace AST;
 
+struct Keys {
+  explicit Keys() = default;
+  auto operator()(const Map &map) noexcept {
+    auto range = map | views::transform([](auto &pair) { return pair.first; });
+    return std::vector<std::string>{range.begin(), range.end()};
+  }
+  auto operator()(const auto &discard) noexcept { return std::vector<std::string>(); }
+};
+
 struct MutableAt {
   const string &key;
   explicit MutableAt(const string &key) noexcept : key{key} {};
@@ -263,6 +272,10 @@ struct Print {
 } // namespace
 
 namespace AST {
+
+std::vector<std::string> DSLValue::keys() noexcept {
+  return unaryOperation(Keys{});
+}
 
 optional<reference_wrapper<DSLValue>>
 DSLValue::operator[](const string &key) noexcept {

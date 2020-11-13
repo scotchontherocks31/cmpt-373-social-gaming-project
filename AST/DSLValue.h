@@ -83,6 +83,11 @@ public:
   DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {};
   DSLValue(const DSLValue &other) noexcept { value = other.value; }
   DSLValue(DSLValue &&other) noexcept { value = std::move(other.value); }
+  std::vector<std::string> keys() noexcept;
+  template <typename T> std::reference_wrapper<const T> get() const noexcept {
+    return std::cref(std::get<T>(value));
+  }
+
   template <DSLType T> DSLValue &operator=(T &&a) noexcept {
     value = std::forward<T>(a);
     return *this;
