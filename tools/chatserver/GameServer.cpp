@@ -85,8 +85,8 @@ std::map<std::string, GameServer::Command>  GameServer::initializeCommandMap() {
   return theMap.getMap();
 }
 
-GameServer::Command matchCommand(const std::string &command) {
-  if ( strToCommandMap.strToCommandMapIsEnded(command) ) {
+GameServer::Command GameServer::matchCommand(const std::string &command) {
+  if ( strToGameCommandMap.find(command) == strToGameCommandMap.end ) {
     return GameServer::Command::UNKNOWN;
   }
   return GameServer::strToCommandMap[command];
@@ -188,7 +188,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     auto [roomPtr, created] =
         roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
     if (created) {
-      output = "Creating room \"" + roomPtr->getName() + "\"...\n";
+      output = "Creating room \""/* + roomPtr->getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
     } else {
       output = "Room already existed.\n";
     }
@@ -199,7 +199,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     if (tokens.size() >= 2) {
       if (roomManager.putUserToRoom(user, tokens[1])) {
         output = "Joining room \""
-               + roomManager.getRoomFromUser(user).getName() + "\"...\n";
+               /*+ roomManager.getRoomFromUser(user).getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
       } else {
         output = "Failed to join room.";
       }
@@ -210,7 +210,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
   std::function<functionType> leaveFunc = [this](User &user, std::vector<std::string> &tokens) {
     std::string output;
     roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
-    output = "Leaving room \"" + roomManager.getRoomFromUser(user).getName() + "\"...\n";
+    output = "Leaving room \"" /*+ roomManager.getRoomFromUser(user).getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
     return output;
   };
   std::function<functionType> listFunc = [this](User &user, std::vector<std::string> &tokens) {
@@ -221,9 +221,9 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
   std::function<functionType> infoFunc = [this](User &user, std::vector<std::string> &tokens) {
     std::string output;
     auto &room = roomManager.getRoomFromUser(user);
-    output = "Your name is: " + user.name + "\n"
+    output = "Your name is: " /*+ user.name + "\n"
            + "You are in room: " + room.getName() + " ("
-           + room.getCurrentSize() + "/" + room.getCapacity() + ")\n";
+           + room.getCurrentSize() + "/" + room.getCapacity()*/ + ")\n"; //TODO figure out why "+" doesnt work
     return output;
   };  
   std::function<functionType> gameFunc = [this](User &user, std::vector<std::string> &tokens) {
@@ -286,7 +286,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     if (tokens.size() < 4) {
       output = "Error. Create command requires 2 arguments.\n";
     } else {
-      output = "Creating game \"" + tokens[2] + "\"\n";
+      output = "Creating game \""/* + tokens[2]*/ + "\"\n"; //TODO figure out why "+" doesnt work
       gameManager.createGame(std::move(tokens[2]), std::move(tokens[3]));
     }
     return output;
@@ -297,7 +297,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
       output = "Error. Start command requires 1 argument.\n";
     } else {
       auto &instance = gameManager.getGameInstance(user);
-      output = "Starting game \"" + tokens[2] + "\"\n";
+      output = "Starting game \""/* + tokens[2]*/ + "\"\n"; //TODO figure out why "+" doesnt work
       instance.loadGame(gameManager.getGame(tokens[2]));
       instance.runGame();
     }
@@ -330,7 +330,7 @@ GameServer::Command strToGameCommandMapGetCommand(const std::string &command) {
   return strToGameCommandMap[command];
 }*/
 
-GameServer::GameCommand matchGameCommand(const std::string &command) {
+GameServer::GameCommand GameServer::matchGameCommand(const std::string &command) {
   if ( strToGameCommandMap.find(command) == strToGameCommandMap.end ) {
     return GameServer::GameCommand::UNKNOWN_GAME;
   }
