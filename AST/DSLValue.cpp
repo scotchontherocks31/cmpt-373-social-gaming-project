@@ -15,7 +15,9 @@ struct Keys {
     auto range = map | views::transform([](auto &pair) { return pair.first; });
     return std::vector<std::string>{range.begin(), range.end()};
   }
-  auto operator()(const auto &discard) noexcept { return std::vector<std::string>(); }
+  auto operator()(const auto &discard) noexcept {
+    return std::vector<std::string>();
+  }
 };
 
 struct MutableAt {
