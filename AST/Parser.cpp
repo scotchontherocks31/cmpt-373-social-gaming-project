@@ -70,19 +70,15 @@ Environment Configurator::createEnvironment(
 
   // add the current members into the game
   auto perPlayer = json[0]["per-player"];
-  std::stringstream playerJson;
-  Json playerJsonObj;
+  Json aPlayer;
   for (auto i = players.begin(); i != players.end(); ++i) {
-    playerJson.str("");
-    playerJson << "{\"id\":" << i->first << ",\"name\":\"" << i->second
-               << "\""; //,";
+    aPlayer = {};
+    aPlayer["id"] = i->first;
+    aPlayer["name"] = i->second;
     for (Json::iterator it = perPlayer.begin(); it != perPlayer.end(); ++it) {
-      playerJson << ",\"" << it.key() << "\":" << it.value() << ",";
+      aPlayer[it.key()] = it.value();
     }
-    playerJson.seekp(-1, playerJson.cur);
-    playerJson << '}';
-    playerJsonObj = Json::parse(playerJson.str());
-    enviro.setBinding(i->second, DSLValue{playerJsonObj});
+    enviro.setBinding(i->second, DSLValue{aPlayer});
   }
 
   // add constants
