@@ -188,7 +188,8 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     auto [roomPtr, created] =
         roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
     if (created) {
-      output = "Creating room \""/* + roomPtr->getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
+      output = "Creating room \"";
+      output.append("\"...\n");///* + roomPtr->getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
     } else {
       output = "Room already existed.\n";
     }
@@ -198,8 +199,8 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     std::string output;
     if (tokens.size() >= 2) {
       if (roomManager.putUserToRoom(user, tokens[1])) {
-        output = "Joining room \""
-               /*+ roomManager.getRoomFromUser(user).getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
+        output = "Joining room \"";
+        output.append("\"...\n");       ///*+ roomManager.getRoomFromUser(user).getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
       } else {
         output = "Failed to join room.";
       }
@@ -210,7 +211,8 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
   std::function<functionType> leaveFunc = [this](User &user, std::vector<std::string> &tokens) {
     std::string output;
     roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
-    output = "Leaving room \"" /*+ roomManager.getRoomFromUser(user).getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
+    output = "Leaving room \"";
+    output.append("\"...\n"); ///*+ roomManager.getRoomFromUser(user).getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
     return output;
   };
   std::function<functionType> listFunc = [this](User &user, std::vector<std::string> &tokens) {
@@ -221,9 +223,10 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
   std::function<functionType> infoFunc = [this](User &user, std::vector<std::string> &tokens) {
     std::string output;
     auto &room = roomManager.getRoomFromUser(user);
-    output = "Your name is: " /*+ user.name + "\n"
-           + "You are in room: " + room.getName() + " ("
-           + room.getCurrentSize() + "/" + room.getCapacity()*/ + ")\n"; //TODO figure out why "+" doesnt work
+    output = "Your name is: ";
+    output.append(")\n"); /*+ user.name + "\n"
+           //+ "You are in room: " + room.getName() + " ("
+           //+ room.getCurrentSize() + "/" + room.getCapacity()*/ + //")\n"; //TODO figure out why "+" doesnt work
     return output;
   };  
   std::function<functionType> gameFunc = [this](User &user, std::vector<std::string> &tokens) {
@@ -286,7 +289,8 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     if (tokens.size() < 4) {
       output = "Error. Create command requires 2 arguments.\n";
     } else {
-      output = "Creating game \""/* + tokens[2]*/ + "\"\n"; //TODO figure out why "+" doesnt work
+      output = "Creating game \"";
+      output.append("\"\n");///* + tokens[2]*/ + "\"\n"; //TODO figure out why "+" doesnt work
       gameManager.createGame(std::move(tokens[2]), std::move(tokens[3]));
     }
     return output;
@@ -297,7 +301,8 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
       output = "Error. Start command requires 1 argument.\n";
     } else {
       auto &instance = gameManager.getGameInstance(user);
-      output = "Starting game \""/* + tokens[2]*/ + "\"\n"; //TODO figure out why "+" doesnt work
+      output = "Starting game \"";
+      output.append("\"\n");///* + tokens[2]*/ + "\"\n"; //TODO figure out why "+" doesnt work
       instance.loadGame(gameManager.getGame(tokens[2]));
       instance.runGame();
     }
