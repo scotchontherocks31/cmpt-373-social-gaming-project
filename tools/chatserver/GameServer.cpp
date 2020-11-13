@@ -55,25 +55,37 @@ std::vector<std::string> tokenizeCommand(std::string command) {
   return tokens;
 }
 
-std::map<std::string, GameServer::Command>  GameCommands::initializeCommandMap() {
-  std::map<std::string, GameServer::Command> strToCommandMap;
-  strToCommandMap["quit"] = GameServer::Command::QUIT;
-  strToCommandMap["shutdown"] = GameServer::Command::SHUTDOWN;
-  strToCommandMap["create"] = GameServer::Command::CREATE;
-  strToCommandMap["join"] = GameServer::Command::JOIN;
-  strToCommandMap["leave"] = GameServer::Command::LEAVE;
-  strToCommandMap["list"] = GameServer::Command::LIST;
-  strToCommandMap["info"] = GameServer::Command::INFO;
-  strToCommandMap["game"] = GameServer::Command::GAME;
-  strToCommandMap["create"] = GameServer::Command::CRT;
-  strToCommandMap["start"] = GameServer::Command::START;
-  strToCommandMap["clean"] = GameServer::Command::CLEAN;
+/*bool GameServer::strToCommandMapIsEnded(const std::string &command) {
+  return strToCommandMap.find(command) == strToCommandMap.end;
+}
 
-  return strToCommandMap;
+GameServer::Command strToCommandMapGetCommand(const std::string &command) {
+  return strToCommandMap[command];
+}*/
+
+std::map<std::string, GameServer::Command>  GameCommands::initializeCommandMap() {
+  std::vector<std::string> keys = { "quit",
+                                    "shutdown",
+                                    "create",
+                                    "join",
+                                    "leave",
+                                    "list",
+                                    "info",
+                                    "game"};
+  std::vector<GameServer::Command> values = { GameServer::Command::QUIT,
+                                              GameServer::Command::SHUTDOWN,
+                                              GameServer::Command::CREATE,
+                                              GameServer::Command::JOIN,
+                                              GameServer::Command::LEAVE,
+                                              GameServer::Command::LIST,
+                                              GameServer::Command::INFO,
+                                              GameServer::Command::GAME};
+  standartMap strToCommandMap;
+  return strToCommandMap.initializeMap(keys, values);
 }
 
 GameServer::Command matchCommand(const std::string &command) {
-  if (GameServer::strToCommandMap.find(command) == GameServer::strToCommandMap.end) {
+  if ( strToCommandMap.strToCommandMapIsEnded(command) ) {
     return GameServer::Command::UNKNOWN;
   }
   return GameServer::strToCommandMap[command];
@@ -220,17 +232,26 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     return output;
   };
 
-  std::map<GameServer::Command, std::function<functionType>> commandToFunctionMap;
-  commandToFunctionMap[GameServer::Command::QUIT] = quitFunc;
-  commandToFunctionMap[GameServer::Command::SHUTDOWN] = shutdownFunc;
-  commandToFunctionMap[GameServer::Command::CREATE] = createFunc;
-  commandToFunctionMap[GameServer::Command::JOIN] = joinFunc;
-  commandToFunctionMap[GameServer::Command::LEAVE] = leaveFunc;
-  commandToFunctionMap[GameServer::Command::LIST] = listFunc;
-  commandToFunctionMap[GameServer::Command::INFO] = infoFunc;
-  commandToFunctionMap[GameServer::Command::GAME] = gameFunc;
-  commandToFunctionMap[GameServer::Command::LEAVE] = leaveFunc;
-  return commandToFunctionMap;
+  std::vector<GameServer::Command> keys = { GameServer::Command::QUIT,
+                                                GameServer::Command::SHUTDOWN,
+                                                GameServer::Command::CREATE,
+                                                GameServer::Command::JOIN,
+                                                GameServer::Command::LEAVE,
+                                                GameServer::Command::LIST,
+                                                GameServer::Command::INFO,
+                                                GameServer::Command::GAME,
+                                                GameServer::Command::LEAVE};
+  std::vector<std::function<functionType>> values = { quitFunc,
+                                                      shutdownFunc,
+                                                      createFunc,
+                                                      joinFunc,
+                                                      leaveFunc,
+                                                      listFunc,
+                                                      infoFunc,
+                                                      gameFunc,
+                                                      leaveFunc};
+  standartMap commandToFunctionMap;
+  return commandToFunctionMap.initializeMap(keys, values);
 }
 
 std::string GameServer::processCommand(User &user, std::string rawCommand) {
@@ -245,12 +266,15 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
 }
 
 std::map<std::string, GameServer::Command>  GameCommands::initializeGameCommandMap() {
-  std::map<std::string, GameServer::GameCommand> strToGameCommandMap;
-  strToCommandMap["create"] = GameServer::GCommand::CREATE_GAME;
-  strToCommandMap["start"] = GameServer::GCommand::START;
-  strToCommandMap["clean"] = GameServer::GCommand::CLEAN;
-
-  return strToGameCommandMap;
+  std::vector<std::string> keys = { "create",
+                                    "start",
+                                    "clean"};
+  std::vector<GameServer::GameCommand> values = { GameServer::GameCommand::CREATE_GAME,
+                                              GameServer::GameCommand::START,
+                                              GameServer::GameCommand::CLEAN};
+  standartMap strToGameCommandMap;
+  
+  return strToGameCommandMap.initializeMap(keys, values);
 }
 
 std::map<GameServer::Command, std::function<functionType>>  GameServer::initializeGameFunctionMap() {
@@ -283,16 +307,27 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     return output;
   };
 
-  std::map<GameServer::GameCommand, std::function<functionType>> commandToGameFunctionMap;
-
-  commandToGameFunctionMap[GameServer::GameCommand::CREATE_GAME] = createFunc;
-  commandToGameFunctionMap[GameServer::GameCommand::START] = startFunc;
-  commandToGameFunctionMap[GameServer::GameCommand::CLEAN] = cleanFunc;
-  return commandGameToFunctionMap;
+  //std::map<GameServer::GameCommand, std::function<functionType>> commandToGameFunctionMap;
+  std::vector<GameServer::GameCommand> keys = {GameServer::GameCommand::CREATE_GAME,
+                                          GameServer::GameCommand::START,
+                                          GameServer::GameCommand::CLEAN};
+  std::vector<std::function<functionType>> values = {createFunc,
+                                              startFunc,
+                                              cleanFunc};
+  standartMap commandToGameFunctionMap;
+  return commandToGameFunctionMap.initializeMap(keys, values);
 }
 
+/*bool GameServer::strToGameCommandMapIsEnded(const std::string &command) {
+  return strToGameCommandMap.find(command) == strToGameCommandMap.end;
+}
+
+GameServer::Command strToGameCommandMapGetCommand(const std::string &command) {
+  return strToGameCommandMap[command];
+}*/
+
 GameServer::GameCommand matchGameCommand(const std::string &command) {
-  if (GameServer::strToGameCommandMap.find(command) == GameServer::strToGameCommandMap.end) {
+  if ( GameServer::strToGameCommandMap.strToGameCommandMapIsEnded(command) ) {
     return GameServer::GameCommand::UNKNOWN_GAME;
   }
   return GameServer::strToGameCommandMap[command];

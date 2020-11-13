@@ -47,6 +47,12 @@ public:
   User &getUser(userid id) { return users.at(id); }
   void startRunningLoop();
 
+  /*bool strToCommandMapIsEnded(const std::string &command);
+  Command strToCommandMapGetCommand(const std::string &command);
+  //std::function commandToFunctionMapGetCommand
+
+  bool strToGameCommandMapIsEnded(const std::string &command);
+  Command strToGameCommandMapGetCommand(const std::string &command);*/
 private:
   Server server;
   RoomManager roomManager;
@@ -59,8 +65,6 @@ private:
   std::map<GameServer::Command, std::function<functionType>> commandToFunctionMap;
   std::map<GameServer::Command, std::function<functionType>> commandToGameFunctionMap;
   bool running = false;
-  std::map<GameServer::Command, std::function<functionType>>  initializeFunctionMap();
-  std::map<GameServer::Command, std::function<functionType>>  initializeGameFunctionMap();
   void onConnect(Connection c);
   void onDisconnect(Connection c);
   void processMessages();
@@ -69,14 +73,21 @@ private:
                                  std::vector<std::string> &tokens);
   User &getUser(Connection connection) { return users.at(connection.id); }
   void flush();
-
 };
 
-class GameCommands {
+class Mapz {
   public:
-    std::map<std::string, GameServer::Command>  initializeCommandMap();
-    std::map<std::string, GameServer::GameCommand>  initializeGameCommandMap();
-  //public: //TODO is it even required?
-    //std::map<std::string, GameServer::Command> getMap();
-    //void add(std::string, GameServer::Command);
+    virtual auto  initializeMap(std::vector<auto>; std::vector<auto>) = 0;
+};
+
+class standartMap : public Mapz {
+    auto  initializeMap(std::vector<auto> keys; std::vector<auto> values) override {
+      std::map<keys.value_type, values.value_type> theMap;
+      if (keys.size() == values.size()) {
+        for (int i = 0; i < keys.size(); i++) {
+          theMap[keys[i]] = values[i];
+        }
+      }
+      return theMap
+    }
 };
