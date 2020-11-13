@@ -189,6 +189,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
         roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
     if (created) {
       output = "Creating room \"";
+      output.append(this->roomPtr->getName());
       output.append("\"...\n");///* + roomPtr->getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
     } else {
       output = "Room already existed.\n";
@@ -200,6 +201,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     if (tokens.size() >= 2) {
       if (roomManager.putUserToRoom(user, tokens[1])) {
         output = "Joining room \"";
+        output.append(this->roomManager.getRoomFromUser(user).getName());
         output.append("\"...\n");       ///*+ roomManager.getRoomFromUser(user).getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
       } else {
         output = "Failed to join room.";
@@ -212,6 +214,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     std::string output;
     roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
     output = "Leaving room \"";
+    output.append(this->roomManager.getRoomFromUser(user).getName());
     output.append("\"...\n"); ///*+ roomManager.getRoomFromUser(user).getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
     return output;
   };
@@ -224,6 +227,15 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     std::string output;
     auto &room = roomManager.getRoomFromUser(user);
     output = "Your name is: ";
+    output.append(this->user.name);
+    output.append("\n");
+    output.append("You are in a room: ");
+    output.append(this->room.getName());
+    output.append(" (");
+    output.append(this->room.getCurrentSize());
+    output.append("/");
+    output.append(this->room.getCapacity());
+    output.append(")\n");
     output.append(")\n"); /*+ user.name + "\n"
            //+ "You are in room: " + room.getName() + " ("
            //+ room.getCurrentSize() + "/" + room.getCapacity()*/ //+ //")\n"; //TODO figure out why "+" doesnt work
@@ -274,8 +286,8 @@ std::map<std::string, GameServer::Command>  GameServer::initializeGameCommandMap
                                     "start",
                                     "clean"};
   std::vector<GameServer::Command> values { GameServer::Command::CREATE_GAME,
-                                              GameServer::Command::START,
-                                              GameServer::Command::CLEAN};
+                                              GameServer::Command::START_GAME,
+                                              GameServer::Command::CLEAN_GAME};
   englishCommandMap strToGameCommandMap;
   
   englishCommandMap theMap;
@@ -290,6 +302,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
       output = "Error. Create command requires 2 arguments.\n";
     } else {
       output = "Creating game \"";
+      output.append(tokens[2]);
       output.append("\"\n");///* + tokens[2]*/ + "\"\n"; //TODO figure out why "+" doesnt work
       gameManager.createGame(std::move(tokens[2]), std::move(tokens[3]));
     }
@@ -302,6 +315,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     } else {
       auto &instance = gameManager.getGameInstance(user);
       output = "Starting game \"";
+      output.append(tokens[2]);
       output.append("\"\n");///* + tokens[2]*/ + "\"\n"; //TODO figure out why "+" doesnt work
       instance.loadGame(gameManager.getGame(tokens[2]));
       instance.runGame();
@@ -317,8 +331,8 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
 
   //std::map<GameServer::Command, std::function<functionType>> commandToGameFunctionMap;
   std::vector<GameServer::Command> keys {GameServer::Command::CREATE_GAME,
-                                          GameServer::Command::START,
-                                          GameServer::Command::CLEAN};
+                                          GameServer::Command::START_GAME,
+                                          GameServer::Command::CLEAN_GAME};
   std::vector<std::function<functionType>> values {createFunc,
                                               startFunc,
                                               cleanFunc};
@@ -326,14 +340,6 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
   theMap.initializeMap(keys, values);
   return theMap.getMap();
 }
-
-/*bool GameServer::strToGameCommandMapIsEnded(const std::string &command) {
-  return strToGameCommandMap.find(command) == strToGameCommandMap.end;
-}
-
-GameServer::Command strToGameCommandMapGetCommand(const std::string &command) {
-  return strToGameCommandMap[command];
-}*/
 
 GameServer::Command GameServer::matchGameCommand(const std::string &command) {
   if ( strToGameCommandMap.contains(command) ) {
@@ -349,7 +355,7 @@ std::string GameServer::processGameCommand(const User &user,
     return "Invalid command.\n";
   }
 
-  std::function func = commandToGameFunctionMap[command];
+  std::function func = commandToGameFunctionMap[tokens[1]];
   std::string output = func(user, tokens);
 
   return output;
@@ -371,12 +377,3 @@ void GameServer::sendMessageToRoom(const Room &room, std::string message) {
     outboundMessages.push_back({user->connection, message});
   }
 }
-
-/*
-std::map<std::string, GameServer::Command> getMap() {
-  return strToCommandMap;
-}
-void add(std::string key, GameServer::Command comm) {
-  strToCommandMap[key] = comm;
-}
-*/

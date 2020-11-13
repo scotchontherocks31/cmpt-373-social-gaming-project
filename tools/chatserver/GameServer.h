@@ -34,13 +34,10 @@ public:
     GAME,
     UNKNOWN,
     CREATE_GAME, 
-    START,
-    CLEAN,
+    START_GAME,
+    CLEAN_GAME,
     UNKNOWN_GAME
   };
-  //enum GameCommand {
-    
-  //};
 
   GameServer(unsigned short port, std::string httpMessage);
   void sendMessageToUser(const User &user, std::string message);
