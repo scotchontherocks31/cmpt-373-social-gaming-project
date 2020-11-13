@@ -49,6 +49,7 @@ bool GameInstance::queueMessage(const User &user, std::string message) {
   inboundMessageQueue.push_back({&player, std::move(message)});
   return true;
 }
+
 void GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
   auto players = this->getPlayers();
   auto playersTran = players | std::views::transform([](Player player) {
