@@ -61,8 +61,7 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
   return std::make_unique<Variable>(json["list"]);
 }
 
-Environment Configurator::createEnvironment(
-    std::vector<Player> players) {
+Environment Configurator::createEnvironment(std::vector<Player> players) {
   auto config = json[0]["configuration"];
   auto enviro = Environment{nullptr};
   DSLValue setUp{config["setup"]};
