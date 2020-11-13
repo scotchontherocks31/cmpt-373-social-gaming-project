@@ -138,7 +138,6 @@ void GameServer::processMessages() {
     // Check if message is a command (e.g. /create)
     if (message.text[0] == '/') {
       isBroadcast = false;
-      // std::cout<<"message.text.substr(1)"<<message.text.substr(1)<<std::endl;
       output = processCommand(user, message.text.substr(1));
     } else {
       // If not a command then just output a message
@@ -247,8 +246,8 @@ std::string GameServer::processGameCommand(const User &user,
     } else {
       auto &instance = gameManager.getGameInstance(user);
       output << "Starting game \"" << tokens[2] << "\"\n";
-      instance.loadGame((gameManager.getGame(tokens[2])).first,
-                        (gameManager.getGame(tokens[2])).second);
+      auto &[ast, config] = gameManager.getGame(tokens[2]);
+      instance.loadGame(ast, config);
       instance.runGame();
     }
   } else if (tokens[1] == "clean") {

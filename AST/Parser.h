@@ -54,55 +54,11 @@ class Configurator {
 public:
   Configurator(std::string json)
       : json{nlohmann::json::parse(std::move(json))} {}
-  Environment createEnvironment(auto players) {
-    auto config = json[0]["configuration"];
-    auto enviro = Environment{nullptr};
-    DSLValue setUp{config["setup"]};
-    enviro.setBinding("configuration", setUp);
 
-    // add the current members into the game
-    auto perPlayer = json[0]["per-player"];
-    std::stringstream playerJson;
-    Json playerJsonObj;
-    for (auto i = players.begin(); i != players.end(); ++i) {
-      playerJson.str("");
-      playerJson << "{\"id\":" << i->first << ",\"name\":\"" << i->second
-                 << "\""; //,";
-      for (Json::iterator it = perPlayer.begin(); it != perPlayer.end(); ++it) {
-        playerJson << ",\"" << it.key() << "\":" << it.value() << ",";
-      }
-      playerJson.seekp(-1, playerJson.cur);
-      playerJson << '}';
-      playerJsonObj = Json::parse(playerJson.str());
-      enviro.setBinding(i->second, DSLValue{playerJsonObj});
-    }
-
-    // add constants
-    Json constants = json[0]["constants"];
-    for (Json::iterator it = constants.begin(); it != constants.end(); ++it) {
-      enviro.setBinding(it.key(), it.value());
-    }
-
-    // add variables
-    Json variables = json[0]["variables"];
-    for (Json::iterator it = variables.begin(); it != variables.end(); ++it) {
-      enviro.setBinding(it.key(), it.value());
-    }
-    return enviro;
-  }
-
-  std::pair<int, int> getPlayerCount() {
-    auto config = json[0]["configuration"];
-    auto playerMax = config["player count"]["max"];
-    auto playerMin = config["player count"]["min"];
-    return {playerMin, playerMax};
-  }
-
-  bool hasAudience() {
-    auto config = json[0]["configuration"];
-    auto audience = config["audience"];
-    return audience;
-  }
+  Environment
+  createEnvironment(std::vector<std::pair<int, std::string>> players);
+  std::pair<int, int> getPlayerCount();
+  bool hasAudience();
 
 private:
   const Json json;

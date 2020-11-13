@@ -60,4 +60,52 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
 
   return std::make_unique<Variable>(json["list"]);
 }
+
+Environment Configurator::createEnvironment(
+    std::vector<std::pair<int, std::string>> players) {
+  auto config = json[0]["configuration"];
+  auto enviro = Environment{nullptr};
+  DSLValue setUp{config["setup"]};
+  enviro.setBinding("configuration", setUp);
+
+  // add the current members into the game
+  auto perPlayer = json[0]["per-player"];
+  Json aPlayer;
+  for (auto i = players.begin(); i != players.end(); ++i) {
+    aPlayer = {};
+    aPlayer["id"] = i->first;
+    aPlayer["name"] = i->second;
+    for (Json::iterator it = perPlayer.begin(); it != perPlayer.end(); ++it) {
+      aPlayer[it.key()] = it.value();
+    }
+    enviro.setBinding(i->second, DSLValue{aPlayer});
+  }
+
+  // add constants
+  Json constants = json[0]["constants"];
+  for (Json::iterator it = constants.begin(); it != constants.end(); ++it) {
+    enviro.setBinding(it.key(), it.value());
+  }
+
+  // add variables
+  Json variables = json[0]["variables"];
+  for (Json::iterator it = variables.begin(); it != variables.end(); ++it) {
+    enviro.setBinding(it.key(), it.value());
+  }
+  return enviro;
+}
+
+std::pair<int, int> Configurator::getPlayerCount() {
+  auto config = json[0]["configuration"];
+  auto playerMax = config["player count"]["max"];
+  auto playerMin = config["player count"]["min"];
+  return {playerMin, playerMax};
+}
+
+bool Configurator::hasAudience() {
+  auto config = json[0]["configuration"];
+  auto audience = config["audience"];
+  return audience;
+}
+
 } // namespace AST
