@@ -17,38 +17,34 @@ GameInstance::GameInstance(Room &room, GameServer &server, const User &owner)
   }
 }
 
-void GameInstance::sendToPlayer(const Player &player, std::string message) {
-  auto userId = playerIdMapping.at(player.id);
+void GameInstance::sendToPlayer(int playerId, std::string message) {
+  auto userId = playerIdMapping.at(playerId);
   auto &user = room->getMember(userId);
   server->sendMessageToUser(user, std::move(message));
 }
 
 void GameInstance::sendToOwner(std::string message) {
-  auto userId = playerIdMapping.at(ownerId);
-  auto &user = room->getMember(userId);
-  server->sendMessageToUser(user, std::move(message));
+  sendToPlayer(ownerId, std::move(message));
 }
 
 void GameInstance::sendGlobalMessage(std::string message) {
   server->sendMessageToRoom(*room, std::move(message));
 }
 
-std::deque<PlayerMessage>
-GameInstance::receiveFromPlayer(const Player &player) {
-  std::deque<PlayerMessage> messages;
-  auto &&[x, y] =
-      std::ranges::partition(inboundMessageQueue, [&player](auto &message) {
-        return player.id != message.player->id;
-      });
-  std::ranges::move(x, inboundMessageQueue.end(), std::back_inserter(messages));
-  inboundMessageQueue.erase(x, inboundMessageQueue.end());
-  playerMessageRequest.at(player.id) = messages.empty();
+std::deque<AST::PlayerMessage> GameInstance::receiveFromPlayer(int playerId) {
+  std::deque<AST::PlayerMessage> messages;
+  auto it = std::partition(
+      inboundMessageQueue.begin(), inboundMessageQueue.end(),
+      [playerId](auto &message) { return playerId != message.playerId; });
+  std::ranges::move(it, inboundMessageQueue.end(),
+                    std::back_inserter(messages));
+  inboundMessageQueue.erase(it, inboundMessageQueue.end());
+  playerMessageRequest.at(playerId) = messages.empty();
   return messages;
 }
 
-std::deque<PlayerMessage> GameInstance::receiveFromOwner() {
-  auto &owner = players.at(ownerId);
-  return receiveFromPlayer(owner);
+std::deque<AST::PlayerMessage> GameInstance::receiveFromOwner() {
+  return receiveFromPlayer(ownerId);
 }
 
 bool GameInstance::queueMessage(const User &user, std::string message) {
@@ -60,7 +56,7 @@ bool GameInstance::queueMessage(const User &user, std::string message) {
   if (!playerMessageRequest.at(playerId)) {
     return false;
   }
-  inboundMessageQueue.push_back({&player, std::move(message)});
+  inboundMessageQueue.push_back({playerId, std::move(message)});
   return true;
 }
 void GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {

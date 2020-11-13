@@ -21,11 +21,6 @@ struct Player {
   std::string name;
 };
 
-struct PlayerMessage {
-  Player *player;
-  std::string message;
-};
-
 class GameInstance : public AST::Communicator {
 public:
   GameInstance(Room &room, GameServer &server, const User &owner);
@@ -38,17 +33,17 @@ public:
   bool queueMessage(const User &user, std::string message);
 
   /// Send ouput message to a player
-  void sendToPlayer(const Player &player, std::string message);
+  void sendToPlayer(int playerId, std::string message);
 
-  void sendToOwner(std::string message);
+  void sendToOwner(std::string message) override;
 
   void sendGlobalMessage(std::string message) override;
 
   /// Get messages from a player.
   /// Returns empty deque if no message is available.
-  std::deque<PlayerMessage> receiveFromPlayer(const Player &player);
+  std::deque<AST::PlayerMessage> receiveFromPlayer(int playerId);
 
-  std::deque<PlayerMessage> receiveFromOwner();
+  std::deque<AST::PlayerMessage> receiveFromOwner() override;
 
   /// Get info about players in the room
   const std::vector<Player> &getPlayers() const { return players; }
@@ -63,7 +58,7 @@ private:
   std::vector<Player> players;
   std::map<int, userid> playerIdMapping;
   std::map<userid, int> reversePlayerIdMapping;
-  std::list<PlayerMessage> inboundMessageQueue;
+  std::list<AST::PlayerMessage> inboundMessageQueue;
   coro::Task<> gameTask;
   std::unique_ptr<AST::ASTVisitor> interpreter;
 };
