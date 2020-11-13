@@ -80,8 +80,9 @@ std::map<std::string, GameServer::Command>  GameCommands::initializeCommandMap()
                                               GameServer::Command::LIST,
                                               GameServer::Command::INFO,
                                               GameServer::Command::GAME};
-  standartMap strToCommandMap;
-  return strToCommandMap.initializeMap(keys, values);
+  strToCommandMap theMap;
+  theMap.initializeMap(keys, values);
+  return theMap.getMap();
 }
 
 GameServer::Command matchCommand(const std::string &command) {
@@ -98,10 +99,9 @@ GameServer::GameServer(unsigned short port, std::string httpMessage)
           [this](Connection c) { this->onDisconnect(c); }
           ),
       roomManager(), gameManager(*this, roomManager),
-      commandToFunctionMap(initializeFunctionMap())  {
-        GameCommands comm;
-        strToCommandMap = comm.initializeCommandMap();
-      }
+      strToCommandMap(initializeCommandMap()), strToGameCommandMap(initializeGameCommandMap()), 
+      commandToFunctionMap(initializeFunctionMap()), commandToGameFunctionMap(initializeGameFunctionMap())
+        {}
 
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";
@@ -250,8 +250,9 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
                                                       infoFunc,
                                                       gameFunc,
                                                       leaveFunc};
-  standartMap commandToFunctionMap;
-  return commandToFunctionMap.initializeMap(keys, values);
+  commandToFunctionMap theMap;
+  theMap.initializeMap(keys, values);
+  return theMap.getMap();
 }
 
 std::string GameServer::processCommand(User &user, std::string rawCommand) {
@@ -274,7 +275,9 @@ std::map<std::string, GameServer::Command>  GameCommands::initializeGameCommandM
                                               GameServer::GameCommand::CLEAN};
   standartMap strToGameCommandMap;
   
-  return strToGameCommandMap.initializeMap(keys, values);
+  strToCommandMap theMap;
+  theMap.initializeMap(keys, values);
+  return theMap.getMap();
 }
 
 std::map<GameServer::Command, std::function<functionType>>  GameServer::initializeGameFunctionMap() {
@@ -314,8 +317,9 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
   std::vector<std::function<functionType>> values = {createFunc,
                                               startFunc,
                                               cleanFunc};
-  standartMap commandToGameFunctionMap;
-  return commandToGameFunctionMap.initializeMap(keys, values);
+  commandToFunctionMap theMap;
+  theMap.initializeMap(keys, values);
+  return theMap.getMap();
 }
 
 /*bool GameServer::strToGameCommandMapIsEnded(const std::string &command) {
@@ -327,7 +331,7 @@ GameServer::Command strToGameCommandMapGetCommand(const std::string &command) {
 }*/
 
 GameServer::GameCommand matchGameCommand(const std::string &command) {
-  if ( GameServer::strToGameCommandMap.strToGameCommandMapIsEnded(command) ) {
+  if ( strToGameCommandMap.find(command) == strToGameCommandMap.end ) {
     return GameServer::GameCommand::UNKNOWN_GAME;
   }
   return GameServer::strToGameCommandMap[command];

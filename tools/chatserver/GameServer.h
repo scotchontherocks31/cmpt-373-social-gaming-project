@@ -80,14 +80,37 @@ class Mapz {
     virtual auto  initializeMap(std::vector<auto>; std::vector<auto>) = 0;
 };
 
-class standartMap : public Mapz {
-    auto  initializeMap(std::vector<auto> keys; std::vector<auto> values) override {
-      std::map<keys.value_type, values.value_type> theMap;
+class strToCommandMap : public Mapz {
+  private:
+    std::map<std::string, GameServer::Command> theMap;
+  public:
+    std::map<std::string, GameServer::Command> getMap() {
+      return theMap;
+    }
+    void initializeMap(std::vector<std::string> keys; std::vector<GameServer::Command> values) override { //std::vector<auto> keys; std::vector<auto> values
+      //std::map<keys.value_type, values.value_type> theMap;
       if (keys.size() == values.size()) {
         for (int i = 0; i < keys.size(); i++) {
           theMap[keys[i]] = values[i];
         }
       }
-      return theMap
+      //return theMap
+    }
+};
+
+class commandToFunctionMap : public Mapz {
+  private:
+    std::map<GameServer::Command, std::function<functionType>> theMap;
+  public:
+    std::map<GameServer::Command, std::function<functionType>> getMap() {
+      return theMap;
+    }
+    void initializeMap(std::vector<GameServer::Command> keys; std::vector<std::function<functionType>> values) override {
+      if (keys.size() == values.size()) {
+        for (int i = 0; i < keys.size(); i++) {
+          theMap[keys[i]] = values[i];
+        }
+      }
+      //return theMap;
     }
 };
