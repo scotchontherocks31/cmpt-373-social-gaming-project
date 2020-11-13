@@ -70,7 +70,7 @@ private:
 };
 
 class strToCommandMap {
-  private:
+  protected:
     std::map<std::string, GameServer::Command> theMap;
   public:
     virtual void initializeMap(std::vector<std::string> keys, std::vector<GameServer::Command> values) = 0;
@@ -93,7 +93,7 @@ class englishCommandMap : public strToCommandMap {
 };
 
 class commandToFunctionMap {
-  private:
+  protected:
     std::map<GameServer::Command, std::function<functionType>> theMap;
   public:
     virtual void initializeMap(std::vector<GameServer::Command> keys, std::vector<std::function<functionType>> values) = 0;
