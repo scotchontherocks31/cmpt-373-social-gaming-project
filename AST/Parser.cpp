@@ -61,8 +61,7 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
   return std::make_unique<Variable>(json["list"]);
 }
 
-Environment Configurator::createEnvironment(
-    std::vector<std::pair<int, std::string>> players) {
+Environment Configurator::createEnvironment(std::vector<Player> players) {
   auto config = json[0]["configuration"];
   auto enviro = Environment{nullptr};
   DSLValue setUp{config["setup"]};
@@ -73,12 +72,12 @@ Environment Configurator::createEnvironment(
   Json aPlayer;
   for (auto i = players.begin(); i != players.end(); ++i) {
     aPlayer = {};
-    aPlayer["id"] = i->first;
-    aPlayer["name"] = i->second;
+    aPlayer["id"] = i->getId();
+    aPlayer["name"] = i->getName();
     for (Json::iterator it = perPlayer.begin(); it != perPlayer.end(); ++it) {
       aPlayer[it.key()] = it.value();
     }
-    enviro.setBinding(i->second, DSLValue{aPlayer});
+    enviro.setBinding(i->getName(), DSLValue{aPlayer});
   }
 
   // add constants

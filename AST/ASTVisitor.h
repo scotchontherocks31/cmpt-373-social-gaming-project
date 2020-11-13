@@ -15,6 +15,20 @@ namespace AST {
 
 using Json = nlohmann::json;
 
+class Player {
+public:
+  Player(std::string name, int id, DSLValue *dslPtr)
+      : name{name}, id{id}, dslPtr{dslPtr} {}
+  int getId() { return id; }
+  std::string getName() { return name; }
+  DSLValue *getDslPtr() { return dslPtr; }
+
+private:
+  std::string name;
+  int id;
+  DSLValue *dslPtr;
+};
+
 class Communicator {
 public:
   virtual void sendGlobalMessage(std::string message) = 0;

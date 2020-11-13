@@ -53,10 +53,13 @@ void GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
   auto players = this->getPlayers();
   auto playersTran =
       players | std::views::transform([](Player player) {
-        return std::pair<int, std::string>{player.id, player.name};
+        return AST::Player(
+            player.name, player.id,
+            nullptr); // std::pair<int, std::string>{player.id, player.name};
       });
-  std::vector<std::pair<int, std::string>> playersInfo(playersTran.begin(),
-                                                       playersTran.end());
+  // AST::Player aPlayer = AST::Player("hello",5,nullptr);
+
+  std::vector<AST::Player> playersInfo(playersTran.begin(), playersTran.end());
   AST::Environment env = config.createEnvironment(playersInfo);
   (this->interpreter).reset();
   this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
