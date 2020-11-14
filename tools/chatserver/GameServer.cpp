@@ -11,8 +11,6 @@ using networking::Connection;
 using networking::Message;
 using networking::Server;
 using functionType = std::string(User &user, std::vector<std::string> &tokens);
-using commandToFunctionMapType = std::map<GameServer::Command, std::function<functionType>>;
-using stringToCommandMapType = std::map<std::string, GameServer::Command>;
 
 /// Tokenize raw command string.
 ///
@@ -57,7 +55,7 @@ std::vector<std::string> tokenizeCommand(std::string command) {
   return tokens;
 }
 
-stringToCommandMapType GameServer::initializeCommandMap() {
+std::map<std::string, GameServer::Command> GameServer::initializeCommandMap() {
   std::vector<std::string> keys{"quit",  "shutdown", "create", "join",
                                 "leave", "list",     "info",   "game"};
   std::vector<GameServer::Command> values{
@@ -155,7 +153,7 @@ void GameServer::processMessages() {
   }
 }
 
-commandToFunctionMapType
+std::map<GameServer::Command, std::function<functionType>>
 GameServer::initializeFunctionMap() {
   std::function<functionType> quitFunc =
       [this](User &user,
@@ -255,7 +253,7 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
   return output;
 }
 
-stringToCommandMapType
+std::map<std::string, GameServer::Command>
 GameServer::initializeGameCommandMap() {
   std::vector<std::string> keys{"create", "start", "clean"};
   std::vector<GameServer::Command> values{GameServer::Command::CREATE_GAME,
@@ -267,7 +265,7 @@ GameServer::initializeGameCommandMap() {
   return theMap.getMap();
 }
 
-commandToFunctionMapType
+std::map<GameServer::Command, std::function<functionType>>
 GameServer::initializeGameFunctionMap() {
   std::function<functionType> createFunc =
       [this](User &user, std::vector<std::string> &tokens) {
