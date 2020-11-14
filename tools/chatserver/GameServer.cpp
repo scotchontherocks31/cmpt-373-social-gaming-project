@@ -55,14 +55,6 @@ std::vector<std::string> tokenizeCommand(std::string command) {
   return tokens;
 }
 
-/*bool GameServer::strToCommandMapIsEnded(const std::string &command) {
-  return strToCommandMap.find(command) == strToCommandMap.end;
-}
-
-GameServer::Command strToCommandMapGetCommand(const std::string &command) {
-  return strToCommandMap[command];
-}*/
-
 std::map<std::string, GameServer::Command>  GameServer::initializeCommandMap() {
   std::vector<std::string> keys { "quit",
                                     "shutdown",
@@ -189,7 +181,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
         roomManager.createRoom(tokens.size() >= 2 ? tokens[1] : "");
     if (created) {
       output = "Creating room \"";
-      output.append(this->roomPtr->getName());
+      output.append(roomPtr->getName());
       output.append("\"...\n");///* + roomPtr->getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
     } else {
       output = "Room already existed.\n";
@@ -201,7 +193,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     if (tokens.size() >= 2) {
       if (roomManager.putUserToRoom(user, tokens[1])) {
         output = "Joining room \"";
-        output.append(this->roomManager.getRoomFromUser(user).getName());
+        output.append(roomManager.getRoomFromUser(user).getName());
         output.append("\"...\n");       ///*+ roomManager.getRoomFromUser(user).getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
       } else {
         output = "Failed to join room.";
@@ -214,7 +206,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     std::string output;
     roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
     output = "Leaving room \"";
-    output.append(this->roomManager.getRoomFromUser(user).getName());
+    output.append(roomManager.getRoomFromUser(user).getName());
     output.append("\"...\n"); ///*+ roomManager.getRoomFromUser(user).getName()*/ + "\"...\n"; //TODO figure out why "+" doesnt work
     return output;
   };
@@ -227,14 +219,14 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
     std::string output;
     auto &room = roomManager.getRoomFromUser(user);
     output = "Your name is: ";
-    output.append(this->user.name);
+    output.append(user.name);
     output.append("\n");
     output.append("You are in a room: ");
-    output.append(this->room.getName());
+    output.append(room.getName());
     output.append(" (");
-    output.append(this->room.getCurrentSize());
+    output.append(room.getCurrentSize());
     output.append("/");
-    output.append(this->room.getCapacity());
+    output.append(room.getCapacity());
     output.append(")\n");
     output.append(")\n"); /*+ user.name + "\n"
            //+ "You are in room: " + room.getName() + " ("
