@@ -5,7 +5,6 @@
 #include "ASTVisitor.h"
 #include "json.hpp"
 #include <memory>
-#include <sstream>
 using Json = nlohmann::json;
 
 namespace AST {
@@ -50,18 +49,22 @@ private:
   std::unique_ptr<ParallelFor> parseParallelFor(const Json &);
 };
 
-class Configurator {
+class ConfigParser {
 public:
-  Configurator(std::string json)
+  ConfigParser(std::string json)
       : json{nlohmann::json::parse(std::move(json))} {}
-
-  Environment createEnvironment(std::vector<Player> players);
-  std::pair<int, int> getPlayerCount();
-  bool hasAudience();
+  std::string parseName();
+  std::pair<int, int> parsePlayerCount();
+  bool parseHasAudience();
+  Json parseSetup();
+  Json parsePerPlayer();
+  Json parsePerAudience();
+  Json parseVariables();
+  Json parseConstants();
 
 private:
-  const Json json;
-};
+  Json json;
+}
 
 } // namespace AST
 
