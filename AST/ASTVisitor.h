@@ -184,7 +184,10 @@ private:
   void visitLeave(ParallelFor &node){};
 
   void visitEnter(Expression &node){};
-  void visitLeave(Expression &node){};
+  void visitLeave(Expression &node) {
+    const auto operatorType = node.getOperationType();
+    // Implement this in branch 37 Expression node
+  };
 
 private:
   Environment environment;
