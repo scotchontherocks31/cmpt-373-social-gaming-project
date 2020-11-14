@@ -36,9 +36,8 @@ coro::Task<Json> getSetupValueFromOwner(const std::string &key, Json &value,
 namespace AST {
 
 bool Configurator::isSetupValid() {
-  return std::none_of(setup.begin(), setup.end(), [](auto &element) {
-    return element.contains("kind");
-  });
+  return std::none_of(setup.begin(), setup.end(),
+                      [](auto &element) { return element.contains("kind"); });
 }
 
 coro::Task<Environment>

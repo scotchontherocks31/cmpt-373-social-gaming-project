@@ -78,24 +78,14 @@ bool ConfigParser::parseHasAudience() {
   return config["audience"].get<bool>();
 }
 
-Json ConfigParser::parseSetup() {
-  return json[0]["configuration"]["setup"];
-}
+Json ConfigParser::parseSetup() { return json[0]["configuration"]["setup"]; }
 
-Json ConfigParser::parsePerPlayer() {
-  return json[0]["per-player"];
-}
+Json ConfigParser::parsePerPlayer() { return json[0]["per-player"]; }
 
-Json ConfigParser::parsePerAudience() {
-  return json[0]["per-audience"];
-}
+Json ConfigParser::parsePerAudience() { return json[0]["per-audience"]; }
 
-Json ConfigParser::parseVariables() {
-  return json[0]["variables"];
-}
+Json ConfigParser::parseVariables() { return json[0]["variables"]; }
 
-Json ConfigParser::parseConstants() {
-  return json[0]["constants"];
-}
+Json ConfigParser::parseConstants() { return json[0]["constants"]; }
 
 } // namespace AST
