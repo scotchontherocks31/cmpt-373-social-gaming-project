@@ -298,7 +298,7 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
       //output.append("\"\n");///* + tokens[2]*/ + "\"\n"; //TODO figure out why "+" doesnt work
       gameManager.createGame(std::move(tokens[2]), std::move(tokens[3]));
     }
-    return output;
+    return output.str();
   };
   std::function<functionType> startFunc = [this](User &user, std::vector<std::string> &tokens) {
     std::ostringstream output;
