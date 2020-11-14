@@ -82,8 +82,8 @@ protected:
   std::map<std::string, GameServer::Command> theMap;
 
 public:
-  virtual void initializeMap(std::vector<std::string> keys,
-                             std::vector<GameServer::Command> values) = 0;
+  /*virtual void initializeMap(std::vector<std::string> keys,
+                             std::vector<GameServer::Command> values) = 0;*/
   virtual std::map<std::string, GameServer::Command> getMap() = 0;
 };
 
@@ -100,6 +100,7 @@ public:
       }
     }
   }*/
+  EnglishCommandMap() {}
   EnglishCommandMap(std::vector<std::string> keys,
                     std::vector<GameServer::Command> values) {
     if (keys.size() == values.size()) {
@@ -118,8 +119,8 @@ public:
   /*virtual void
   initializeMap(std::vector<GameServer::Command> keys,
                 std::vector<std::function<functionType>> values) = 0;*/
-  CommandToFunctionM(std::vector<GameServer::Command> keys,
-                     std::vector<std::function<functionType>> values);
+  // CommandToFunctionM(/*std::vector<GameServer::Command> keys,
+  // std::vector<std::function<functionType>> values*/);
   virtual std::map<GameServer::Command, std::function<functionType>>
   getMap() = 0;
 };
@@ -137,15 +138,13 @@ public:
       }
     }
   }*/
+  GameServerFunctions() {}
   GameServerFunctions(std::vector<GameServer::Command> keys,
                       std::vector<std::function<functionType>> values) {
     if (keys.size() == values.size()) {
       for (int i = 0; i < keys.size(); i++) {
         theMap[keys[i]] = values[i];
       }
-    }
-    else {
-      
     }
   }
 };
