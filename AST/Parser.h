@@ -64,7 +64,7 @@ public:
 
 private:
   Json json;
-}
+};
 
 } // namespace AST
 
