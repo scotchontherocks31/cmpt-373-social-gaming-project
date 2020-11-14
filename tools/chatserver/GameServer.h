@@ -11,7 +11,7 @@
 using networking::Connection;
 using networking::Message;
 using networking::Server;
-using functionType = std::string(User&, std::vector<std::string>&);
+using functionType = std::string(const User&, std::vector<std::string>&);
 
 struct DecoratedMessage {
   const User &user;
@@ -66,7 +66,7 @@ private:
   void onConnect(Connection c);
   void onDisconnect(Connection c);
   void processMessages();
-  std::string processCommand(User &user, std::string rawCommand);
+  std::string processCommand(const User &user, std::string rawCommand);
   std::string processGameCommand(const User &user,
                                  std::vector<std::string> &tokens);
   User &getUser(Connection connection) { return users.at(connection.id); }
