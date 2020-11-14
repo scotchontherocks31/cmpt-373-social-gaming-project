@@ -265,7 +265,7 @@ struct Print {
 namespace AST {
 
 optional<reference_wrapper<DSLValue>>
-DSLValue::operator[](const string &key) noexcept {
+    DSLValue::operator[](const string &key) noexcept {
   return unaryOperation(MutableAt{key});
 }
 
@@ -275,17 +275,17 @@ DSLValue::at(const std::string &key) const noexcept {
 }
 
 optional<reference_wrapper<DSLValue>>
-DSLValue::operator[](size_t index) noexcept {
+    DSLValue::operator[](size_t index) noexcept {
   return unaryOperation(MutableListIndex{index});
 }
 
 optional<reference_wrapper<const DSLValue>>
-DSLValue::operator[](size_t index) const noexcept {
+    DSLValue::operator[](size_t index) const noexcept {
   return unaryOperation(ListIndex{index});
 }
 
-optional<DSLValue>
-DSLValue::createSlice(const std::string &key) const noexcept {
+optional<DSLValue> DSLValue::createSlice(const std::string &key) const
+    noexcept {
   return unaryOperation(Slice{key});
 }
 

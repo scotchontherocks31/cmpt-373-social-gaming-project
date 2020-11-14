@@ -1,6 +1,7 @@
 #ifndef AST_NODE_H
 #define AST_NODE_H
 
+#include "ExpressionParser.h"
 #include <algorithm>
 #include <iostream>
 #include <memory>
@@ -133,6 +134,54 @@ public:
   }
 
 private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
+enum class OperationType {
+  DOT,
+  EQUALS,
+  GREATER,
+  GREATEREQUALS,
+  LESS,
+  LESSEQUALS,
+  NOT,
+};
+
+// Maps not compiling inside .h ... Change operatorType to enum
+// maybe strong type the expression
+class Expression : public ASTNode {
+public:
+  explicit Expression(std::string exp) : expression{std::move(exp)} {
+
+    operation = parseExpression(expression);
+    switch (operation.size()) {
+    case 1: // e.g. Player.name
+    {
+      break;
+    }
+    case 2: // e.g. !Player.isTall
+    {
+      operationType = operation[1];
+      // std::unique_ptr<Expression> left = 
+      // std::make_unique<Expression>(expression[0]);
+      // appendChild(std::move(left));
+      break;
+    }
+    case 3: // e.g. Player.name == "Mike"
+    {
+      operationType = operation[1];
+      break;
+    }
+    default:
+      break;
+    }
+  }
+
+private:
+  // std::variant< int, std::string, bool> value; //add more variant
+  std::string expression;
+  std::vector<std::string> operation;
+  std::string operationType;
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 

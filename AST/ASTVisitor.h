@@ -67,6 +67,7 @@ public:
   coro::Task<> visit(Rules &node);
   coro::Task<> visit(ParallelFor &node);
   coro::Task<> visit(InputText &node);
+  coro::Task<> visit(Expression &node);
   virtual ~ASTVisitor() = default;
 
 private:
@@ -77,6 +78,7 @@ private:
   virtual coro::Task<> visitHelper(Variable &) = 0;
   virtual coro::Task<> visitHelper(VarDeclaration &) = 0;
   virtual coro::Task<> visitHelper(InputText &) = 0;
+  virtual coro::Task<> visitHelper(Expression &) = 0;
 };
 
 // TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
@@ -140,6 +142,14 @@ private:
     visitLeave(node);
     co_return;
   }
+  coro::Task<> visitHelper(Expression &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
@@ -172,6 +182,9 @@ private:
 
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
+
+  void visitEnter(Expression &node){};
+  void visitLeave(Expression &node){};
 
 private:
   Environment environment;
@@ -242,6 +255,14 @@ private:
     visitLeave(node);
     co_return;
   }
+  coro::Task<> visitHelper(Expression &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(FormatNode &node) {
@@ -262,6 +283,9 @@ private:
   void visitLeave(VarDeclaration &node) { out << ")"; };
   void visitEnter(ParallelFor &node) { out << "(ParallelFor "; };
   void visitLeave(ParallelFor &node) { out << ")"; };
+
+  void visitEnter(Expression &node) { out << "(Expression "; };
+  void visitLeave(Expression &node) { out << ")"; };
 
 private:
   std::ostream &out;

@@ -43,5 +43,11 @@ coro::Task<> ASTVisitor::visit(ParallelFor &node) {
     co_await coroutine;
   }
 }
+coro::Task<> ASTVisitor::visit(Expression &node) {
+  auto coroutine = visitHelper(node);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
 
 } // namespace AST

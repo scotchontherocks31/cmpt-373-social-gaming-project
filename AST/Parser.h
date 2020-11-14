@@ -47,6 +47,7 @@ private:
   std::unique_ptr<VarDeclaration> parseVarDeclaration(const Json &);
   std::unique_ptr<Variable> parseVariable(const Json &);
   std::unique_ptr<ParallelFor> parseParallelFor(const Json &);
+  std::unique_ptr<Expression> parseExpressionNode(const std::string &);
 };
 
 } // namespace AST
