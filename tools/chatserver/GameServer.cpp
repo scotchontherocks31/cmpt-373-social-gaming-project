@@ -270,7 +270,7 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
   std::function func = commandToFunctionMap[command];
   std::string output = func(user, tokens);
 
-  return output;
+  return output.str();
 }
 
 std::map<std::string, GameServer::Command>  GameServer::initializeGameCommandMap() {
@@ -350,7 +350,7 @@ std::string GameServer::processGameCommand(const User &user,
   std::function func = commandToGameFunctionMap[tokens[1]];
   std::string output = func(user, tokens);
 
-  return output;
+  return output.str();
 }
 
 void GameServer::flush() {
