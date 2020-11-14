@@ -18,8 +18,7 @@ namespace coroutine = std::experimental;
 namespace coroutine = std;
 #endif
 
-template <typename T, bool movable = false>
-class Awaitable;
+template <typename T, bool movable = false> class Awaitable;
 
 template <typename T = void>
 class [[nodiscard("Coroutine Task Discarded")]] Task {
@@ -50,7 +49,9 @@ public:
   }
   bool isDone() const noexcept { return !handle || handle.done(); }
   auto operator co_await() const &noexcept { return Awaitable<T>(handle); }
-  auto operator co_await() const &&noexcept { return Awaitable<T, std::movable<T>>(handle); }
+  auto operator co_await() const &&noexcept {
+    return Awaitable<T, std::movable<T>>(handle);
+  }
 
   ~Task() {
     if (handle) {
