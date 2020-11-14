@@ -24,8 +24,8 @@ struct Player {
 
 class GameInstance : public AST::Communicator {
 public:
-  GameInstance(Room &room, GameServer &server, const User &owner);
-  void startGame(AST::AST &ast, AST::Configurator &config);
+  GameInstance(Room &room, GameServer &server);
+  void startGame(AST::AST &ast, AST::Configurator &config, const User &user);
   void resumeGame();
   bool isRunning() { return !gameTask.isDone(); }
 

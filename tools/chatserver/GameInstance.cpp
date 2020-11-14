@@ -2,13 +2,10 @@
 #include "GameServer.h"
 #include <algorithm>
 
-GameInstance::GameInstance(Room &room, GameServer &server, const User &owner)
+GameInstance::GameInstance(Room &room, GameServer &server)
     : room{&room}, server{&server} {
   int counter = 0;
   for (auto &[id, user] : room.getMembers()) {
-    if (owner.getId() == id) {
-      ownerId = counter;
-    }
     players.push_back({counter, user->name});
     playerIdMapping.insert({counter, id});
     playerMessageRequest.insert({counter, false});
@@ -78,7 +75,9 @@ void GameInstance::resumeGame() {
   }
 }
 
-void GameInstance::startGame(AST::AST &ast, AST::Configurator &config) {
+void GameInstance::startGame(AST::AST &ast, AST::Configurator &config,
+                             const User &owner) {
+  ownerId = reversePlayerIdMapping.at(owner.getId());
   gameTask = loadGame(ast, config);
   resumeGame();
 }
