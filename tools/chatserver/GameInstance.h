@@ -35,7 +35,7 @@ public:
   /// Send ouput message to a player
   void sendToPlayer(int playerId, std::string message);
 
-  void sendToOwner(std::string message) override;
+  void sendToOwner(std::string message);
 
   void sendGlobalMessage(std::string message) override;
 
@@ -43,7 +43,7 @@ public:
   /// Returns empty deque if no message is available.
   std::deque<AST::PlayerMessage> receiveFromPlayer(int playerId);
 
-  std::deque<AST::PlayerMessage> receiveFromOwner() override;
+  std::deque<AST::PlayerMessage> receiveFromOwner();
 
   /// Get info about players in the room
   const std::vector<Player> &getPlayers() const { return players; }
