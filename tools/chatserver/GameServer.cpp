@@ -340,7 +340,7 @@ GameServer::Command GameServer::matchGameCommand(const std::string &command) {
   return GameServer::strToGameCommandMap[command];
 }
 
-std::string GameServer::processGameCommand(const User &user,/////////////////////////////////////////////////////////
+std::string GameServer::processGameCommand(User &user,/////////////////////////////////////////////////////////
                                            std::vector<std::string> &tokens) {
   // TODO: rework this to use visitor pattern
   if (tokens.size() < 2) {
