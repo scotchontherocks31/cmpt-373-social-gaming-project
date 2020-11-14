@@ -92,8 +92,16 @@ public:
   std::map<std::string, GameServer::Command> getMap() override {
     return theMap;
   }
-  void initializeMap(std::vector<std::string> keys,
+  /*void initializeMap(std::vector<std::string> keys,
                      std::vector<GameServer::Command> values) override {
+    if (keys.size() == values.size()) {
+      for (int i = 0; i < keys.size(); i++) {
+        theMap[keys[i]] = values[i];
+      }
+    }
+  }*/
+  EnglishCommandMap(std::vector<std::string> keys,
+                    std::vector<GameServer::Command> values) {
     if (keys.size() == values.size()) {
       for (int i = 0; i < keys.size(); i++) {
         theMap[keys[i]] = values[i];
@@ -107,9 +115,11 @@ protected:
   std::map<GameServer::Command, std::function<functionType>> theMap;
 
 public:
-  virtual void
+  /*virtual void
   initializeMap(std::vector<GameServer::Command> keys,
-                std::vector<std::function<functionType>> values) = 0;
+                std::vector<std::function<functionType>> values) = 0;*/
+  CommandToFunctionM(std::vector<GameServer::Command> keys,
+                     std::vector<std::function<functionType>> values);
   virtual std::map<GameServer::Command, std::function<functionType>>
   getMap() = 0;
 };
@@ -119,8 +129,16 @@ public:
   std::map<GameServer::Command, std::function<functionType>> getMap() {
     return theMap;
   }
-  void initializeMap(std::vector<GameServer::Command> keys,
+  /*void initializeMap(std::vector<GameServer::Command> keys,
                      std::vector<std::function<functionType>> values) override {
+    if (keys.size() == values.size()) {
+      for (int i = 0; i < keys.size(); i++) {
+        theMap[keys[i]] = values[i];
+      }
+    }
+  }*/
+  GameServerFunctions(std::vector<GameServer::Command> keys,
+                      std::vector<std::function<functionType>> values) {
     if (keys.size() == values.size()) {
       for (int i = 0; i < keys.size(); i++) {
         theMap[keys[i]] = values[i];
