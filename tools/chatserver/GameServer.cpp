@@ -63,7 +63,7 @@ std::map<std::string, GameServer::Command> GameServer::initializeCommandMap() {
       GameServer::Command::CREATE, GameServer::Command::JOIN,
       GameServer::Command::LEAVE,  GameServer::Command::LIST,
       GameServer::Command::INFO,   GameServer::Command::GAME};
-  englishCommandMap theMap;
+  EnglishCommandMap theMap;
   theMap.initializeMap(keys, values);
   return theMap.getMap();
 }
@@ -237,7 +237,7 @@ GameServer::initializeFunctionMap() {
   std::vector<std::function<functionType>> values{
       quitFunc, shutdownFunc, createFunc, joinFunc, leaveFunc,
       listFunc, infoFunc,     gameFunc,   leaveFunc};
-  gameServerFunctions theMap;
+  GameServerFunctions theMap;
   theMap.initializeMap(keys, values);
   return theMap.getMap();
 }
@@ -259,9 +259,8 @@ GameServer::initializeGameCommandMap() {
   std::vector<GameServer::Command> values{GameServer::Command::CREATE_GAME,
                                           GameServer::Command::START_GAME,
                                           GameServer::Command::CLEAN_GAME};
-  englishCommandMap strToGameCommandMap;
 
-  englishCommandMap theMap;
+  EnglishCommandMap theMap;
   theMap.initializeMap(keys, values);
   return theMap.getMap();
 }
@@ -305,7 +304,7 @@ GameServer::initializeGameFunctionMap() {
                                         GameServer::Command::CLEAN_GAME};
   std::vector<std::function<functionType>> values{createFunc, startFunc,
                                                   cleanFunc};
-  gameServerFunctions theMap;
+  GameServerFunctions theMap;
   theMap.initializeMap(keys, values);
   return theMap.getMap();
 }

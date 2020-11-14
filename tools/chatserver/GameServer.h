@@ -77,7 +77,7 @@ private:
   void flush();
 };
 
-class strToCommandM {
+class StrToCommandM {
 protected:
   std::map<std::string, GameServer::Command> theMap;
 
@@ -87,7 +87,7 @@ public:
   virtual std::map<std::string, GameServer::Command> getMap() = 0;
 };
 
-class englishCommandMap : public strToCommandM {
+class EnglishCommandMap : public StrToCommandM {
 public:
   std::map<std::string, GameServer::Command> getMap() override {
     return theMap;
@@ -102,7 +102,7 @@ public:
   }
 };
 
-class commandToFunctionM {
+class CommandToFunctionM {
 protected:
   std::map<GameServer::Command, std::function<functionType>> theMap;
 
@@ -114,7 +114,7 @@ public:
   getMap() = 0;
 };
 
-class gameServerFunctions : public commandToFunctionM {
+class GameServerFunctions : public CommandToFunctionM {
 public:
   std::map<GameServer::Command, std::function<functionType>> getMap() {
     return theMap;
