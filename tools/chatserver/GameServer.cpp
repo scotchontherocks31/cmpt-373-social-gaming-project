@@ -64,7 +64,7 @@ std::map<std::string, GameServer::Command> GameServer::initializeCommandMap() {
       GameServer::Command::LEAVE,  GameServer::Command::LIST,
       GameServer::Command::INFO,   GameServer::Command::GAME};
   EnglishCommandMap theMap{keys, values};
-  
+
   return theMap.getMap();
 }
 
