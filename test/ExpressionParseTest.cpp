@@ -53,9 +53,7 @@ TEST(ExpressionParseTest, ChainedDotChainedEquals) {
   std::vector<std::string> result;
 
   std::vector<std::string> expected;
-  expected.push_back("winners.size.big.size ");
-  expected.push_back("==");
-  expected.push_back("winners.size.small.fast");
+  expected.push_back("(winners.size.big.size == winners.size.small.fast) ");
   expected.push_back("==");
   expected.push_back("true");
 

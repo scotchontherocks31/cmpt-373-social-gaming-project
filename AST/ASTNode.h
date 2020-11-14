@@ -147,13 +147,11 @@ enum class OperationType {
   NOT,
 };
 
-// Maps not compiling inside .h ... Change operatorType to enum
-// maybe strong type the expression
 class Expression : public ASTNode {
 public:
   explicit Expression(std::string exp) : expression{std::move(exp)} {
 
-    operation = parseExpression(expression);
+    std::vector<std::string> operation = parseExpression(expression);
     switch (operation.size()) {
     case 1: // e.g. Player.name
     {
@@ -178,10 +176,8 @@ public:
   }
 
 private:
-  // std::variant< int, std::string, bool> value; //add more variant
   std::string expression;
-  std::vector<std::string> operation;
-  std::string operationType;
+  std::string operationType; //change to enum
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 

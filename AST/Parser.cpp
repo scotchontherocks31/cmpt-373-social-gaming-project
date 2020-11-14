@@ -64,7 +64,7 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
 
 std::unique_ptr<Expression>
 JSONToASTParser::parseExpressionNode(const std::string &expression) {
-  // return std::make_unique<Expression>(expression);
+  return std::make_unique<Expression>(expression);
 }
 
 } // namespace AST
