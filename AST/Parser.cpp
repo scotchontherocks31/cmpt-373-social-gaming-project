@@ -1,5 +1,6 @@
 #include "Parser.h"
 #include "ASTVisitor.h"
+#include "ExpressionParser.h"
 #include <assert.h>
 
 namespace AST {
@@ -60,4 +61,9 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
 
   return std::make_unique<Variable>(json["list"]);
 }
+
+std::unique_ptr<Expression> JSONToASTParser::parseVariable(std::string expression) {
+
+}
+
 } // namespace AST

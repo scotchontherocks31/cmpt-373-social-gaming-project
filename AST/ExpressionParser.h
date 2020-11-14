@@ -6,3 +6,4 @@
 #include <vector>
 
 std::vector<std::string> parseExpression(std::string str);
+std::vector<std::string> expressionParser(std::string str);
