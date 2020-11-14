@@ -12,8 +12,6 @@ using networking::Connection;
 using networking::Message;
 using networking::Server;
 using functionType = std::string(User &user, std::vector<std::string> &tokens);
-using commandToFunctionMapType = std::map<GameServer::Command, std::function<functionType>>;
-using stringToCommandMapType = std::map<std::string, GameServer::Command>;
 
 struct DecoratedMessage {
   const User &user;
@@ -46,11 +44,11 @@ public:
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
   void startRunningLoop();
-  stringToCommandMapType initializeCommandMap();
-  stringToCommandMapType initializeGameCommandMap();
-  commandToFunctionMapType
+  std::map<std::string, GameServer::Command> initializeCommandMap();
+  std::map<std::string, GameServer::Command> initializeGameCommandMap();
+  std::map<GameServer::Command, std::function<functionType>>
   initializeFunctionMap();
-  commandToFunctionMapType
+  std::map<GameServer::Command, std::function<functionType>>
   initializeGameFunctionMap();
 
   Command matchCommand(const std::string &command);
@@ -63,11 +61,11 @@ private:
   std::map<userid, User> users;
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
-  stringToCommandMapType strToCommandMap;
-  stringToCommandMapType strToGameCommandMap;
-  commandToFunctionMapType
+  std::map<std::string, GameServer::Command> strToCommandMap;
+  std::map<std::string, GameServer::Command> strToGameCommandMap;
+  std::map<GameServer::Command, std::function<functionType>>
       commandToFunctionMap;
-  commandToFunctionMapType
+  std::map<GameServer::Command, std::function<functionType>>
       commandToGameFunctionMap;
   bool running = false;
   void onConnect(Connection c);
@@ -81,17 +79,17 @@ private:
 
 class StrToCommandM {
 protected:
-  stringToCommandMapType theMap;
+  std::map<std::string, GameServer::Command> theMap;
 
 public:
   virtual void initializeMap(std::vector<std::string> keys,
                              std::vector<GameServer::Command> values) = 0;
-  virtual stringToCommandMapType getMap() = 0;
+  virtual std::map<std::string, GameServer::Command> getMap() = 0;
 };
 
 class EnglishCommandMap : public StrToCommandM {
 public:
-  stringToCommandMapType getMap() override {
+  std::map<std::string, GameServer::Command> getMap() override {
     return theMap;
   }
   /*void initializeMap(std::vector<std::string> keys,
@@ -114,7 +112,7 @@ public:
 
 class CommandToFunctionM {
 protected:
-  commandToFunctionMapType theMap;
+  std::map<GameServer::Command, std::function<functionType>> theMap;
 
 public:
   /*virtual void
@@ -122,13 +120,13 @@ public:
                 std::vector<std::function<functionType>> values) = 0;*/
   CommandToFunctionM(std::vector<GameServer::Command> keys,
                      std::vector<std::function<functionType>> values);
-  virtual commandToFunctionMapType
+  virtual std::map<GameServer::Command, std::function<functionType>>
   getMap() = 0;
 };
 
 class GameServerFunctions : public CommandToFunctionM {
 public:
-  commandToFunctionMapType getMap() {
+  std::map<GameServer::Command, std::function<functionType>> getMap() {
     return theMap;
   }
   /*void initializeMap(std::vector<GameServer::Command> keys,
@@ -147,7 +145,7 @@ public:
       }
     }
     else {
-
+      
     }
   }
 };
