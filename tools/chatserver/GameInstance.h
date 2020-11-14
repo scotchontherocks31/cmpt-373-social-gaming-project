@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ASTVisitor.h"
+#include "Config.h"
 #include "Parser.h"
 #include "Room.h"
 #include <list>
@@ -24,8 +25,8 @@ struct Player {
 class GameInstance : public AST::Communicator {
 public:
   GameInstance(Room &room, GameServer &server, const User &owner);
-  void loadGame(AST::AST &ast, AST::Configurator &config);
-  void runGame();
+  void startGame(AST::AST &ast, AST::Configurator &config);
+  void resumeGame();
   bool isRunning() { return !gameTask.isDone(); }
 
   /// Only allow new message to be queued when the game requests it.
@@ -51,6 +52,7 @@ public:
   bool isGameUnused() const { return room->getMembers().empty(); }
 
 private:
+  coro::Task<> loadGame(AST::AST &ast, AST::Configurator &config);
   Room *room;
   GameServer *server;
   int ownerId = 0;

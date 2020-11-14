@@ -60,20 +60,25 @@ bool GameInstance::queueMessage(const User &user, std::string message) {
   return true;
 }
 
-void GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
+coro::Task<> GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
   auto players = this->getPlayers();
   auto playersTran = players | std::views::transform([](Player player) {
-                       return AST::Player(player.name, player.id, nullptr);
+                       return AST::Player{player.name, player.id, nullptr};
                      });
   std::vector<AST::Player> playersInfo(playersTran.begin(), playersTran.end());
-  AST::Environment env = config.createEnvironment(playersInfo);
-  (this->interpreter).reset();
+  auto env = std::move(
+      co_await config.populateEnvironment(std::move(playersInfo), *this));
   this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
-  gameTask = ast.accept(*(this->interpreter));
+  co_await ast.accept(*(this->interpreter));
 }
 
-void GameInstance::runGame() {
+void GameInstance::resumeGame() {
   if (!gameTask.isDone()) {
     gameTask.resume();
   }
+}
+
+void GameInstance::startGame(AST::AST &ast, AST::Configurator &config) {
+  gameTask = loadGame(ast, config);
+  resumeGame();
 }
