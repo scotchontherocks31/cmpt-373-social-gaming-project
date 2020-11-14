@@ -346,7 +346,7 @@ std::string GameServer::processGameCommand(const User &user,////////////////////
   if (tokens.size() < 2) {
     return "Invalid command.\n";
   }
-  auto command = matchCommand(tokens[0]);
+  auto command = matchGameCommand(tokens[1]);
 
   std::function<functionType> func = commandToGameFunctionMap[command]; //was taking tokens[1]
   std::string output = func(user, tokens);
