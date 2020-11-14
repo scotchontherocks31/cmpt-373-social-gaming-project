@@ -18,11 +18,13 @@ namespace coroutine = std::experimental;
 namespace coroutine = std;
 #endif
 
+template <typename T, bool movable = false>
+class Awaitable;
+
 template <typename T = void>
 class [[nodiscard("Coroutine Task Discarded")]] Task {
 public:
   class Promise;
-  class Awaitable;
   using promise_type = Promise;
   Task() noexcept : handle{nullptr} {};
   explicit Task(coroutine::coroutine_handle<Promise> handle) : handle{handle} {}
@@ -47,7 +49,8 @@ public:
     return not isDone();
   }
   bool isDone() const noexcept { return !handle || handle.done(); }
-  auto operator co_await() const &noexcept { return Awaitable(handle); }
+  auto operator co_await() const &noexcept { return Awaitable<T>(handle); }
+  auto operator co_await() const &&noexcept { return Awaitable<T, std::movable<T>>(handle); }
 
   ~Task() {
     if (handle) {
@@ -115,12 +118,12 @@ public:
   void result() {}
 };
 
-template <typename T> class Task<T>::Awaitable {
+template <typename T, bool movable> class Awaitable {
 private:
-  coroutine::coroutine_handle<Task<T>::Promise> coroutine;
+  coroutine::coroutine_handle<typename Task<T>::Promise> coroutine;
 
 public:
-  Awaitable(coroutine::coroutine_handle<Task<T>::Promise> coroutine)
+  Awaitable(coroutine::coroutine_handle<typename Task<T>::Promise> coroutine)
       : coroutine{coroutine} {}
   bool await_ready() const noexcept { return !coroutine || coroutine.done(); }
   coroutine::coroutine_handle<>
@@ -130,7 +133,11 @@ public:
   }
   decltype(auto) await_resume() noexcept {
     assert(coroutine);
-    return coroutine.promise().result();
+    if constexpr (not movable) {
+      return coroutine.promise().result();
+    } else {
+      return std::move(coroutine.promise().result());
+    }
   }
 };
 
