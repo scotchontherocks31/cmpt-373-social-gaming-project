@@ -59,14 +59,13 @@ bool GameInstance::queueMessage(const User &user, std::string message) {
   inboundMessageQueue.push_back({playerId, std::move(message)});
   return true;
 }
+
 void GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
   auto players = this->getPlayers();
-  auto playersTran =
-      players | std::views::transform([](Player player) {
-        return std::pair<int, std::string>{player.id, player.name};
-      });
-  std::vector<std::pair<int, std::string>> playersInfo(playersTran.begin(),
-                                                       playersTran.end());
+  auto playersTran = players | std::views::transform([](Player player) {
+                       return AST::Player(player.name, player.id, nullptr);
+                     });
+  std::vector<AST::Player> playersInfo(playersTran.begin(), playersTran.end());
   AST::Environment env = config.createEnvironment(playersInfo);
   (this->interpreter).reset();
   this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
