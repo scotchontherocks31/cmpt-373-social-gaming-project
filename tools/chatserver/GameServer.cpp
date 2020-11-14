@@ -262,15 +262,15 @@ std::map<GameServer::Command, std::function<functionType>>  GameServer::initiali
   return theMap.getMap();
 }
 
-std::string GameServer::processCommand(User &user, std::string rawCommand) {
+std::string GameServer::processCommand(User &user, std::string rawCommand) { ////////////////////////////////////////////////////////////////////////////////////////////
   // tokenize command
   auto tokens = tokenizeCommand(std::move(rawCommand));
   auto command = matchCommand(tokens[0]);
 
-  std::function func = commandToFunctionMap[command];
+  std::function<functionType> func = commandToFunctionMap[command];
   std::string output = func(user, tokens);
 
-  return output.str();
+  return output;
 }
 
 std::map<std::string, GameServer::Command>  GameServer::initializeGameCommandMap() {
@@ -340,17 +340,18 @@ GameServer::Command GameServer::matchGameCommand(const std::string &command) {
   return GameServer::strToGameCommandMap[command];
 }
 
-std::string GameServer::processGameCommand(const User &user,
+std::string GameServer::processGameCommand(const User &user,/////////////////////////////////////////////////////////
                                            std::vector<std::string> &tokens) {
   // TODO: rework this to use visitor pattern
   if (tokens.size() < 2) {
     return "Invalid command.\n";
   }
+  auto command = matchCommand(tokens[0]);
 
-  std::function func = commandToGameFunctionMap[tokens[1]];
+  std::function<functionType> func = commandToGameFunctionMap[command]; //was taking tokens[1]
   std::string output = func(user, tokens);
 
-  return output.str();
+  return output;
 }
 
 void GameServer::flush() {
