@@ -50,7 +50,8 @@ bool GameInstance::queueMessage(const User &user, std::string message) {
   return true;
 }
 
-void GameInstance::loadGame(AST::AST &ast, std::unique_ptr<AST::Environment> &&env) {
+void GameInstance::loadGame(AST::AST &ast,
+                            std::unique_ptr<AST::Environment> &&env) {
   (this->interpreter).reset();
   this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
   gameTask = ast.accept(*(this->interpreter));
