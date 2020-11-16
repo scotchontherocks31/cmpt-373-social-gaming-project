@@ -1,5 +1,6 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
+#include "Environment.h"
 #include "gtest/gtest.h"
 
 #include <iostream>
@@ -12,7 +13,7 @@ using namespace testing;
 
 TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
-  auto enviro = AST::Environment{nullptr};
+  auto enviro = std::make_unique<AST::Environment>();
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
 
@@ -37,7 +38,7 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
 TEST(ASTprinter, ParallelForandInput) {
 
-  auto enviro = AST::Environment{nullptr};
+  auto enviro = std::make_unique<AST::Environment>();
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
 
