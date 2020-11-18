@@ -3,6 +3,7 @@
 
 #include "ASTNode.h"
 #include "DSLValue.h"
+#include "Environment.h"
 #include <algorithm>
 #include <iostream>
 #include <json.hpp>
@@ -28,36 +29,6 @@ class PrintCommunicator : public Communicator {
 public:
   void sendGlobalMessage(std::string message) override {
     std::cout << message << std::endl;
-  }
-};
-
-class Environment {
-public:
-  using Lexeme = std::string;
-
-private:
-  Environment *parent;
-  std::unique_ptr<Environment> child;
-  std::map<Lexeme, DSLValue> bindings;
-
-public:
-  Environment() : parent{nullptr} {}
-  explicit Environment(Environment *parent) : parent{parent} {}
-  DSLValue &getValue(const Lexeme &lexeme) noexcept { return bindings[lexeme]; }
-  void removeBinding(const Lexeme &lexeme) noexcept {
-    if (bindings.contains(lexeme)) {
-      bindings.erase(lexeme);
-    }
-  }
-  bool contains(const Lexeme &lexeme) noexcept {
-    return bindings.contains(lexeme);
-  }
-  void setBinding(const Lexeme &lexeme, DSLValue value) noexcept {
-    bindings.insert_or_assign(lexeme, std::move(value));
-  }
-  Environment &createChildEnvironment() noexcept {
-    child = std::make_unique<Environment>(this);
-    return *child;
   }
 };
 
@@ -87,7 +58,7 @@ private:
 // and Rules
 class Interpreter : public ASTVisitor {
 public:
-  Interpreter(Environment &&env, Communicator &communicator)
+  Interpreter(std::unique_ptr<Environment> &&env, Communicator &communicator)
       : environment{std::move(env)}, communicator{communicator} {}
 
 private:
@@ -195,7 +166,7 @@ private:
   void visitLeave(ParallelFor &node){};
 
 private:
-  Environment environment;
+  std::unique_ptr<Environment> environment;
   Communicator &communicator;
 };
 
