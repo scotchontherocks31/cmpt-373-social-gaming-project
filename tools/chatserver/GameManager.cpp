@@ -1,28 +1,45 @@
 #include "GameManager.h"
 #include "GameServer.h"
+#include "Parser.h"
+#include "json.hpp"
+#include <sstream>
+
+using json = nlohmann::json;
 
 GameManager::GameManager(GameServer &server, RoomManager &roomManager)
     : server{server}, roomManager{roomManager} {}
 
-// If game is already existed for the room, replace with new one.
-GameHandler &GameManager::createGame(Room &room) {
+// If game already exists in the room, replace with new one.
+GameInstance &GameManager::getGameInstance(const User &user) {
+  auto &room = roomManager.getRoomFromUser(user);
   auto roomId = room.getId();
-  games.insert_or_assign(roomId, GameHandler{room, server});
-  return games.at(roomId);
+  auto [it, _] = instances.insert({roomId, GameInstance{room, server}});
+  return it->second;
 }
 
-void GameManager::dispatch(const DecoratedMessage &message) {
-  auto &room = roomManager.getRoomFromUser(message.user);
+std::pair<AST::AST *, bool> GameManager::createGame(std::string name,
+                                                    std::string json) {
+  if (games.count(name)) {
+    return {&games.at(name), false};
+  }
+  auto parser = AST::JSONToASTParser(std::move(json));
+  auto [it, inserted] = games.insert({std::move(name), parser.parse()});
+  return {&it->second, inserted};
+}
+
+void GameManager::dispatch(const User &user, std::string message) {
+  auto &room = roomManager.getRoomFromUser(user);
   auto roomId = room.getId();
-  if (!games.count(roomId)) {
+  if (!instances.count(roomId)) {
     return; // Game does not exist. Exit.
   }
-  auto &game = games.at(roomId);
-  game.queueMessage(message);
+  auto &game = instances.at(roomId);
+  if (game.queueMessage(user, std::move(message))) {
+    game.runGame();
+  }
 }
 
-// TODO: Call this method somewhere to clean empty games if needed.
-void GameManager::cleanEmptyGames() {
-  std::erase_if(games,
+void GameManager::cleanEmptyGameInstances() {
+  std::erase_if(instances,
                 [](const auto &pair) { return pair.second.isGameUnused(); });
 }

@@ -5,15 +5,13 @@ if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/json/json.hpp)
   )
 endif()
 
-if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/magic_enum/magic_enum.hpp)
-  file(DOWNLOAD 
-    https://raw.githubusercontent.com/Neargye/magic_enum/v0.7.0/include/magic_enum.hpp 
-    ${CMAKE_CURRENT_BINARY_DIR}/magic_enum/magic_enum.hpp
-  )
-endif()
-
 add_library(json INTERFACE)
 target_include_directories(json INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/json)
 
-add_library(magic_enum INTERFACE)
-target_include_directories(magic_enum INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/magic_enum)
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG release-1.10.0
+)
+FetchContent_MakeAvailable(googletest)

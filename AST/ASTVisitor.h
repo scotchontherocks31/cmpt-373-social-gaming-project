@@ -2,9 +2,12 @@
 #define AST_VISITOR_H
 
 #include "ASTNode.h"
-#include <deque>
+#include "DSLValue.h"
+#include <algorithm>
 #include <iostream>
+#include <json.hpp>
 #include <map>
+#include <sstream>
 #include <string>
 #include <task.h>
 //include "../coroutine/task.h"
@@ -14,66 +17,17 @@
 
 namespace AST {
 
-class Communication {
+using Json = nlohmann::json;
+
+class Communicator {
 public:
-  void sendGlobalMessage(std::string &message) {
-    std::cout << message << std::endl;
-  }
+  virtual void sendGlobalMessage(std::string message) = 0;
 };
 
-class DSLValue;
-using List = std::vector<DSLValue>;
-using Map = std::map<std::string, DSLValue>;
-
-template <typename T>
-concept DSLType =
-    std::is_convertible<T, bool>::value ||
-    std::is_convertible<T, std::string>::value ||
-    std::is_convertible<T, int>::value ||
-    std::is_convertible<T, double>::value ||
-    std::is_convertible<T, List>::value || std::is_convertible<T, Map>::value;
-
-class DSLValue {
-private:
-  using InternalType =
-      std::variant<std::monostate, bool, std::string, int, double, List, Map>;
-  InternalType value;
-
+class PrintCommunicator : public Communicator {
 public:
-  template <DSLType T>
-  DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {}
-  DSLValue() noexcept = default;
-  DSLValue(const DSLValue &other) noexcept { this->value = other.value; }
-  DSLValue(DSLValue &&other) noexcept { this->value = std::move(other.value); }
-  template <DSLType T> T &get() { return std::get<T>(value); }
-  template <DSLType T> auto &get_if() noexcept { return std::get_if<T>(value); }
-  template <DSLType T> DSLValue &operator=(T &&a) noexcept {
-    value = std::forward<T>(a);
-    return *this;
-  }
-  DSLValue &operator=(const DSLValue &other) noexcept {
-    this->value = other.value;
-    return *this;
-  }
-  DSLValue &operator=(DSLValue &&other) noexcept {
-    this->value = std::move(other.value);
-    return *this;
-  }
-  DSLValue &operator[](const std::string &key) {
-    Map &map = get<Map>();
-    return map[key];
-  }
-  DSLValue &operator[](size_t index) {
-    List &list = get<List>();
-    return list[index];
-  }
-  List createKeyList(const std::string &key) {
-    List returnList{};
-    Map map = get<Map>();
-    for (const auto &[x, y] : map) {
-      returnList.push_back(y);
-    }
-    return returnList;
+  void sendGlobalMessage(std::string message) override {
+    std::cout << message << std::endl;
   }
 };
 
@@ -87,6 +41,7 @@ private:
   std::map<Lexeme, DSLValue> bindings;
 
 public:
+  Environment() : parent{nullptr} {}
   explicit Environment(Environment *parent) : parent{parent} {}
   DSLValue &getValue(const Lexeme &lexeme) noexcept { return bindings[lexeme]; }
   void removeBinding(const Lexeme &lexeme) noexcept {
@@ -132,8 +87,8 @@ private:
 // and Rules
 class Interpreter : public ASTVisitor {
 public:
-  Interpreter(Environment &&env, Communication &communication)
-      : environment{std::move(env)}, communication{communication} {}
+  Interpreter(Environment &&env, Communicator &communicator)
+      : environment{std::move(env)}, communicator{communicator} {}
 
 private:
   coro::Task<> visitHelper(GlobalMessage &node) override {
@@ -160,7 +115,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  coro::Task<> visitHelper(Variable &node) override {
+  coro::Task<> visitHelper(Variable &node) final {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -191,11 +146,7 @@ private:
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
     auto &&formatMessage = formatMessageNode.getFormat();
-    const std::string GAME_NAME = "Game Name";
-    auto &&gameNameDSL = environment.getValue(GAME_NAME);
-    auto &&gameName = gameNameDSL.get<std::string>();
-    auto finalMessage = formatMessage;
-    communication.sendGlobalMessage(finalMessage);
+    communicator.sendGlobalMessage(formatMessage);
   };
 
   void visitEnter(FormatNode &node){};
@@ -211,17 +162,12 @@ private:
   void visitLeave(VarDeclaration &node){};
 
   coro::Task<> visitEnter(Rules &node) {
-    auto rules = node.getChildren();
 
-    std::deque<coro::Task<>> tasks;
-    for (auto &&rule : rules) {
-      tasks.push_back(rule->accept(*this));
-    }
-
-    for (coro::Task<> &ruleTask : tasks) {
-      do {
-        co_await ruleTask;
-      } while (not ruleTask.isDone());
+    for (auto &&child : node.getChildren()) {
+      auto task = child->accept(*this);
+      while (not task.isDone()) {
+        co_await task;
+      }
     }
   };
   void visitLeave(Rules &node){};
@@ -250,7 +196,7 @@ private:
 
 private:
   Environment environment;
-  Communication &communication;
+  Communicator &communicator;
 };
 
 // TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
@@ -317,30 +263,36 @@ private:
     visitLeave(node);
     co_return;
   }
-
-  void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
+  void visitEnter(GlobalMessage &node) { out << "(GlobalMessage"; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(FormatNode &node) {
-    out << "(FormatNode \"" << node.getFormat() << "\" ";
+    out << "(FormatNode \"" << node.getFormat() << "\"";
   };
   void visitLeave(FormatNode &node) { out << ")"; };
-  void visitEnter(InputText &node) { out << "(InputText "; };
+  void visitEnter(InputText &node) { out << "(InputText"; };
   void visitLeave(InputText &node) { out << ")"; };
-  void visitEnter(Rules &node) { out << "(Rules "; };
+  void visitEnter(Rules &node) { out << "(Rules"; };
   void visitLeave(Rules &node) { out << ")"; };
   void visitEnter(Variable &node) {
-    out << "(Variable \"" << node.getLexeme() << "\" ";
+    out << "(Variable\"" << node.getLexeme() << "\"";
   };
   void visitLeave(Variable &node) { out << ")"; };
   void visitEnter(VarDeclaration &node) {
-    out << "(VarDeclaration \"" << node.getLexeme() << "\" ";
+    out << "(VarDeclaration\"" << node.getLexeme() << "\"";
   };
   void visitLeave(VarDeclaration &node) { out << ")"; };
-  void visitEnter(ParallelFor &node) { out << "(ParallelFor "; };
+  void visitEnter(ParallelFor &node) { out << "(ParallelFor"; };
   void visitLeave(ParallelFor &node) { out << ")"; };
 
-private:
   std::ostream &out;
+
+public:
+  std::string returnOutput() {
+    std::stringstream newStream;
+    newStream << out.rdbuf();
+    std::string myString = newStream.str();
+    return myString;
+  }
 };
 
 } // namespace AST

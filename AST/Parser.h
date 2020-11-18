@@ -32,6 +32,8 @@ private:
 
 class JSONToASTParser : public DomainSpecificParser {
 public:
+  JSONToASTParser(std::string json)
+      : json{nlohmann::json::parse(std::move(json))} {}
   JSONToASTParser(Json &&json) : json{json} {}
 
 private:
