@@ -55,6 +55,11 @@ void GameInstance::loadGame(AST::AST &ast,
   (this->interpreter).reset();
   this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
   gameTask = ast.accept(*(this->interpreter));
+
+  AST::Printer printer = AST::Printer{std::cout};
+  auto task = ast.accept(printer);
+  while (task.resume()) {
+  }
 }
 
 void GameInstance::runGame() {

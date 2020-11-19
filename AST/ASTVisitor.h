@@ -11,7 +11,6 @@
 #include <sstream>
 #include <string>
 #include <task.h>
-//include "../coroutine/task.h"
 #include <variant>
 #include <list>
 #include <deque> 
@@ -144,24 +143,79 @@ private:
   void visitLeave(Rules &node){};
 
   coro::Task<> visitEnter(ParallelFor &node){
-    std::cout << "visit enter ParallelFor" << std::endl;
-    // get name of list variable
-    const auto &listNameVar = node.getListName();
-    auto &&listName = listNameVar.getLexeme();
-    std::cout << listName << std::endl;
-    // get the list from environment
-    std::list<std::string> players {"Sarb","Ard","Vlad","Kabir","Tom","Jiho"}; // TODO: actually get this from env instead of mocking
-    // retreive the rules for each player
-    auto &&theRules = node.getRules();
-    
-    std::deque<coro::Task<>> tasks;
-    //for (auto &&player : players) {
-      //std::cout<<player<<std::endl;
-      //TODO set the player variable in the environment
+   // auto &env = environment->createChildEnvironment(); 
+   Environment env = environment->createChildEnvironment();
 
-      tasks.push_back(theRules.accept(*this)); // we create co routine/task with same rules for each player?
-    //}
+    // for (auto &&child : node.getChildren()) {
+    //   auto task = child->accept(*this);
+    //   while (not task.isDone()) {
+    //     co_await task;
+    //   }
+    // }
+
+    // set the mock players
+  std::list<std::string> playersStrings {"Sarb","Ard","Vlad","Kabir","Tom","Jiho"}; // TODO: actually get this from env instead of mocking
+
+  std::vector<DSLValue> playersDSL;
+  for (auto &player: playersStrings) {
+
+    playersDSL.push_back(DSLValue{player});
+  }
+
+  Symbol symbol = Symbol{playersDSL, false};
+  Environment::Name key = "players";
+  env.allocate(key, symbol);
+
+  //std::cout<<"\nthis is list of playerst: "<<(env.find<false>(key)).value()<<std::endl;
+
+  
+  //auto handle = (env.find<false>(key)).value();
+
+  std::deque<std::pair<coro::Task<>, DSLValue *>> tasks;
+
+  for (auto &element : listVar) {
+      tasks.push_back({(node.getRules()).accept(*this), &element});  // creating task with name of element that goes with it
+  }
+
+
+
    
+
+  /*
+    coro::Task<> visitEnter(ParallelFor &node){
+    auto &env = parentEnv->createChildEnvironment(); 
+    auto &list = node.getListName();
+    auto &element = node.getElementName();
+    co_await list.accept(*this);  					// why do we need to co_await on a Variable Node
+    co_await element.accept(*this);                 // why do we need to co_await on a VariableDeclarion Node
+    env.setBinding(element.getLexeme(), {});       // set the first element to empty
+    std::deque<std::pair<coro::Task<>, DSLValue *>> tasks;
+    auto &listVar = *env.getVariable(list.getLexeme()); // list of DSL values
+    
+    for (auto &element : listVar) {
+      tasks.push_back({(node.getRules()).accept(*this), &element});  // creating task with name of element that goes with it
+    }
+    std::deque<std::pair<coro::Task<>, DSLValue *>> waitingTasks;
+    while (not tasks.empty()) {
+      while (not tasks.empty()) {
+        auto &task = tasks.front();
+        tasks.pop_front();
+        env.setVarBinding(element.getLexeme(), task.second);   // put element name inside the envi
+        parentEnv = &env;
+        task.first.resume();       // which environment will the task look into?
+        if (not task.first.isDone()) {
+          waitingTasks.push_back(std::move(task));
+        }
+      }
+      if (not waitingTasks.empty()) {
+        co_await std::suspend_always{};
+      }
+      std::ranges::move(waitingTasks, std::back_inserter(tasks));
+    }
+    co_return;
+  };
+  */
+   co_return;
   };
   void visitLeave(ParallelFor &node){};
 

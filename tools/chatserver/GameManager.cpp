@@ -22,8 +22,8 @@ std::pair<AST::AST *, bool> GameManager::createGame(std::string name,
   if (games.count(name)) {
     return {&games.at(name), false};
   }
-  auto parser = AST::JSONToASTParser(std::move(json));
-  auto [it, inserted] = games.insert({std::move(name), parser.parse()});
+  ///auto parser = AST::JSONToASTParser(std::move(json));
+auto parser = AST::JSONToASTParser(std::string{"{\"rules\":[{\"rule\":\"parallelfor\",\"list\":\"players\",\"element\":\"player\",\"rules\":[{\"rule\":\"global-message\",\"value\":\"heyguys\"}]}]}"});  auto [it, inserted] = games.insert({std::move(name), parser.parse()});
   return {&it->second, inserted};
 }
 
