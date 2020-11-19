@@ -5,8 +5,6 @@
 #include <map>
 //--------------------
 Type getStringToType(std::string str) {
-  // std::string::iterator end_pos = std::remove(str.begin(), str.end(), ' ');
-  // str.erase(end_pos, str.end());
   if (stringToType.count(str) != 0) {
     return stringToType[str];
   } else {
@@ -15,13 +13,11 @@ Type getStringToType(std::string str) {
 }
 
 int lookAhead(std::string str, int end) {
-
   if (str[end + 1] == '=') {
     end += 2;
   } else {
     end += 1;
   }
-
   return end;
 }
 
@@ -67,8 +63,15 @@ std::vector<TokenType> parseToType(std::string str) {
   }
   return tokens;
 }
+
+void parseToNodes(std::vector<TokenType> tokens){
+
+}
+
 //--------------------------
 
+
+//___
 std::vector<std::string> parseExpression(std::string str) {
   struct Visitor;
   using Expression = peg_parser::Interpreter<void, Visitor &>::Expression;
@@ -104,21 +107,15 @@ std::vector<std::string> parseExpression(std::string str) {
   g["Dot"] << "Dots '.' Atomic" >>
       [](auto e, auto &v) { v.visitDot(e[0], e[1]); }; // 8
 
-  g["Equals"] << "String '==' Dots" >>
-      [](auto e, auto &v) { v.visitComparison(e[0], e[1], "=="); }; // 7
-  g["Greater"] << "String '>' Dots" >>
-      [](auto e, auto &v) { v.visitComparison(e[0], e[1], ">"); }; // 7
-  g["GreaterEquals"] << "String '>=' Dots" >>
-      [](auto e, auto &v) { v.visitComparison(e[0], e[1], ">="); }; // 7
-  g["Less"] << "String '<' Dots" >>
-      [](auto e, auto &v) { v.visitComparison(e[0], e[1], "<"); }; // 7
-  g["LessEquals"] << "String '<=' Dots" >>
-      [](auto e, auto &v) { v.visitComparison(e[0], e[1], "<="); }; // 7
+  g["Equals"] << "String BIN Dots" >>
+      [](auto e, auto &v) { v.visitComparison(e[0], e[2], e[1].string() ); }; // 7
+  
 
   g["Not"] << " '!' Equals"; // 0
 
   g["Brackets"] << "'(' String ')'";
   g["Name"] << "[a-zA-Z] [a-zA-Z0-9]*";
+  g["BIN"] << " '==' | '<=' | '>=' | '<' | '>' ";
   g["Atomic"] << "Name | Brackets";
   // g["Function"] << " Name '(' Name ')' ";
   // g["And"]

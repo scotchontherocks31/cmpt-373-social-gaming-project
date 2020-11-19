@@ -64,3 +64,4 @@ TEST(ExpressionParseTest, ChainedDotChainedEquals) {
     EXPECT_EQ(result[i], expected[i]);
   }
 }
+
