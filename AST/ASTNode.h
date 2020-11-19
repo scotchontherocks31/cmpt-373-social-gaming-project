@@ -136,49 +136,6 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
-// form a tree of expressions, until the expression cant be parsed anymore
-class Expression : public ASTNode {
-public:
-  explicit Expression(std::string exp) : expression{std::move(exp)} {
-
-    std::vector<std::string> operation = parseExpression(expression);
-    switch (operation.size()) {
-    case 1: // e.g. Player.name
-    {
-      operationType = OperationType::NOTHING;
-      break;
-    }
-    case 2: // e.g. !Player.isTall
-    {
-      operationType = stringToOperator[operation[1]];
-      std::unique_ptr<Expression> left =
-          std::make_unique<Expression>(&expression[0]);
-      appendChild(std::move(left));
-      break;
-    }
-    case 3: // e.g. Player.name == "Mike"
-    {
-      operationType = stringToOperator[operation[1]];
-      std::unique_ptr<Expression> left =
-          std::make_unique<Expression>(&expression[0]);
-      appendChild(std::move(left));
-      std::unique_ptr<Expression> right =
-          std::make_unique<Expression>(&expression[2]);
-      appendChild(std::move(right));
-      break;
-    }
-    default:
-      break;
-    }
-  }
-  const OperationType &getOperationType() const { return operationType; }
-
-private:
-  std::string expression;
-  OperationType operationType; // change to enum
-  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
-};
-
 class AST {
 public:
   AST(std::unique_ptr<ASTNode> &&root) : root{std::move(root)} {}

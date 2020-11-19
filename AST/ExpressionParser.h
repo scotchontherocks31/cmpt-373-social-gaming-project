@@ -1,7 +1,8 @@
 #ifndef EXPRESSION_PARSER_H
 #define EXPRESSION_PARSER_H
 
-#include <peg_parser/generator.h>
+
+
 
 #include <cmath>
 #include <iostream>
@@ -57,7 +58,9 @@ private:
   std::string value;
 };
 
-struct rdp{
+std::vector<TokenType> parseToType(std::string str);
+
+struct RDP{ //Recursive Descent Parser
   
   enum class Terminal{
     COMMA,
@@ -87,129 +90,12 @@ struct rdp{
   Terminal terminalType(TokenType t){
     if(TypeToTerminal.count(t.getType()) != 0){
       return TypeToTerminal[t.getType()];
-    } else {
-      return Terminal::ID;
-    }
+    } 
   }
 
-  //nodeE
-  //nodeT
-  //nodeF
-  //nodeP
-  //nodeARG
-  void parseToNodes(std::vector<TokenType> tokens){ //Returns ExpressionNode, in the end...
-    index = 0;
-  }
-
-  void parseE(){
-
-    if(checkE()){
-      // E BIN T
-    } else {
-      parseT();
-    }
-
-  }
   
-  void parseT(){
-    if(terminalType(tokens[index]) == Terminal::UN){
-      //return Unary(tokens[index].getType() , parseT() ) 
-    }
-    else if(checkF()){
-
-    }
-    else if (terminalType(tokens[index]) == Terminal::OPENPAR){
-
-    }
-    
-  }
-  
-  void parseF(){
-    current = index;
-    if(checkF()){
-      // F DOT P
-    } else {
-      parseP();
-    }
-    
-  }
-
-  void parseP(){
-    current = index;
-    if(terminalType(tokens[current]) == Terminal::ID){
-      if(terminalType(tokens[current]) == Terminal::OPENPAR){
-        index += 2;
-        // Node n =  (tokens[current], pareseARG());  
-        index += 1; //get rid of CLOSEPAR
-        //return n
-      } else {
-        index += 1;
-        //return Node( tokens[current] );
-      }
-    } else {
-      // return Node //nothing
-    }
-  }
-
-  void parseARG(){
-    current = index;
-    if(terminalType(tokens[current]) == Terminal::ID ){
-      if(terminalType(tokens[current+1]) == Terminal::COMMA ){
-        index += 2;
-        //return Node( tokens[current] , tokens[current+1] ,parseARG() )
-      } else {
-        index += 1;
-        //return Node( tokens[current] );
-      }
-    }
-    else {
-      //return Node() //nothing
-    }
-  }
-
-  //look ahead
-  bool checkE(int current){
-
-  }
-  bool checkT(int current){
-
-  }
-  bool checkF(int current){
-
-  }
-  bool checkARG(int current){
-    return true;
-  }
-  bool checkP(int current){
-    return true;
-  }
-
-  int index;
-  int current;
   std::vector<TokenType> tokens;
 };
 
-//--- old --- TODELETE later
-enum class OperationType {
-  DOT,
-  EQUALS,
-  GREATER,
-  GREATEREQUALS,
-  LESS,
-  LESSEQUALS,
-  NOT,
-  NOTHING,
-};
 
-static std::map<std::string, OperationType> stringToOperator = {
-    {".", OperationType::DOT},     {"==", OperationType::EQUALS},
-    {">", OperationType::GREATER}, {">=", OperationType::GREATEREQUALS},
-    {"<", OperationType::LESS},    {"<=", OperationType::LESSEQUALS},
-    {"!", OperationType::NOT}};
-
-std::vector<std::string> parseExpression(std::string str);
-std::vector<std::string> expressionParser(std::string str);
-// -------
-
-std::vector<TokenType> parseToType(std::string str);
 #endif
