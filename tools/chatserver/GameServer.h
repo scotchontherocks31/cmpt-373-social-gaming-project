@@ -77,74 +77,65 @@ private:
   void flush();
 };
 
-class StrToCommandM {
-protected:
+class AnyStrToCommandM {};
+
+class StrToCommandMap : public AnyStrToCommandM {
+private:
   std::map<std::string, GameServer::Command> theMap;
 
 public:
-  /*virtual void initializeMap(std::vector<std::string> keys,
-                             std::vector<GameServer::Command> values) = 0;*/
-  virtual std::map<std::string, GameServer::Command> getMap() = 0;
-};
-
-class EnglishCommandMap : public StrToCommandM {
-public:
-  std::map<std::string, GameServer::Command> getMap() override {
+  StrToCommandMap() {
+    theMap{{"quit", GameServer::Command::QUIT},
+           {"shutdown", GameServer::Command::SHUTDOWN},
+           {"create", GameServer::Command::CREATE},
+           {"join", GameServer::Command::JOIN},
+           {"leave", GameServer::Command::LEAVE},
+           {"list", GameServer::Command::LIST},
+           {"info", GameServer::Command::INFO},
+           {"game", GameServer::Command::GAME}};
+  }
+  operator const std::map<std::string, GameServer::Command> &() const {
     return theMap;
   }
-  /*void initializeMap(std::vector<std::string> keys,
-                     std::vector<GameServer::Command> values) override {
-    if (keys.size() == values.size()) {
-      for (int i = 0; i < keys.size(); i++) {
-        theMap[keys[i]] = values[i];
-      }
-    }
-  }*/
-  EnglishCommandMap() {}
-  EnglishCommandMap(std::vector<std::string> keys,
-                    std::vector<GameServer::Command> values) {
-    if (keys.size() == values.size()) {
-      for (int i = 0; i < keys.size(); i++) {
-        theMap[keys[i]] = values[i];
-      }
-    }
+};
+
+class StrToGameCommandMap : public AnyStrToCommandM {
+private:
+  std::map<std::string, GameServer::Command> theMap;
+
+public:
+  StrToGameCommandMap() {
+    theMap{{"create", GameServer::Command::CREATE_GAME},
+           {"start", GameServer::Command::START_GAME},
+           {"clean", GameServer::Command::CLEAN_GAME}};
+  }
+  operator const std::map<std::string, GameServer::Command> &() const {
+    return theMap;
   }
 };
 
-class CommandToFunctionM {
-protected:
+class AnyCommandToFunctionM {};
+
+class CommandToFunctionMap : public AnyCommandToFunctionM {
+private:
   std::map<GameServer::Command, std::function<functionType>> theMap;
 
 public:
-  /*virtual void
-  initializeMap(std::vector<GameServer::Command> keys,
-                std::vector<std::function<functionType>> values) = 0;*/
-  // CommandToFunctionM(/*std::vector<GameServer::Command> keys,
-  // std::vector<std::function<functionType>> values*/);
-  virtual std::map<GameServer::Command, std::function<functionType>>
-  getMap() = 0;
-};
-
-class GameServerFunctions : public CommandToFunctionM {
-public:
-  std::map<GameServer::Command, std::function<functionType>> getMap() {
+  CommandToFunctionMap();
+  operator const std::map<GameServer::Command, std::function<functionType>> &()
+      const {
     return theMap;
   }
-  /*void initializeMap(std::vector<GameServer::Command> keys,
-                     std::vector<std::function<functionType>> values) override {
-    if (keys.size() == values.size()) {
-      for (int i = 0; i < keys.size(); i++) {
-        theMap[keys[i]] = values[i];
-      }
-    }
-  }*/
-  GameServerFunctions() {}
-  GameServerFunctions(std::vector<GameServer::Command> keys,
-                      std::vector<std::function<functionType>> values) {
-    if (keys.size() == values.size()) {
-      for (int i = 0; i < keys.size(); i++) {
-        theMap[keys[i]] = values[i];
-      }
-    }
+};
+
+class CommandToGameFunctionMap : public AnyCommandToFunctionM {
+private:
+  std::map<GameServer::Command, std::function<functionType>> theMap;
+
+public:
+  CommandToGameFunctionMap();
+  operator const std::map<GameServer::Command, std::function<functionType>> &()
+      const {
+    return theMap;
   }
 };

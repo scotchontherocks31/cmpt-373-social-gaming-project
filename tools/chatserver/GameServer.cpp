@@ -55,19 +55,6 @@ std::vector<std::string> tokenizeCommand(std::string command) {
   return tokens;
 }
 
-std::map<std::string, GameServer::Command> GameServer::initializeCommandMap() {
-  std::vector<std::string> keys{"quit",  "shutdown", "create", "join",
-                                "leave", "list",     "info",   "game"};
-  std::vector<GameServer::Command> values{
-      GameServer::Command::QUIT,   GameServer::Command::SHUTDOWN,
-      GameServer::Command::CREATE, GameServer::Command::JOIN,
-      GameServer::Command::LEAVE,  GameServer::Command::LIST,
-      GameServer::Command::INFO,   GameServer::Command::GAME};
-  EnglishCommandMap theMap{keys, values};
-
-  return theMap.getMap();
-}
-
 GameServer::Command GameServer::matchCommand(const std::string &command) {
   if (strToGameCommandMap.contains(command)) {
     return GameServer::Command::UNKNOWN;
@@ -75,16 +62,21 @@ GameServer::Command GameServer::matchCommand(const std::string &command) {
   return GameServer::strToCommandMap[command];
 }
 
-GameServer::GameServer(unsigned short port, std::string httpMessage)
+GameServer::GameServer(
+    unsigned short port, std::string httpMessage, AnyStrToCommandM strToComm,
+    AnyStrToCommandM strToGameComm, // recieves maps to translate strings
+                                    // (possibly from any language)
+    AnyCommandToFunctionM commToFunc,
+    AnyCommandToFunctionM
+        commToGameFunc) // recieves maps to traslate comands to functions
     : server(
           port, std::move(httpMessage),
           [this](Connection c) { this->onConnect(c); },
           [this](Connection c) { this->onDisconnect(c); }),
       roomManager(), gameManager(*this, roomManager),
-      strToCommandMap(initializeCommandMap()),
-      strToGameCommandMap(initializeGameCommandMap()),
-      commandToFunctionMap(initializeFunctionMap()),
-      commandToGameFunctionMap(initializeGameFunctionMap()) {}
+      strToCommandMap(strToComm), strToGameCommandMap(strToGameComm),
+      commandToFunctionMap(commToFunc),
+      commandToGameFunctionMap(commToGameFunc) {}
 
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";
@@ -153,8 +145,7 @@ void GameServer::processMessages() {
   }
 }
 
-std::map<GameServer::Command, std::function<functionType>>
-GameServer::initializeFunctionMap() {
+CommandToFunctionMap::CommandToFunctionMap() {
   std::function<functionType> quitFunc =
       [this](User &user,
              std::vector<std::string>
@@ -228,18 +219,15 @@ GameServer::initializeFunctionMap() {
         return output.str();
       };
 
-  std::vector<GameServer::Command> keys{
-      GameServer::Command::QUIT,   GameServer::Command::SHUTDOWN,
-      GameServer::Command::CREATE, GameServer::Command::JOIN,
-      GameServer::Command::LEAVE,  GameServer::Command::LIST,
-      GameServer::Command::INFO,   GameServer::Command::GAME,
-      GameServer::Command::LEAVE};
-  std::vector<std::function<functionType>> values{
-      quitFunc, shutdownFunc, createFunc, joinFunc, leaveFunc,
-      listFunc, infoFunc,     gameFunc,   leaveFunc};
-  GameServerFunctions theMap{keys, values};
-
-  return theMap.getMap();
+  theMap{{GameServer::Command::QUIT, quitFunc},
+         {GameServer::Command::SHUTDOWN, shutdownFunc},
+         {GameServer::Command::CREATE, createFunc},
+         {GameServer::Command::JOIN, joinFunc},
+         {GameServer::Command::LEAVE, leaveFunc},
+         {GameServer::Command::LIST, listFunc},
+         {GameServer::Command::INFO, infoFunc},
+         {GameServer::Command::GAME, gameFunc},
+         {GameServer::Command::LEAVE, leaveFunc}};
 }
 
 std::string GameServer::processCommand(User &user, std::string rawCommand) {
@@ -253,20 +241,7 @@ std::string GameServer::processCommand(User &user, std::string rawCommand) {
   return output;
 }
 
-std::map<std::string, GameServer::Command>
-GameServer::initializeGameCommandMap() {
-  std::vector<std::string> keys{"create", "start", "clean"};
-  std::vector<GameServer::Command> values{GameServer::Command::CREATE_GAME,
-                                          GameServer::Command::START_GAME,
-                                          GameServer::Command::CLEAN_GAME};
-
-  EnglishCommandMap theMap{keys, values};
-
-  return theMap.getMap();
-}
-
-std::map<GameServer::Command, std::function<functionType>>
-GameServer::initializeGameFunctionMap() {
+CommandToGameFunctionMap::CommandToGameFunctionMap() {
   std::function<functionType> createFunc =
       [this](User &user, std::vector<std::string> &tokens) {
         std::ostringstream output;
@@ -299,14 +274,9 @@ GameServer::initializeGameFunctionMap() {
         return output.str();
       };
 
-  std::vector<GameServer::Command> keys{GameServer::Command::CREATE_GAME,
-                                        GameServer::Command::START_GAME,
-                                        GameServer::Command::CLEAN_GAME};
-  std::vector<std::function<functionType>> values{createFunc, startFunc,
-                                                  cleanFunc};
-  GameServerFunctions theMap{keys, values};
-
-  return theMap.getMap();
+  theMap{{GameServer::Command::CREATE_GAME, createFunc},
+         {GameServer::Command::START_GAME, startFunc},
+         {GameServer::Command::CLEAN_GAME, cleanFunc}};
 }
 
 GameServer::Command GameServer::matchGameCommand(const std::string &command) {
