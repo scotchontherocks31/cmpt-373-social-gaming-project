@@ -61,59 +61,31 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
   return std::make_unique<Variable>(json["list"]);
 }
 
-Environment Configurator::createEnvironment(std::vector<Player> players) {
-  auto config = json[0]["configuration"];
-  auto enviro = Environment{nullptr};
-  DSLValue setUp{config["setup"]};
-  enviro.setBinding("configuration", setUp);
-
-  // add the current members into the game
-  auto perPlayer = json[0]["per-player"];
-  Json aPlayer;
-  std::vector<DSLValue> playersDSL;
-
-  for (auto i = players.begin(); i != players.end(); ++i) {
-    aPlayer = {};
-    aPlayer["id"] = i->getId();
-    aPlayer["name"] = i->getName();
-    for (Json::iterator it = perPlayer.begin(); it != perPlayer.end(); ++it) {
-      aPlayer[it.key()] = it.value();
-    }
-    // add the DSLVaue player to the DSL List
-    playersDSL.push_back(DSLValue{aPlayer});
-  }
-
-  enviro.setBinding("players", playersDSL);
-
-  auto &&playerDSL = enviro.getValue("players");
-  // const Map &map
-  std::cout << "testing player:  " << playerDSL << std::endl;
-
-  // add constants
-  Json constants = json[0]["constants"];
-  for (Json::iterator it = constants.begin(); it != constants.end(); ++it) {
-    enviro.setBinding(it.key(), it.value());
-  }
-
-  // add variables
-  Json variables = json[0]["variables"];
-  for (Json::iterator it = variables.begin(); it != variables.end(); ++it) {
-    enviro.setBinding(it.key(), it.value());
-  }
-  return enviro;
+std::string ConfigParser::parseName() {
+  auto &config = json[0]["configuration"];
+  return config["name"].get<std::string>();
 }
 
-std::pair<int, int> Configurator::getPlayerCount() {
-  auto config = json[0]["configuration"];
-  auto playerMax = config["player count"]["max"];
-  auto playerMin = config["player count"]["min"];
+std::pair<int, int> ConfigParser::parsePlayerCount() {
+  auto &config = json[0]["configuration"];
+  auto playerMax = config["player count"]["max"].get<int>();
+  auto playerMin = config["player count"]["min"].get<int>();
   return {playerMin, playerMax};
 }
 
-bool Configurator::hasAudience() {
-  auto config = json[0]["configuration"];
-  auto audience = config["audience"];
-  return audience;
+bool ConfigParser::parseHasAudience() {
+  auto &config = json[0]["configuration"];
+  return config["audience"].get<bool>();
 }
+
+Json ConfigParser::parseSetup() { return json[0]["configuration"]["setup"]; }
+
+Json ConfigParser::parsePerPlayer() { return json[0]["per-player"]; }
+
+Json ConfigParser::parsePerAudience() { return json[0]["per-audience"]; }
+
+Json ConfigParser::parseVariables() { return json[0]["variables"]; }
+
+Json ConfigParser::parseConstants() { return json[0]["constants"]; }
 
 } // namespace AST

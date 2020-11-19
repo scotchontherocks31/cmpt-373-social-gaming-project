@@ -4,6 +4,7 @@
 #include "ASTNode.h"
 #include "DSLValue.h"
 #include <algorithm>
+#include <deque>
 #include <iostream>
 #include <json.hpp>
 #include <map>
@@ -29,9 +30,16 @@ private:
   DSLValue *dslPtr;
 };
 
+struct PlayerMessage {
+  int playerId;
+  std::string message;
+};
+
 class Communicator {
 public:
   virtual void sendGlobalMessage(std::string message) = 0;
+  virtual void sendToOwner(std::string message) = 0;
+  virtual std::deque<PlayerMessage> receiveFromOwner() = 0;
 };
 
 class PrintCommunicator : public Communicator {

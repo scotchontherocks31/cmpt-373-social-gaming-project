@@ -35,7 +35,7 @@ void GameManager::dispatch(const User &user, std::string message) {
   }
   auto &game = instances.at(roomId);
   if (game.queueMessage(user, std::move(message))) {
-    game.runGame();
+    game.resumeGame();
   }
 }
 

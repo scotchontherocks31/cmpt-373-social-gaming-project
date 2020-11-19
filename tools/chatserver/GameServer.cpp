@@ -247,8 +247,7 @@ std::string GameServer::processGameCommand(const User &user,
       auto &instance = gameManager.getGameInstance(user);
       output << "Starting game \"" << tokens[2] << "\"\n";
       auto &[ast, config] = gameManager.getGame(tokens[2]);
-      instance.loadGame(ast, config);
-      instance.runGame();
+      instance.startGame(ast, config, user);
     }
   } else if (tokens[1] == "clean") {
     output << "Cleaning empty game instances.\n";
