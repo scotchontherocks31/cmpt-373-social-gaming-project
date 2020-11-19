@@ -21,6 +21,13 @@ struct DecoratedMessage {
 
 class GameManager;
 
+class AnyStrToCommandM;
+class StrToCommandMap : public AnyStrToCommandM;
+class StrToGameCommandMap : public AnyStrToCommandM;
+class AnyCommandToFunctionM;
+class CommandToFunctionMap : public AnyCommandToFunctionM;
+class CommandToGameFunctionMap : public AnyCommandToFunctionM;
+
 class GameServer {
 public:
   enum Command {
