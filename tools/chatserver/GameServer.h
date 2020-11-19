@@ -85,14 +85,14 @@ private:
 
 public:
   StrToCommandMap() {
-    theMap{{"quit", GameServer::Command::QUIT},
-           {"shutdown", GameServer::Command::SHUTDOWN},
-           {"create", GameServer::Command::CREATE},
-           {"join", GameServer::Command::JOIN},
-           {"leave", GameServer::Command::LEAVE},
-           {"list", GameServer::Command::LIST},
-           {"info", GameServer::Command::INFO},
-           {"game", GameServer::Command::GAME}};
+    theMap = {{"quit", GameServer::Command::QUIT},
+              {"shutdown", GameServer::Command::SHUTDOWN},
+              {"create", GameServer::Command::CREATE},
+              {"join", GameServer::Command::JOIN},
+              {"leave", GameServer::Command::LEAVE},
+              {"list", GameServer::Command::LIST},
+              {"info", GameServer::Command::INFO},
+              {"game", GameServer::Command::GAME}};
   }
   operator const std::map<std::string, GameServer::Command> &() const {
     return theMap;
@@ -105,9 +105,9 @@ private:
 
 public:
   StrToGameCommandMap() {
-    theMap{{"create", GameServer::Command::CREATE_GAME},
-           {"start", GameServer::Command::START_GAME},
-           {"clean", GameServer::Command::CLEAN_GAME}};
+    theMap = {{"create", GameServer::Command::CREATE_GAME},
+              {"start", GameServer::Command::START_GAME},
+              {"clean", GameServer::Command::CLEAN_GAME}};
   }
   operator const std::map<std::string, GameServer::Command> &() const {
     return theMap;

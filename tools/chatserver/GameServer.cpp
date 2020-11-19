@@ -219,15 +219,15 @@ CommandToFunctionMap::CommandToFunctionMap() {
         return output.str();
       };
 
-  theMap{{GameServer::Command::QUIT, quitFunc},
-         {GameServer::Command::SHUTDOWN, shutdownFunc},
-         {GameServer::Command::CREATE, createFunc},
-         {GameServer::Command::JOIN, joinFunc},
-         {GameServer::Command::LEAVE, leaveFunc},
-         {GameServer::Command::LIST, listFunc},
-         {GameServer::Command::INFO, infoFunc},
-         {GameServer::Command::GAME, gameFunc},
-         {GameServer::Command::LEAVE, leaveFunc}};
+  theMap = {{GameServer::Command::QUIT, quitFunc},
+            {GameServer::Command::SHUTDOWN, shutdownFunc},
+            {GameServer::Command::CREATE, createFunc},
+            {GameServer::Command::JOIN, joinFunc},
+            {GameServer::Command::LEAVE, leaveFunc},
+            {GameServer::Command::LIST, listFunc},
+            {GameServer::Command::INFO, infoFunc},
+            {GameServer::Command::GAME, gameFunc},
+            {GameServer::Command::LEAVE, leaveFunc}};
 }
 
 std::string GameServer::processCommand(User &user, std::string rawCommand) {
@@ -274,9 +274,9 @@ CommandToGameFunctionMap::CommandToGameFunctionMap() {
         return output.str();
       };
 
-  theMap{{GameServer::Command::CREATE_GAME, createFunc},
-         {GameServer::Command::START_GAME, startFunc},
-         {GameServer::Command::CLEAN_GAME, cleanFunc}};
+  theMap = {{GameServer::Command::CREATE_GAME, createFunc},
+            {GameServer::Command::START_GAME, startFunc},
+            {GameServer::Command::CLEAN_GAME, cleanFunc}};
 }
 
 GameServer::Command GameServer::matchGameCommand(const std::string &command) {
