@@ -46,7 +46,8 @@ public:
     UNKNOWN_GAME
   };
 
-  GameServer(unsigned short port, std::string httpMessage, AnyStrToCommandM strToComm,
+  GameServer(
+    unsigned short port, std::string httpMessage, AnyStrToCommandM strToComm,
     AnyStrToCommandM strToGameComm, 
     AnyCommandToFunctionM commToFunc,
     AnyCommandToFunctionM
