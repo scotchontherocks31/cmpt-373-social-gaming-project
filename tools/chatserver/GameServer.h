@@ -22,11 +22,11 @@ struct DecoratedMessage {
 class GameManager;
 
 class AnyStrToCommandM;
-class StrToCommandMap : public AnyStrToCommandM;
-class StrToGameCommandMap : public AnyStrToCommandM;
+class StrToCommandMap;
+class StrToGameCommandMap;
 class AnyCommandToFunctionM;
-class CommandToFunctionMap : public AnyCommandToFunctionM;
-class CommandToGameFunctionMap : public AnyCommandToFunctionM;
+class CommandToFunctionMap;
+class CommandToGameFunctionMap;
 
 class GameServer {
 public:
