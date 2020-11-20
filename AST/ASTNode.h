@@ -136,6 +136,36 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
+class BinaryNode : public ASTNode {
+public:
+  BinaryNode(std::unique_ptr<ASTNode> &&variable,
+              std::unique_ptr<ASTNode> &&variableTwo,
+              Type binOperator) {
+    appendChild(std::move(variable));
+    appendChild(std::move(variableTwo));
+    oper = binOperator;
+  }
+
+private:
+  Type oper;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
+class UnaryNode : public ASTNode {
+public:
+  UnaryNode(std::unique_ptr<ASTNode> &&variable,
+              Type unOperator) {
+    appendChild(std::move(variable));
+    oper = unOperator;
+  }
+
+private:
+  Type oper;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
+
+
 class AST {
 public:
   AST(std::unique_ptr<ASTNode> &&root) : root{std::move(root)} {}

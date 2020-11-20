@@ -67,6 +67,8 @@ public:
   coro::Task<> visit(Rules &node);
   coro::Task<> visit(ParallelFor &node);
   coro::Task<> visit(InputText &node);
+  coro::Task<> visit(BinaryNode &node);
+  coro::Task<> visit(UnaryNode &node);
   virtual ~ASTVisitor() = default;
 
 private:
@@ -77,6 +79,8 @@ private:
   virtual coro::Task<> visitHelper(Variable &) = 0;
   virtual coro::Task<> visitHelper(VarDeclaration &) = 0;
   virtual coro::Task<> visitHelper(InputText &) = 0;
+  virtual coro::Task<> visitHelper(BinaryNode &) = 0;
+  virtual coro::Task<> visitHelper(UnaryNode &) = 0;
 };
 
 // TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
@@ -140,6 +144,24 @@ private:
     visitLeave(node);
     co_return;
   }
+
+  coro::Task<> visitHelper(BinaryNode &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+
+  coro::Task<> visitHelper(UnaryNode &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
   
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
@@ -173,6 +195,12 @@ private:
 
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
+
+  void visitEnter(BinaryNode &node){};
+  void visitLeave(BinaryNode &node){};
+
+  void visitEnter(UnaryNode &node){};
+  void visitLeave(UnaryNode &node){};
 
   
 
@@ -245,6 +273,24 @@ private:
     visitLeave(node);
     co_return;
   }
+
+  coro::Task<> visitHelper(BinaryNode &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+
+  coro::Task<> visitHelper(UnaryNode &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
   
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
@@ -266,6 +312,12 @@ private:
   void visitLeave(VarDeclaration &node) { out << ")"; };
   void visitEnter(ParallelFor &node) { out << "(ParallelFor "; };
   void visitLeave(ParallelFor &node) { out << ")"; };
+
+  void visitEnter(BinaryNode &node) { out << "(BinaryNode "; };
+  void visitLeave(BinaryNode &node) { out << ")"; };
+
+  void visitEnter(UnaryNode &node) { out << "(UnaryNode "; };
+  void visitLeave(UnaryNode &node) { out << ")"; };
 
   
 
