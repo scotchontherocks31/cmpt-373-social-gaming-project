@@ -149,6 +149,7 @@ private:
     co_return;
   }
 
+<<<<<<< HEAD
   coro::Task<> visitHelper(BinaryNode &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
@@ -185,6 +186,8 @@ private:
     co_return;
   }
 
+=======
+>>>>>>> 47-Expression-Parser
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
@@ -218,6 +221,7 @@ private:
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
 
+<<<<<<< HEAD
   void visitEnter(BinaryNode &node){};
   void visitLeave(BinaryNode &node){};
 
@@ -230,6 +234,8 @@ private:
   void visitEnter(FunctionCallNode &node){};
   void visitLeave(FunctionCallNode &node){};
 
+=======
+>>>>>>> 47-Expression-Parser
 private:
   Environment environment;
   Communicator &communicator;
@@ -300,6 +306,7 @@ private:
     co_return;
   }
 
+<<<<<<< HEAD
   coro::Task<> visitHelper(BinaryNode &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
@@ -336,6 +343,8 @@ private:
     co_return;
   }
 
+=======
+>>>>>>> 47-Expression-Parser
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(FormatNode &node) {

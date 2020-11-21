@@ -1,17 +1,13 @@
 #ifndef EXPRESSION_PARSER_H
 #define EXPRESSION_PARSER_H
 
-
-
-
 #include <cmath>
 #include <iostream>
 #include <map>
+#include <memory>
+#include <queue>
 #include <unordered_map>
 #include <vector>
-
-
-
 enum class Type { // name it better
   OPENPAR,
   CLOSEPAR,
@@ -27,9 +23,10 @@ enum class Type { // name it better
   COMMA,
 };
 
-static std::map<char, int> tokenTrigger = { // name it better... Change to vector
-    {'(', 1}, {')', 1}, {'.', 1}, {'=', 2},
-    {'!', 2}, {'<', 2}, {'>', 2}, {',', 1}};
+static std::map<char, int> tokenTrigger =
+    { // name it better... Change to vector
+        {'(', 1}, {')', 1}, {'.', 1}, {'=', 2},
+        {'!', 2}, {'<', 2}, {'>', 2}, {',', 1}};
 
 static std::map<std::string, Type> stringToType = { // name it better
     {"(", Type::OPENPAR},
@@ -58,44 +55,38 @@ private:
   std::string value;
 };
 
-std::vector<TokenType> parseToType(std::string str);
-
-struct RDP{ //Recursive Descent Parser
-  
-  enum class Terminal{
-    COMMA,
-    BIN,
-    UN,
-    OPENPAR,
-    CLOSEPAR,
-    ID,
-    DOT,
-  };
-
-  std::map<Type, Terminal> TypeToTerminal{  //Anything that does not map is 
-    {Type::OPENPAR , Terminal::OPENPAR},
-    {Type::CLOSEPAR, Terminal::CLOSEPAR},
-    {Type::DOT, Terminal::DOT},
-    {Type::EQUALS, Terminal::BIN},
-    {Type::NOTEQUALS, Terminal::BIN},
-    {Type::GREATER, Terminal::BIN},
-    {Type::GREATEREQUALS, Terminal::BIN},
-    {Type::LESS, Terminal::BIN},
-    {Type::LESSEQUALS, Terminal::BIN},
-    {Type::NOT, Terminal::UN},
-    {Type::COMMA, Terminal::COMMA},
-    {Type::ID, Terminal::ID}
-  };
-  
-  Terminal terminalType(TokenType t){
-    if(TypeToTerminal.count(t.getType()) != 0){
-      return TypeToTerminal[t.getType()];
-    } 
-  }
-
-  
-  std::vector<TokenType> tokens;
+enum class Terminal {
+  COMMA,
+  BIN,
+  UN,
+  OPENPAR,
+  CLOSEPAR,
+  ID,
+  DOT,
+  END,
 };
 
+static std::map<Type, Terminal> TypeToTerminal{
+    // Anything that does not map is
+    {Type::OPENPAR, Terminal::OPENPAR},   {Type::CLOSEPAR, Terminal::CLOSEPAR},
+    {Type::DOT, Terminal::DOT},           {Type::EQUALS, Terminal::BIN},
+    {Type::NOTEQUALS, Terminal::BIN},     {Type::GREATER, Terminal::BIN},
+    {Type::GREATEREQUALS, Terminal::BIN}, {Type::LESS, Terminal::BIN},
+    {Type::LESSEQUALS, Terminal::BIN},    {Type::NOT, Terminal::UN},
+    {Type::COMMA, Terminal::COMMA},       {Type::ID, Terminal::ID}};
+
+// The Main feature is to make sure i do not go out of bounds
+struct Safeway {
+  // I will use these Functions //
+  Safeway(std::vector<TokenType> tokens) {}
+  Terminal getTerminal() {} // If it is out of bounds, return Terminal::END.
+  TokenType front() {}      // get whatever is in front
+  void next_token() {}      // move to next token
+  // ----------------------------
+private:
+  std::queue<TokenType> tokensQueue;
+};
+
+std::vector<TokenType> parseToType(std::string str);
 
 #endif
