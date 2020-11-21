@@ -69,6 +69,8 @@ public:
   coro::Task<> visit(InputText &node);
   coro::Task<> visit(BinaryNode &node);
   coro::Task<> visit(UnaryNode &node);
+  coro::Task<> visit(VariableExpression &node);
+  coro::Task<> visit(FunctionCallNode &node);
   virtual ~ASTVisitor() = default;
 
 private:
@@ -81,6 +83,8 @@ private:
   virtual coro::Task<> visitHelper(InputText &) = 0;
   virtual coro::Task<> visitHelper(BinaryNode &) = 0;
   virtual coro::Task<> visitHelper(UnaryNode &) = 0;
+  virtual coro::Task<> visitHelper(VariableExpression &) = 0;
+  virtual coro::Task<> visitHelper(FunctionCallNode &) = 0;
 };
 
 // TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
@@ -162,7 +166,25 @@ private:
     visitLeave(node);
     co_return;
   }
-  
+
+  coro::Task<> visitHelper(VariableExpression &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+
+  coro::Task<> visitHelper(FunctionCallNode &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
@@ -202,7 +224,11 @@ private:
   void visitEnter(UnaryNode &node){};
   void visitLeave(UnaryNode &node){};
 
-  
+  void visitEnter(VariableExpression &node){};
+  void visitLeave(VariableExpression &node){};
+
+  void visitEnter(FunctionCallNode &node){};
+  void visitLeave(FunctionCallNode &node){};
 
 private:
   Environment environment;
@@ -291,7 +317,25 @@ private:
     visitLeave(node);
     co_return;
   }
-  
+
+  coro::Task<> visitHelper(VariableExpression &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+
+  coro::Task<> visitHelper(FunctionCallNode &node) override {
+    visitEnter(node);
+    for (auto &&child : node.getChildren()) {
+      co_await child->accept(*this);
+    }
+    visitLeave(node);
+    co_return;
+  }
+
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(FormatNode &node) {
@@ -319,7 +363,11 @@ private:
   void visitEnter(UnaryNode &node) { out << "(UnaryNode "; };
   void visitLeave(UnaryNode &node) { out << ")"; };
 
-  
+  void visitEnter(VariableExpression &node) { out << "(UnaryNode "; };
+  void visitLeave(VariableExpression &node) { out << ")"; };
+
+  void visitEnter(FunctionCallNode &node) { out << "(FunctionCallNode "; };
+  void visitLeave(FunctionCallNode &node) { out << ")"; };
 
 private:
   std::ostream &out;
