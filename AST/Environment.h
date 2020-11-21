@@ -88,7 +88,9 @@ public:
 
   std::optional<Handle> getReturnValue() noexcept;
   std::optional<ConstantHandle> getConstReturnValue() noexcept;
+  // returns new values, copies, only use one of the two
   void allocateReturn(SymbolType auto &&symbol) noexcept;
+  // returns references (i.e. handles), only use one of the two
   void setReturn(HandleType auto handle) noexcept;
 };
 
