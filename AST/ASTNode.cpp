@@ -52,5 +52,4 @@ coro::Task<> InputText::acceptHelper(ASTVisitor &visitor) {
   }
 }
 
-
 } // namespace AST

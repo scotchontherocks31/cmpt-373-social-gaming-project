@@ -44,5 +44,4 @@ coro::Task<> ASTVisitor::visit(ParallelFor &node) {
   }
 }
 
-
 } // namespace AST

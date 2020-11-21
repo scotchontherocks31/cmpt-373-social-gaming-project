@@ -61,5 +61,51 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
   return std::make_unique<Variable>(json["list"]);
 }
 
+std::unique_ptr<ASTNode>
+JSONToASTParser::parseExpression(const std::string &str) {
+  struct RDP {
+    RDP(std::string str) : safe(parseToType(str)) {}
+
+    /*
+    S -> E END_TOKEN
+    E -> T E'
+    E'-> BIN TE' | epsilon
+    T -> UN T | F | (E)
+    F -> P F'
+    F'-> DOT PF' | epsilon
+    P -> ID(arglist) | ID | epsilon
+    arglist -> E
+    arglist -> epsilon
+    arglist -> E, arglist
+    */
+
+    std::unique_ptr<ASTNode> parse_S() { // S -> E END_TOKEN
+      while (safe.getTerminal() != Terminal::END) {
+        auto &&result = parse_E();
+      }
+    }
+
+    std::unique_ptr<ASTNode> parse_E() { // E -> T E'
+      auto &&result = parse_T();
+
+      while (safe.getTerminal() == Terminal::BIN) { // E'-> BIN TE' | epsilon'
+        safe.next_token();
+        auto &&right = parse_T();
+        // result = std::make_unique<Binary>(result, right , front().getType()
+        // ); //Create a Binary Node
+      }
+      // return result;
+    }
+
+    std::unique_ptr<ASTNode> parse_T() {}
+
+  private:
+    std::vector<TokenType> tokens;
+    Safeway safe;
+  };
+
+  // auto tokens = parseToType(str);
+  // return parseToNodes(tokens);
+}
 
 } // namespace AST

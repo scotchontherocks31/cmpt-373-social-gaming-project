@@ -140,7 +140,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  
+
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
     const auto &formatMessageNode = node.getFormatNode();
@@ -173,8 +173,6 @@ private:
 
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
-
-  
 
 private:
   Environment environment;
@@ -245,7 +243,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  
+
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(FormatNode &node) {
@@ -266,8 +264,6 @@ private:
   void visitLeave(VarDeclaration &node) { out << ")"; };
   void visitEnter(ParallelFor &node) { out << "(ParallelFor "; };
   void visitLeave(ParallelFor &node) { out << ")"; };
-
-  
 
 private:
   std::ostream &out;

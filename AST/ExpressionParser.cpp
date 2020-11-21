@@ -63,4 +63,3 @@ std::vector<TokenType> parseToType(std::string str) {
   }
   return tokens;
 }
-
