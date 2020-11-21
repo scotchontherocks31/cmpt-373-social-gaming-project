@@ -22,13 +22,13 @@ protected:
 TEST_F(EnvironmentTests, CreateChild) {
   auto child = parent.createChildEnvironment();
   child.allocate(key, symbol);
-  EXPECT_EQ(symbol.dsl, child.find<false>(key));
-  EXPECT_EQ(nullopt, parent.find<false>(key));
+  EXPECT_EQ(symbol.dsl, child.find(key));
+  EXPECT_EQ(nullopt, parent.find(key));
   auto secondChild = child.createChildEnvironment();
   secondChild.allocate(secondKey, secondSymbol);
-  EXPECT_EQ(secondSymbol.dsl, secondChild.find<true>(secondKey));
-  EXPECT_EQ(symbol.dsl, secondChild.find<false>(key));
-  EXPECT_EQ(nullopt, secondChild.find<true>("Does not exist"));
+  EXPECT_EQ(secondSymbol.dsl, secondChild.constFind(secondKey));
+  EXPECT_EQ(symbol.dsl, secondChild.find(key));
+  EXPECT_EQ(nullopt, secondChild.constFind("Does not exist"));
 }
 
 TEST_F(EnvironmentTests, contains) {
@@ -60,41 +60,40 @@ TEST_F(EnvironmentTests, find) {
   grandChild1.allocate(secondKey, secondSymbol);
   child2.allocate(secondKey, symbol);
   grandChild2.allocate(key, secondSymbol);
-  EXPECT_EQ(symbol.dsl, child1.find<true>(key));
-  EXPECT_EQ(symbol.dsl, child1.find<false>(key));
-  EXPECT_EQ(nullopt, child1.find<true>(secondKey));
-  EXPECT_EQ(nullopt, child1.find<false>(secondKey));
-  EXPECT_EQ(symbol.dsl, grandChild1.find<true>(key));
-  EXPECT_EQ(symbol.dsl, grandChild1.find<false>(key));
-  EXPECT_EQ(secondSymbol.dsl, grandChild1.find<true>(secondKey));
-  EXPECT_EQ(nullopt, grandChild1.find<false>(secondKey));
-  EXPECT_EQ(nullopt, parent.find<false>(key));
-  EXPECT_EQ(nullopt, parent.find<true>(key));
-  EXPECT_EQ(nullopt, parent.find<true>(secondKey));
-  EXPECT_EQ(nullopt, parent.find<true>(secondKey));
-  EXPECT_EQ(nullopt, child2.find<true>(key));
-  EXPECT_EQ(nullopt, child2.find<false>(key));
-  EXPECT_EQ(symbol.dsl, child2.find<true>(secondKey));
-  EXPECT_EQ(symbol.dsl, child2.find<false>(secondKey));
-  EXPECT_EQ(secondSymbol.dsl, grandChild2.find<true>(key));
-  EXPECT_EQ(nullopt, grandChild2.find<false>(key));
-  EXPECT_EQ(symbol.dsl, grandChild2.find<true>(secondKey));
-  EXPECT_EQ(symbol.dsl, grandChild2.find<false>(secondKey));
+  EXPECT_EQ(symbol.dsl, child1.constFind(key));
+  EXPECT_EQ(symbol.dsl, child1.find(key));
+  EXPECT_EQ(nullopt, child1.constFind(secondKey));
+  EXPECT_EQ(nullopt, child1.find(secondKey));
+  EXPECT_EQ(symbol.dsl, grandChild1.constFind(key));
+  EXPECT_EQ(symbol.dsl, grandChild1.find(key));
+  EXPECT_EQ(secondSymbol.dsl, grandChild1.constFind(secondKey));
+  EXPECT_EQ(nullopt, grandChild1.find(secondKey));
+  EXPECT_EQ(nullopt, parent.find(key));
+  EXPECT_EQ(nullopt, parent.constFind(key));
+  EXPECT_EQ(nullopt, parent.constFind(secondKey));
+  EXPECT_EQ(nullopt, parent.constFind(secondKey));
+  EXPECT_EQ(nullopt, child2.constFind(key));
+  EXPECT_EQ(nullopt, child2.find(key));
+  EXPECT_EQ(symbol.dsl, child2.constFind(secondKey));
+  EXPECT_EQ(symbol.dsl, child2.find(secondKey));
+  EXPECT_EQ(secondSymbol.dsl, grandChild2.constFind(key));
+  EXPECT_EQ(nullopt, grandChild2.find(key));
+  EXPECT_EQ(symbol.dsl, grandChild2.constFind(secondKey));
+  EXPECT_EQ(symbol.dsl, grandChild2.find(secondKey));
 }
 
 TEST_F(EnvironmentTests, insertBinding) {
   child1.allocate(secondKey, secondSymbol);
-  auto handle = child1.find<true>(secondKey);
-  ;
+  auto handle = child1.constFind(secondKey);
   EXPECT_TRUE(handle);
   EXPECT_FALSE(child1.insertBinding(secondKey, *handle));
   EXPECT_TRUE(child1.contains(secondKey));
   EXPECT_TRUE(grandChild1.insertBinding(key, *handle));
-  EXPECT_EQ(secondSymbol.dsl, grandChild1.find<true>(key));
+  EXPECT_EQ(secondSymbol.dsl, grandChild1.constFind(key));
   child1.allocate(key, symbol);
-  auto handle2 = child1.find<true>(key);
+  auto handle2 = child1.constFind(key);
   grandChild1.insertOrAssignBinding(key, *handle2);
-  EXPECT_EQ(symbol.dsl, grandChild1.find<true>(key));
+  EXPECT_EQ(symbol.dsl, grandChild1.constFind(key));
 }
 
 TEST_F(EnvironmentTests, Return) {
@@ -103,16 +102,16 @@ TEST_F(EnvironmentTests, Return) {
     auto grandChild1 = child1.createChildEnvironment();
     grandChild1.allocateReturn(symbol);
   }
-  auto handle = child1.getReturnValue<false>();
+  auto handle = child1.getReturnValue();
   EXPECT_TRUE(handle);
   EXPECT_EQ(symbol.dsl, handle);
   {
     auto grandChild1 = child1.createChildEnvironment();
-    auto handle = parent.find<true>(secondKey);
+    auto handle = parent.constFind(secondKey);
     EXPECT_TRUE(handle);
     grandChild1.setReturn(*handle);
   }
-  auto handle2 = child1.getReturnValue<true>();
+  auto handle2 = child1.getConstReturnValue();
   EXPECT_TRUE(handle2);
   EXPECT_EQ(secondSymbol.dsl, handle2);
 }
