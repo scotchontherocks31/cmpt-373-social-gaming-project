@@ -1,7 +1,7 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
-#include "gtest/gtest.h"
 #include "ExpressionParser.h"
+#include "gtest/gtest.h"
 
 #include <iostream>
 #include <map>
@@ -11,9 +11,7 @@
 
 using namespace testing;
 
-
-
-TEST(ExpressionNodes, RecursiveNesting ) {
+TEST(ExpressionNodes, RecursiveNesting) {
 
   std::unique_ptr<AST::BinaryNode> bin = std::make_unique<AST::BinaryNode>(
       std::make_unique<AST::VariableExpression>(std::string{"player"}),
@@ -21,22 +19,18 @@ TEST(ExpressionNodes, RecursiveNesting ) {
       Type::DOT);
 
   std::unique_ptr<AST::UnaryNode> un = std::make_unique<AST::UnaryNode>(
-  std::make_unique<AST::VariableExpression>(std::string{"random"}),
-  Type::DOT);
-
-  std::unique_ptr<AST::BinaryNode> bin3 = std::make_unique<AST::BinaryNode>(
-      std::move(bin),
-      std::move(un),
+      std::make_unique<AST::VariableExpression>(std::string{"random"}),
       Type::DOT);
 
-
+  std::unique_ptr<AST::BinaryNode> bin3 = std::make_unique<AST::BinaryNode>(
+      std::move(bin), std::move(un), Type::DOT);
 }
 
-
-TEST(ExpressionNodes, ExpressionFunctions ) {
+TEST(ExpressionNodes, ExpressionFunctions) {
 
   std::vector<std::unique_ptr<AST::ExpressionNode>> args;
-  std::unique_ptr<AST::ExpressionNode> arg1 = std::make_unique<AST::VariableExpression>(std::string{"player"});
+  std::unique_ptr<AST::ExpressionNode> arg1 =
+      std::make_unique<AST::VariableExpression>(std::string{"player"});
   std::unique_ptr<AST::BinaryNode> arg2 = std::make_unique<AST::BinaryNode>(
       std::make_unique<AST::VariableExpression>(std::string{"weapon"}),
       std::make_unique<AST::VariableExpression>(std::string{"beats"}),
@@ -45,14 +39,10 @@ TEST(ExpressionNodes, ExpressionFunctions ) {
   args.push_back(std::move(arg1));
   args.push_back(std::move(arg2));
 
- std::unique_ptr<AST::FunctionCallNode> func = std::make_unique<AST::FunctionCallNode>(
-   std::make_unique<AST::VariableExpression>(std::string{"collect"}),
-   args);
+  std::unique_ptr<AST::FunctionCallNode> func =
+      std::make_unique<AST::FunctionCallNode>(
+          std::make_unique<AST::VariableExpression>(std::string{"collect"}),
+          args);
 
-  EXPECT_EQ(func->getFunctionName().getLexeme(),"collect");
-
-
-  
+  EXPECT_EQ(func->getFunctionName().getLexeme(), "collect");
 }
-
-

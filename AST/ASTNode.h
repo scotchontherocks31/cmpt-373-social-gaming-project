@@ -152,7 +152,8 @@ private:
 class BinaryNode : public ExpressionNode {
 public:
   BinaryNode(std::unique_ptr<ExpressionNode> &&operandLeft,
-             std::unique_ptr<ExpressionNode> &&operandRight, Type binaryOperator) {
+             std::unique_ptr<ExpressionNode> &&operandRight,
+             Type binaryOperator) {
     appendChild(std::move(operandLeft));
     appendChild(std::move(operandRight));
     binaryOperator = binaryOperator;
@@ -189,20 +190,17 @@ public:
   FunctionCallNode(std::unique_ptr<ExpressionNode> &&functionName,
                    std::vector<std::unique_ptr<ExpressionNode>> &args) {
     appendChild(std::move(functionName));
-    for(auto &arg:args){
+    for (auto &arg : args) {
       appendChild(std::move(arg));
     }
- 
   }
   const VariableExpression &getFunctionName() const {
     return *static_cast<VariableExpression *>(children[0].get());
   }
 
-  private:
+private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
-
-
 
 class AST {
 public:
