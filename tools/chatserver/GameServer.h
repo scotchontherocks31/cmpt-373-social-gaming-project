@@ -89,8 +89,7 @@ private:
 
 class AnyStrToCommandM {
 public:
-  virtual
-  operator const std::map<std::string, GameServer::Command> &() const = 0;
+  virtual std::map<std::string, GameServer::Command> getMap() const = 0;
 };
 
 class StrToCommandMap : public AnyStrToCommandM {
@@ -108,7 +107,7 @@ public:
               {"info", GameServer::Command::INFO},
               {"game", GameServer::Command::GAME}};
   }
-  operator const std::map<std::string, GameServer::Command> &() const override {
+  std::map<std::string, GameServer::Command> getMap() const override {
     return theMap;
   }
 };
@@ -123,16 +122,15 @@ public:
               {"start", GameServer::Command::START_GAME},
               {"clean", GameServer::Command::CLEAN_GAME}};
   }
-  operator const std::map<std::string, GameServer::Command> &() const override {
+  std::map<std::string, GameServer::Command> getMap() const override {
     return theMap;
   }
 };
 
 class AnyCommandToFunctionM {
 public:
-  virtual
-  operator const std::map<GameServer::Command, std::function<functionType>> &()
-      const = 0;
+  virtual std::map<GameServer::Command, std::function<functionType>>
+  getMap() const = 0;
 };
 
 class CommandToFunctionMap : public AnyCommandToFunctionM {
@@ -141,8 +139,8 @@ private:
 
 public:
   CommandToFunctionMap();
-  operator const std::map<GameServer::Command, std::function<functionType>> &()
-      const override {
+  std::map<GameServer::Command, std::function<functionType>>
+  getMap() const override {
     return theMap;
   }
 };
@@ -153,8 +151,8 @@ private:
 
 public:
   CommandToGameFunctionMap();
-  operator const std::map<GameServer::Command, std::function<functionType>> &()
-      const override {
+  std::map<GameServer::Command, std::function<functionType>>
+  getMap() const override {
     return theMap;
   }
 };

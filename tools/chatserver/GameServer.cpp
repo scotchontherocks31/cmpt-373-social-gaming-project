@@ -65,7 +65,7 @@ GameServer::Command GameServer::matchCommand(const std::string &command) {
 GameServer::GameServer(
     unsigned short port, std::string httpMessage, AnyStrToCommandM &strToComm,
     AnyStrToCommandM &strToGameComm, // recieves maps to translate strings
-                                    // (possibly from any language)
+                                     // (possibly from any language)
     AnyCommandToFunctionM &commToFunc,
     AnyCommandToFunctionM
         &commToGameFunc) // recieves maps to traslate comands to functions
@@ -74,9 +74,10 @@ GameServer::GameServer(
           [this](Connection c) { this->onConnect(c); },
           [this](Connection c) { this->onDisconnect(c); }),
       roomManager(), gameManager(*this, roomManager),
-      strToCommandMap(strToComm()), strToGameCommandMap(strToGameComm()),
-      commandToFunctionMap(commToFunc()),
-      commandToGameFunctionMap(commToGameFunc()) {}
+      strToCommandMap(strToComm.getMap()),
+      strToGameCommandMap(strToGameComm.getMap()),
+      commandToFunctionMap(commToFunc.getMap()),
+      commandToGameFunctionMap(commToGameFunc.getMap()) {}
 
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";
