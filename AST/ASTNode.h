@@ -151,11 +151,11 @@ private:
 
 class BinaryNode : public ExpressionNode {
 public:
-  BinaryNode(std::unique_ptr<ExpressionNode> &&variable,
-             std::unique_ptr<ExpressionNode> &&variableTwo, Type binOperator) {
-    appendChild(std::move(variable));
-    appendChild(std::move(variableTwo));
-    oper = binOperator;
+  BinaryNode(std::unique_ptr<ExpressionNode> &&operandLeft,
+             std::unique_ptr<ExpressionNode> &&operandRight, Type binaryOperator) {
+    appendChild(std::move(operandLeft));
+    appendChild(std::move(operandRight));
+    binaryOperator = binaryOperator;
   }
   const ExpressionNode &getArgOne() const {
     return *static_cast<ExpressionNode *>(children[0].get());
@@ -165,46 +165,44 @@ public:
   }
 
 private:
-  Type oper;
+  Type binaryOperator;
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class UnaryNode : public ExpressionNode {
 public:
-  UnaryNode(std::unique_ptr<ExpressionNode> &&variable, Type unOperator) {
-    appendChild(std::move(variable));
-    oper = unOperator;
+  UnaryNode(std::unique_ptr<ExpressionNode> &&operand, Type unaryOperator) {
+    appendChild(std::move(operand));
+    unaryOperator = unaryOperator;
   }
   const ExpressionNode &getArgOne() const {
     return *static_cast<ExpressionNode *>(children[0].get());
   }
 
 private:
-  Type oper;
+  Type unaryOperator;
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
-class FunctionCallNode : public ExpressionNode {
+class FunctionCallNode final : public ExpressionNode {
 public:
   FunctionCallNode(std::unique_ptr<ExpressionNode> &&functionName,
-                   std::unique_ptr<ExpressionNode> &&argOne = NULL,
-                   std::unique_ptr<ExpressionNode> &&argTwo = NULL) {
+                   std::vector<std::unique_ptr<ExpressionNode>> &args) {
     appendChild(std::move(functionName));
-    appendChild(std::move(argOne));
-    appendChild(std::move(argTwo));
+    for(auto &arg:args){
+      appendChild(std::move(arg));
+    }
+ 
   }
-
   const VariableExpression &getFunctionName() const {
     return *static_cast<VariableExpression *>(children[0].get());
   }
 
-  const ExpressionNode &getArgTwo() const {
-    return *static_cast<ExpressionNode *>(children[1].get());
-  }
-
-private:
+  private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
+
+
 
 class AST {
 public:

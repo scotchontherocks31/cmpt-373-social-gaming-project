@@ -15,7 +15,6 @@ using namespace testing;
 
 TEST(ExpressionNodes, RecursiveNesting ) {
 
-
   std::unique_ptr<AST::BinaryNode> bin = std::make_unique<AST::BinaryNode>(
       std::make_unique<AST::VariableExpression>(std::string{"player"}),
       std::make_unique<AST::VariableExpression>(std::string{"size"}),
@@ -30,38 +29,30 @@ TEST(ExpressionNodes, RecursiveNesting ) {
       std::move(un),
       Type::DOT);
 
-  
-  //const AST::UnaryNode unRet = bin3->getArgTwo();
 
 }
 
 
 TEST(ExpressionNodes, ExpressionFunctions ) {
 
-  // functionNode ( variablenode("upfrom") , Variablenode(1) )
- std::unique_ptr<AST::FunctionCallNode> func = std::make_unique<AST::FunctionCallNode>(
-   std::make_unique<AST::VariableExpression>(std::string{"upfrom"}),
-   std::make_unique<AST::VariableExpression>(std::string{"1"}));
-
-  EXPECT_EQ(func->getFunctionName().getLexeme(),"upfrom");
-
-
-//    - players.elements.collect(player, player.weapon == weapon.beats)
-// 	- (funcNameVar,variable, variable, operator)
-  std::unique_ptr<AST::BinaryNode> binColl = std::make_unique<AST::BinaryNode>(
-      std::make_unique<AST::VariableExpression>(std::string{"player.weapon "}),
-      std::make_unique<AST::VariableExpression>(std::string{"weapon.beats"}),
+  std::vector<std::unique_ptr<AST::ExpressionNode>> args;
+  std::unique_ptr<AST::ExpressionNode> arg1 = std::make_unique<AST::VariableExpression>(std::string{"player"});
+  std::unique_ptr<AST::BinaryNode> arg2 = std::make_unique<AST::BinaryNode>(
+      std::make_unique<AST::VariableExpression>(std::string{"weapon"}),
+      std::make_unique<AST::VariableExpression>(std::string{"beats"}),
       Type::EQUALS);
 
- std::unique_ptr<AST::FunctionCallNode> func2 = std::make_unique<AST::FunctionCallNode>(
+  args.push_back(std::move(arg1));
+  args.push_back(std::move(arg2));
+
+ std::unique_ptr<AST::FunctionCallNode> func = std::make_unique<AST::FunctionCallNode>(
    std::make_unique<AST::VariableExpression>(std::string{"collect"}),
-   std::move(binColl));
+   args);
 
+  EXPECT_EQ(func->getFunctionName().getLexeme(),"collect");
 
-    EXPECT_EQ(func2->getFunctionName().getLexeme(),"collect");
 
   
-
 }
 
 
