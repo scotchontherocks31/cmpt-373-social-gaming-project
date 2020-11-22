@@ -74,9 +74,9 @@ GameServer::GameServer(
           [this](Connection c) { this->onConnect(c); },
           [this](Connection c) { this->onDisconnect(c); }),
       roomManager(), gameManager(*this, roomManager),
-      strToCommandMap(strToComm), strToGameCommandMap(strToGameComm),
-      commandToFunctionMap(commToFunc),
-      commandToGameFunctionMap(commToGameFunc) {}
+      strToCommandMap(strToComm()), strToGameCommandMap(strToGameComm()),
+      commandToFunctionMap(commToFunc()),
+      commandToGameFunctionMap(commToGameFunc()) {}
 
 void GameServer::onConnect(Connection c) {
   std::cout << "New connection found: " << c.id << "\n";

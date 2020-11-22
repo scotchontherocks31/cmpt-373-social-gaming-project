@@ -71,10 +71,12 @@ private:
   std::map<userid, User> users;
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
-  AnyStrToCommandM strToCommandMap;
-  AnyStrToCommandM strToGameCommandMap;
-  AnyCommandToFunctionM commandToFunctionMap;
-  AnyCommandToFunctionM commandToGameFunctionMap;
+  std::map<std::string, GameServer::Command> strToCommandMap;
+  std::map<std::string, GameServer::Command> strToGameCommandMap;
+  std::map<GameServer::Command, std::function<functionType>>
+      commandToFunctionMap;
+  std::map<GameServer::Command, std::function<functionType>>
+      commandToGameFunctionMap;
   bool running = false;
   void onConnect(Connection c);
   void onDisconnect(Connection c);
