@@ -47,9 +47,7 @@ public:
   };
 
   GameServer(unsigned short port, std::string httpMessage,
-             AnyStrToCommandM &strToComm, AnyStrToCommandM &strToGameComm,
-             AnyCommandToFunctionM &commToFunc,
-             AnyCommandToFunctionM &commToGameFunc);
+             AnyStrToCommandM &strToComm, AnyStrToCommandM &strToGameComm);
   void sendMessageToUser(const User &user, std::string message);
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
@@ -78,6 +76,10 @@ private:
   std::map<GameServer::Command, std::function<functionType>>
       commandToGameFunctionMap;
   bool running = false;
+  std::map<GameServer::Command, std::function<functionType>>
+  initializeFunctionMap();
+  std::map<GameServer::Command, std::function<functionType>>
+  initializeGameFunctionMap();
   void onConnect(Connection c);
   void onDisconnect(Connection c);
   void processMessages();
@@ -127,7 +129,7 @@ public:
   }
 };
 
-class AnyCommandToFunctionM {
+/*class AnyCommandToFunctionM {
 public:
   virtual std::map<GameServer::Command, std::function<functionType>>
   getMap() const = 0;
@@ -155,4 +157,4 @@ public:
   getMap() const override {
     return theMap;
   }
-};
+};*/
