@@ -4,6 +4,7 @@ enable_testing()
 add_executable(runAllTests
     ASTTests.cpp
     DSLValueTest.cpp
+    EnvironmentTest.cpp
 )
 
 set_target_properties(runAllTests 
