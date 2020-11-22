@@ -59,12 +59,12 @@ bool GameInstance::queueMessage(const User &user, std::string message) {
 
 coro::Task<> GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
   auto players = this->getPlayers();
-  auto playersTran = players | std::views::transform([](Player player) {
-                       return AST::Player{player.name, player.id, nullptr};
-                     });
+  auto toAstPlayer = [](auto &player) {
+    return AST::Player{player.id, player.name};
+  };
+  auto playersTran = players | std::views::transform(toAstPlayer);
   std::vector<AST::Player> playersInfo(playersTran.begin(), playersTran.end());
-  auto env = std::move(
-      co_await config.populateEnvironment(std::move(playersInfo), *this));
+  auto env = co_await config.populateEnvironment(std::move(playersInfo), *this);
   this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
   co_await ast.accept(*(this->interpreter));
 }

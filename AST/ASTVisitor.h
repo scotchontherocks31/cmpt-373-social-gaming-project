@@ -4,6 +4,7 @@
 #include "ASTNode.h"
 #include "DSLValue.h"
 #include "Environment.h"
+#include "Player.h"
 #include <algorithm>
 #include <deque>
 #include <iostream>
@@ -17,20 +18,6 @@
 namespace AST {
 
 using Json = nlohmann::json;
-
-class Player {
-public:
-  Player(std::string name, int id, DSLValue *dslPtr)
-      : name{name}, id{id}, dslPtr{dslPtr} {}
-  int getId() { return id; }
-  std::string getName() { return name; }
-  DSLValue *getDslPtr() { return dslPtr; }
-
-private:
-  std::string name;
-  int id;
-  DSLValue *dslPtr;
-};
 
 struct PlayerMessage {
   int playerId;
@@ -49,6 +36,10 @@ public:
   void sendGlobalMessage(std::string message) override {
     std::cout << message << std::endl;
   }
+  void sendToOwner(std::string message) override {
+    std::cout << message << std::endl;
+  }
+  std::deque<PlayerMessage> receiveFromOwner() override { return {}; };
 };
 
 class ASTVisitor {
@@ -73,12 +64,18 @@ private:
   virtual coro::Task<> visitHelper(InputText &) = 0;
 };
 
+struct PopulatedEnvironment {
+  std::unique_ptr<Environment> envPtr;
+  PlayerList players;
+};
+
 // TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
 // and Rules
 class Interpreter : public ASTVisitor {
 public:
-  Interpreter(std::unique_ptr<Environment> &&env, Communicator &communicator)
-      : environment{std::move(env)}, communicator{communicator} {}
+  Interpreter(PopulatedEnvironment &&env, Communicator &communicator)
+      : environment{std::move(env.envPtr)}, players{std::move(env.players)},
+        communicator{communicator} {}
 
 private:
   coro::Task<> visitHelper(GlobalMessage &node) override {
@@ -169,6 +166,7 @@ private:
 
 private:
   std::unique_ptr<Environment> environment;
+  PlayerList players;
   Communicator &communicator;
 };
 

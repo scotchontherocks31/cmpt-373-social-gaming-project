@@ -13,7 +13,7 @@ using namespace testing;
 
 TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
-  auto enviro = std::make_unique<AST::Environment>();
+  auto enviro = AST::PopulatedEnvironment{std::make_unique<AST::Environment>()};
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
 
@@ -38,7 +38,7 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
 TEST(ASTprinter, ParallelForandInput) {
 
-  auto enviro = std::make_unique<AST::Environment>();
+  auto enviro = AST::PopulatedEnvironment{std::make_unique<AST::Environment>()};
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
 

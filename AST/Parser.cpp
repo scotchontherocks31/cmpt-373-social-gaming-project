@@ -1,10 +1,11 @@
 #include "Parser.h"
 #include "ASTVisitor.h"
 #include <assert.h>
+using Json = nlohmann::json;
 
 namespace AST {
 
-AST JSONToASTParser::parseHelper() { return AST{parseRules(json[0]["rules"])}; }
+AST JSONToASTParser::parseHelper() { return AST{parseRules(json[0])}; }
 
 std::unique_ptr<Rules> JSONToASTParser::parseRules(const Json &json) {
 
@@ -87,5 +88,18 @@ Json ConfigParser::parsePerAudience() { return json[0]["per-audience"]; }
 Json ConfigParser::parseVariables() { return json[0]["variables"]; }
 
 Json ConfigParser::parseConstants() { return json[0]["constants"]; }
+
+std::optional<CombinedParsers> generateParsers(std::string json) {
+  if (!Json::accept(json)) {
+    return {};
+  }
+  auto jsonObj = Json::parse(std::move(json));
+  if (!jsonObj.contains("rules") || !jsonObj.contains("configuration")) {
+    return {};
+  }
+  auto astParser = JSONToASTParser{std::move(jsonObj.at("rules"))};
+  auto configParser = ConfigParser{std::move(jsonObj)};
+  return CombinedParsers{std::move(configParser), std::move(astParser)};
+}
 
 } // namespace AST

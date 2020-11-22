@@ -34,7 +34,7 @@ class JSONToASTParser : public DomainSpecificParser {
 public:
   JSONToASTParser(std::string json)
       : json{nlohmann::json::parse(std::move(json))} {}
-  JSONToASTParser(Json &&json) : json{json} {}
+  JSONToASTParser(Json json) : json{std::move(json)} {}
 
 private:
   const Json json;
@@ -53,6 +53,7 @@ class ConfigParser {
 public:
   ConfigParser(std::string json)
       : json{nlohmann::json::parse(std::move(json))} {}
+  ConfigParser(Json json) : json{std::move(json)} {}
   std::string parseName();
   std::pair<int, int> parsePlayerCount();
   bool parseHasAudience();
@@ -65,6 +66,13 @@ public:
 private:
   Json json;
 };
+
+struct CombinedParsers {
+  ConfigParser configParser;
+  JSONToASTParser astParser;
+};
+
+std::optional<CombinedParsers> generateParsers(std::string json);
 
 } // namespace AST
 

@@ -2,6 +2,7 @@
 #define AST_CONFIG_H
 
 #include "Parser.h"
+#include "Player.h"
 #include "task.h"
 
 using Json = nlohmann::json;
@@ -11,8 +12,8 @@ namespace AST {
 class Configurator {
 public:
   // clang-format off
-  Configurator(ConfigParser parser)
-      : parser{std::move(parser)}, 
+  Configurator(ConfigParser configParser)
+      : parser{std::move(configParser)}, 
         name{parser.parseName()},
         playerCount{parser.parsePlayerCount()},
         hasAudience{parser.parseHasAudience()}, 
@@ -24,8 +25,8 @@ public:
   // clang-format on
   Configurator(std::string json)
       : Configurator(ConfigParser{std::move(json)}) {}
-  coro::Task<Environment> populateEnvironment(std::vector<Player> players,
-                                              Communicator &com);
+  coro::Task<PopulatedEnvironment>
+  populateEnvironment(std::vector<Player> players, Communicator &com);
   std::string getName() { return name; }
   std::pair<int, int> getPlayerCount() { return playerCount; }
   bool getHasAudience() { return hasAudience; }
@@ -33,7 +34,7 @@ public:
 private:
   bool isSetupValid();
   coro::Task<> populateSetup(Communicator &com);
-  Environment createEnvironment(std::vector<Player> players);
+  PopulatedEnvironment createEnvironment(std::vector<Player> players);
   ConfigParser parser;
   std::string name;
   std::pair<int, int> playerCount;

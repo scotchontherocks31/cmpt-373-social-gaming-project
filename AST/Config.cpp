@@ -40,7 +40,7 @@ bool Configurator::isSetupValid() {
                       [](auto &element) { return element.contains("kind"); });
 }
 
-coro::Task<Environment>
+coro::Task<PopulatedEnvironment>
 Configurator::populateEnvironment(std::vector<Player> players,
                                   Communicator &com) {
   co_await populateSetup(com);
@@ -53,37 +53,44 @@ coro::Task<> Configurator::populateSetup(Communicator &com) {
   }
 }
 
-Environment Configurator::createEnvironment(std::vector<Player> players) {
-  auto env = Environment{nullptr};
+PopulatedEnvironment
+Configurator::createEnvironment(std::vector<Player> players) {
+  auto envPtr = std::make_unique<Environment>();
 
-  env.setBinding("configuration", DSLValue{setup});
+  envPtr->allocate("configuration", Symbol{DSLValue{setup}});
 
   // add the current members into the game
   std::vector<DSLValue> playersDSL;
-
   for (auto &player : players) {
     Json playerJson;
-    playerJson["id"] = player.getId();
-    playerJson["name"] = player.getName();
     for (auto &[key, value] : perPlayer.items()) {
       playerJson[key] = value;
     }
-    // add the DSLValue player to the DSL List
+    playerJson["id"] = player.id;
+    playerJson["name"] = player.name;
     playersDSL.push_back(DSLValue{playerJson});
   }
 
-  env.setBinding("players", playersDSL);
+  envPtr->allocate("players", Symbol{DSLValue{playersDSL}});
+  DSLValue &dsl = *envPtr->find("players");
+  std::vector<DSLPlayer> playerBindings;
+  for (int i = 0; i < dsl.size(); i++) {
+    // Relying on DSLValue conversion to keep the ordering of players.
+    // It's terrible but it's the only way to get both id and DSLValue pointer
+    // at the same time.
+    playerBindings.push_back(DSLPlayer{std::move(players[i]), &dsl[i]->get()});
+  }
 
   // add constants
   for (auto &[key, value] : constants.items()) {
-    env.setBinding(key, value);
+    envPtr->allocate(key, Symbol{DSLValue{value}, true});
   }
 
   // add variables
   for (auto &[key, value] : variables.items()) {
-    env.setBinding(key, value);
+    envPtr->allocate(key, Symbol{DSLValue{value}});
   }
-  return env;
+  return {std::move(envPtr), PlayerList{playerBindings}};
 }
 
 } // namespace AST

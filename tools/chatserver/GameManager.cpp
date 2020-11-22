@@ -18,10 +18,13 @@ GameInstance &GameManager::getGameInstance(const User &user) {
 }
 
 bool GameManager::createGame(std::string name, std::string json) {
-
-  auto config = AST::Configurator{std::move(json)};
-  auto parser = AST::JSONToASTParser{std::move(json)};
-  std::pair<AST::AST, AST::Configurator> gamePair(parser.parse(), config);
+  auto parsers = AST::generateParsers(std::move(json));
+  if (!parsers) {
+    return false;
+  }
+  auto config = AST::Configurator{std::move(parsers->configParser)};
+  std::pair<AST::AST, AST::Configurator> gamePair{parsers->astParser.parse(),
+                                                  std::move(config)};
   auto [it, inserted] = games.insert({std::move(name), std::move(gamePair)});
 
   return inserted;
