@@ -47,9 +47,9 @@ public:
   };
 
   GameServer(unsigned short port, std::string httpMessage,
-             AnyStrToCommandM strToComm, AnyStrToCommandM strToGameComm,
-             AnyCommandToFunctionM commToFunc,
-             AnyCommandToFunctionM commToGameFunc);
+             AnyStrToCommandM &strToComm, AnyStrToCommandM &strToGameComm,
+             AnyCommandToFunctionM &commToFunc,
+             AnyCommandToFunctionM &commToGameFunc);
   void sendMessageToUser(const User &user, std::string message);
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }

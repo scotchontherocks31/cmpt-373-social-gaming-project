@@ -63,12 +63,12 @@ GameServer::Command GameServer::matchCommand(const std::string &command) {
 }
 
 GameServer::GameServer(
-    unsigned short port, std::string httpMessage, AnyStrToCommandM strToComm,
-    AnyStrToCommandM strToGameComm, // recieves maps to translate strings
+    unsigned short port, std::string httpMessage, AnyStrToCommandM &strToComm,
+    AnyStrToCommandM &strToGameComm, // recieves maps to translate strings
                                     // (possibly from any language)
-    AnyCommandToFunctionM commToFunc,
+    AnyCommandToFunctionM &commToFunc,
     AnyCommandToFunctionM
-        commToGameFunc) // recieves maps to traslate comands to functions
+        &commToGameFunc) // recieves maps to traslate comands to functions
     : server(
           port, std::move(httpMessage),
           [this](Connection c) { this->onConnect(c); },
