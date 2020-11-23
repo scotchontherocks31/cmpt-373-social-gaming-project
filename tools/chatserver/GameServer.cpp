@@ -264,7 +264,7 @@ GameServer::initializeGameFunctionMap() {
         } else {
           auto &instance = gameManager.getGameInstance(user);
           output << "Starting game \"" << tokens[2] << "\"\n";
-          instance.loadGame(gameManager.getGame(tokens[2]));
+          //instance.loadGame(gameManager.getGame(tokens[2])); //TODO function now requires environment
           instance.runGame();
         }
         return output.str();
