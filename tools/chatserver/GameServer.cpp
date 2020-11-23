@@ -371,6 +371,7 @@ GameServer::initializeGameFunctionMap() {
       {GameServer::Command::CREATE_GAME, createFunc},
       {GameServer::Command::START_GAME, startFunc},
       {GameServer::Command::CLEAN_GAME, cleanFunc}};
+      return theMap;
 }
 
 /*CommandToGameFunctionMap::CommandToGameFunctionMap() {

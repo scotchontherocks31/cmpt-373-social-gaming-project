@@ -24,9 +24,6 @@ class GameManager;
 class AnyStrToCommandM;
 class StrToCommandMap;
 class StrToGameCommandMap;
-class AnyCommandToFunctionM;
-class CommandToFunctionMap;
-class CommandToGameFunctionMap;
 
 class GameServer {
 public:
