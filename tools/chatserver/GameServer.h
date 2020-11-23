@@ -73,10 +73,6 @@ private:
   std::map<GameServer::Command, std::function<functionType>>
       commandToGameFunctionMap;
   bool running = false;
-  //std::map<GameServer::Command, std::function<functionType>>
-  //initializeFunctionMap();
-  //std::map<GameServer::Command, std::function<functionType>>
-  //initializeGameFunctionMap();
   void onConnect(Connection c);
   void onDisconnect(Connection c);
   void processMessages();
@@ -125,33 +121,3 @@ public:
     return theMap;
   }
 };
-
-/*class AnyCommandToFunctionM {
-public:
-  virtual std::map<GameServer::Command, std::function<functionType>>
-  getMap() const = 0;
-};
-
-class CommandToFunctionMap : public AnyCommandToFunctionM {
-private:
-  std::map<GameServer::Command, std::function<functionType>> theMap;
-
-public:
-  CommandToFunctionMap();
-  std::map<GameServer::Command, std::function<functionType>>
-  getMap() const override {
-    return theMap;
-  }
-};
-
-class CommandToGameFunctionMap : public AnyCommandToFunctionM {
-private:
-  std::map<GameServer::Command, std::function<functionType>> theMap;
-
-public:
-  CommandToGameFunctionMap();
-  std::map<GameServer::Command, std::function<functionType>>
-  getMap() const override {
-    return theMap;
-  }
-};*/
