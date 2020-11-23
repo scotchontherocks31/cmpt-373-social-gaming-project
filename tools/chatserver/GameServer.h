@@ -73,10 +73,10 @@ private:
   std::map<GameServer::Command, std::function<functionType>>
       commandToGameFunctionMap;
   bool running = false;
-  std::map<GameServer::Command, std::function<functionType>>
-  initializeFunctionMap();
-  std::map<GameServer::Command, std::function<functionType>>
-  initializeGameFunctionMap();
+  //std::map<GameServer::Command, std::function<functionType>>
+  //initializeFunctionMap();
+  //std::map<GameServer::Command, std::function<functionType>>
+  //initializeGameFunctionMap();
   void onConnect(Connection c);
   void onDisconnect(Connection c);
   void processMessages();
