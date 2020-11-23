@@ -84,7 +84,7 @@ private:
 
 class AnyStrToCommandM {
 public:
-  virtual std::map<std::string, GameServer::Command> getMap() const = 0;
+  virtual std::map<std::string, GameServer::Command> &getMap() const = 0;
 };
 
 class StrToCommandMap : public AnyStrToCommandM {
@@ -102,7 +102,7 @@ public:
               {"info", GameServer::Command::INFO},
               {"game", GameServer::Command::GAME}};
   }
-  std::map<std::string, GameServer::Command> getMap() const override {
+  std::map<std::string, GameServer::Command> &getMap() const override {
     return theMap;
   }
 };
@@ -117,7 +117,7 @@ public:
               {"start", GameServer::Command::START_GAME},
               {"clean", GameServer::Command::CLEAN_GAME}};
   }
-  std::map<std::string, GameServer::Command> getMap() const override {
+  std::map<std::string, GameServer::Command> &getMap() const override {
     return theMap;
   }
 };

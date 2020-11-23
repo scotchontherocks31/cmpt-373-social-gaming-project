@@ -56,7 +56,7 @@ std::vector<std::string> tokenizeCommand(std::string command) {
 }
 
 GameServer::Command GameServer::matchCommand(const std::string &command) {
-  if (strToGameCommandMap.contains(command)) {
+  if (!strToGameCommandMap.contains(command)) {
     return GameServer::Command::UNKNOWN;
   }
   return GameServer::strToCommandMap[command];
@@ -146,11 +146,10 @@ void GameServer::processMessages() {
 
 std::map<GameServer::Command, std::function<functionType>>
 GameServer::initializeFunctionMap() {
+  // some functions don't need the inputs, however all
+  // of them take it for convinience of the user
   std::function<functionType> quitFunc =
-      [this](User &user,
-             std::vector<std::string>
-                 &tokens) { // some functions don't need the inputs, however all
-                            // of them take it for convinience of the user
+      [this](User &user, std::vector<std::string> &tokens) {
         std::ostringstream output;
         this->server.disconnect(user.connection);
         output << "Server disconnected\n";
@@ -264,7 +263,8 @@ GameServer::initializeGameFunctionMap() {
         } else {
           auto &instance = gameManager.getGameInstance(user);
           output << "Starting game \"" << tokens[2] << "\"\n";
-          //instance.loadGame(gameManager.getGame(tokens[2])); //TODO function now requires environment
+          instance.loadGame(gameManager.getGame(tokens[2]),
+                            std::make_unique<AST::Environment>());
           instance.runGame();
         }
         return output.str();
