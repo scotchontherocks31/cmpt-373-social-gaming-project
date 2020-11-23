@@ -130,7 +130,9 @@ public:
     if (!coroutine) {
       return true;
     }
-    coroutine.resume();
+    if (not coroutine.done()) {
+      coroutine.resume();
+    }
     return coroutine.done();
   }
   coroutine::coroutine_handle<>
