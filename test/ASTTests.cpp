@@ -29,6 +29,7 @@ TEST(ExpressionNodes, RecursiveNesting) {
 TEST(ExpressionNodes, ExpressionFunctions) {
 
   std::vector<std::unique_ptr<AST::ExpressionNode>> args;
+
   std::unique_ptr<AST::ExpressionNode> arg1 =
       std::make_unique<AST::VariableExpression>(std::string{"player"});
   std::unique_ptr<AST::BinaryNode> arg2 = std::make_unique<AST::BinaryNode>(
@@ -42,7 +43,7 @@ TEST(ExpressionNodes, ExpressionFunctions) {
   std::unique_ptr<AST::FunctionCallNode> func =
       std::make_unique<AST::FunctionCallNode>(
           std::make_unique<AST::VariableExpression>(std::string{"collect"}),
-          args);
+          std::move(args) );
 
   EXPECT_EQ(func->getFunctionName().getLexeme(), "collect");
 }

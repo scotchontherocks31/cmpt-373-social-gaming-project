@@ -79,9 +79,13 @@ static std::map<Type, Terminal> TypeToTerminal{
 struct Safeway {
   // I will use these Functions //
   Safeway(std::vector<TokenType> tokens) {}
-  Terminal getTerminal() {} // If it is out of bounds, return Terminal::END.
-  TokenType front() {}      // get whatever is in front
-  void next_token() {}      // move to next token
+
+  
+  Terminal getTerminal() {  return TypeToTerminal[tokensQueue.front().getType()]; } // If it is out of bounds, return Terminal::END.
+  TokenType front() {  return tokensQueue.front(); }      
+  void next_token() { tokensQueue.pop(); }      
+  std::string getValue(){ return tokensQueue.front().getValue(); }
+  Type getType() { return tokensQueue.front().getType(); }
   // ----------------------------
 private:
   std::queue<TokenType> tokensQueue;

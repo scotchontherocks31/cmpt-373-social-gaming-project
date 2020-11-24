@@ -79,68 +79,109 @@ JSONToASTParser::parseExpression(const std::string &str) {
     arglist -> E, arglist
     */
 
-    std::unique_ptr<ASTNode> parse_S() { // S -> E END_TOKEN
+    std::unique_ptr<ExpressionNode> parse_S() { // S -> E END_TOKEN
       while (safe.getTerminal() != Terminal::END) {
         auto &&result = parse_E();
       }
     }
 
-    std::unique_ptr<ASTNode> parse_E() { // E -> T E'
+    std::unique_ptr<ExpressionNode> parse_E() { // E -> T E'
       auto &&result = parse_T();
 
-      while (safe.getTerminal() == Terminal::BIN) { // E'-> BIN TE' | epsilon'
+      while (safe.getTerminal() == Terminal::BIN) { // E'-> BIN TE' | epsilon
+        Type binaryOperator = safe.getType();
         safe.next_token();
         auto &&right = parse_T();
-        // result = std::make_unique<Binary>(result, right , front().getType() ); //Create a Binary Node 
+        result = std::make_unique<BinaryNode>( std::move(result) , std::move(right) , binaryOperator ); 
       }
-      // return result;
+      return std::move(result);
     }
 
-    std::unique_ptr<ASTNode> parse_T() {
-      
+    std::unique_ptr<ExpressionNode> parse_T() {  //T -> UN T | F | (E)
+      auto &&result = empty_parse();
+
+      if(safe.getTerminal() == Terminal::UN){ 
+        auto unaryOperator = safe.getType();
+        safe.next_token();
+        
+        auto &&operand = parse_T();
+        result = std::make_unique<UnaryNode>( std::move(operand) , unaryOperator ); 
+      }
+       
+      if(safe.getTerminal() == Terminal::ID){ 
+        result = parse_F();
+      }
+
+      if(safe.getTerminal() == Terminal::OPENPAR){
+        safe.next_token();
+        result = parse_E();
+        safe.next_token();
+      }
+
+      return std::move(result);
     }
 
-    std::unique_ptr<ASTNode> parse_F(){
+    std::unique_ptr<ExpressionNode> parse_F(){ //F -> P F'
       auto &&result = parse_P();
 
-      while(safe.getTerminal() == Terminal::DOT){
+      while(safe.getTerminal() == Terminal::DOT){ //F'-> DOT PF' | epsilon
+        Type DOT = safe.getType();
         safe.next_token();
+
         auto &&right = parse_P();
-        // result = std::make_unique<Binary>(result, right , front().getType() ); //Create a Binary Node of DOT
+        result = std::make_unique<BinaryNode>( std::move(result) , std::move(right) , DOT ); 
       }
-      // return result;
+      return std::move(result);
     }
 
+    //------------------------------------
     //P -> ID(arglist) | ID | epsilon
-
-    std::unique_ptr<ASTNode> parse_P(){
+    std::unique_ptr<ExpressionNode> parse_P(){
   
       auto && result = empty_parse();
-      if (safe.getTerminal() != Terminal::ID){
-        return result;
-      }   
+
+      if (safe.getTerminal() != Terminal::ID){  //epsilon
+        return std::move(result);
+      }
+
       else {
+        result = std::make_unique<VariableExpression>( safe.getValue() );   
         safe.next_token();
-        if(safe.getTerminal() == Terminal::OPENPAR){
+
+        if(safe.getTerminal() == Terminal::OPENPAR){    
           safe.next_token();
-          result = std::make_unique<function>(functionName , parse_arg());
+          result = std::make_unique<FunctionCallNode>( std::move(result) , std::move( parse_arg()) );
           safe.next_token();  // TODO: CHECK IF CLOSE PAR THEN THROW EXCEPTION INSTEAD
         }
       }
      
-          
-      return parse_variable();
+      return std::move(result);
     }
 
-    std::unique_ptr<ASTNode> parse_arg(){
+    std::vector<std::unique_ptr<ExpressionNode>> parse_arg() {
 
+      std::vector<std::unique_ptr<ExpressionNode>> args;
+      while(isE()){ 
+        args.push_back( parse_E() );
+        if( safe.getTerminal() == Terminal::COMMA){ // E, arglist
+          safe.next_token();
+        }
+      }
+      
+      return std::move(args);
     }
 
-    std::unique_ptr<ASTNode> parse_variable() {}
-    std::unique_ptr<ASTNode> parse_function_call() {}
-    std::unique_ptr<ASTNode> empty_parse() {}
+    std::unique_ptr<ExpressionNode> empty_parse() {
+      return std::make_unique<VariableExpression>("");
+    }
 
-
+    bool isE(){ // E -> T -> UN T | F | (E)         F -> P -> ID
+      if( (safe.getTerminal() == Terminal::UN)  || 
+          (safe.getTerminal() == Terminal::ID)  || 
+          (safe.getTerminal() == Terminal::OPENPAR)){
+              return true;
+      }
+    }
 
   private:
     std::vector<TokenType> tokens;

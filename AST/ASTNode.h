@@ -188,7 +188,7 @@ private:
 class FunctionCallNode final : public ExpressionNode {
 public:
   FunctionCallNode(std::unique_ptr<ExpressionNode> &&functionName,
-                   std::vector<std::unique_ptr<ExpressionNode>> &args) {
+                   std::vector<std::unique_ptr<ExpressionNode>> args) {
     appendChild(std::move(functionName));
     for (auto &arg : args) {
       appendChild(std::move(arg));
