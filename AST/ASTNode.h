@@ -136,6 +136,72 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
+class ExpressionNode : public ASTNode {};
+
+class VariableExpression : public ExpressionNode {
+public:
+  // TODO: Add types to check validity (eg. list vs bool)
+  explicit VariableExpression(std::string lexeme) : lexeme{std::move(lexeme)} {}
+  const std::string &getLexeme() const { return lexeme; }
+
+private:
+  std::string lexeme;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
+class BinaryNode : public ExpressionNode {
+public:
+  BinaryNode(std::unique_ptr<ExpressionNode> &&operandLeft,
+             std::unique_ptr<ExpressionNode> &&operandRight,
+             Type binaryOperator) {
+    appendChild(std::move(operandLeft));
+    appendChild(std::move(operandRight));
+    binaryOperator = binaryOperator;
+  }
+  const ExpressionNode &getArgOne() const {
+    return *static_cast<ExpressionNode *>(children[0].get());
+  }
+  const ExpressionNode &getArgTwo() const {
+    return *static_cast<ExpressionNode *>(children[1].get());
+  }
+
+private:
+  Type binaryOperator;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
+class UnaryNode : public ExpressionNode {
+public:
+  UnaryNode(std::unique_ptr<ExpressionNode> &&operand, Type unaryOperator) {
+    appendChild(std::move(operand));
+    unaryOperator = unaryOperator;
+  }
+  const ExpressionNode &getArgOne() const {
+    return *static_cast<ExpressionNode *>(children[0].get());
+  }
+
+private:
+  Type unaryOperator;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
+class FunctionCallNode final : public ExpressionNode {
+public:
+  FunctionCallNode(std::unique_ptr<ExpressionNode> &&functionName,
+                   std::vector<std::unique_ptr<ExpressionNode>> &args) {
+    appendChild(std::move(functionName));
+    for (auto &arg : args) {
+      appendChild(std::move(arg));
+    }
+  }
+  const VariableExpression &getFunctionName() const {
+    return *static_cast<VariableExpression *>(children[0].get());
+  }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
 class AST {
 public:
   AST(std::unique_ptr<ASTNode> &&root) : root{std::move(root)} {}
