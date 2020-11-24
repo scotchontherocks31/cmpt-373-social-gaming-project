@@ -91,13 +91,56 @@ JSONToASTParser::parseExpression(const std::string &str) {
       while (safe.getTerminal() == Terminal::BIN) { // E'-> BIN TE' | epsilon'
         safe.next_token();
         auto &&right = parse_T();
-        // result = std::make_unique<Binary>(result, right , front().getType()
-        // ); //Create a Binary Node
+        // result = std::make_unique<Binary>(result, right , front().getType() ); //Create a Binary Node 
       }
       // return result;
     }
 
-    std::unique_ptr<ASTNode> parse_T() {}
+    std::unique_ptr<ASTNode> parse_T() {
+      
+    }
+
+    std::unique_ptr<ASTNode> parse_F(){
+      auto &&result = parse_P();
+
+      while(safe.getTerminal() == Terminal::DOT){
+        safe.next_token();
+        auto &&right = parse_P();
+        // result = std::make_unique<Binary>(result, right , front().getType() ); //Create a Binary Node of DOT
+      }
+      // return result;
+    }
+
+    //P -> ID(arglist) | ID | epsilon
+
+    std::unique_ptr<ASTNode> parse_P(){
+  
+      auto && result = empty_parse();
+      if (safe.getTerminal() != Terminal::ID){
+        return result;
+      }   
+      else {
+        safe.next_token();
+        if(safe.getTerminal() == Terminal::OPENPAR){
+          safe.next_token();
+          result = std::make_unique<function>(functionName , parse_arg());
+          safe.next_token();  // TODO: CHECK IF CLOSE PAR THEN THROW EXCEPTION INSTEAD
+        }
+      }
+     
+          
+      return parse_variable();
+    }
+
+    std::unique_ptr<ASTNode> parse_arg(){
+
+    }
+
+    std::unique_ptr<ASTNode> parse_variable() {}
+    std::unique_ptr<ASTNode> parse_function_call() {}
+    std::unique_ptr<ASTNode> empty_parse() {}
+
+
 
   private:
     std::vector<TokenType> tokens;
