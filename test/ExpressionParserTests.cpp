@@ -9,7 +9,7 @@ TEST(ExpressionParser, simple) {
 
   AST::RDP rdp("Weapon==Player");
 
-  std::unique_ptr<AST::BinaryNode> result = rdp.parse_S();
+  std::unique_ptr<AST::ExpressionNode> result = rdp.parse_S();
 
   std::unique_ptr<AST::BinaryNode> expected = std::make_unique<AST::BinaryNode>(
       std::make_unique<AST::VariableExpression>(std::string{"Weapon"}),

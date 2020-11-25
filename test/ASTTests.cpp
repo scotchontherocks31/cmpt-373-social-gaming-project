@@ -1,10 +1,7 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
-<<<<<<< HEAD
 #include "ExpressionParser.h"
-=======
 #include "Environment.h"
->>>>>>> develop
 #include "gtest/gtest.h"
 
 #include <iostream>
@@ -15,7 +12,6 @@
 
 using namespace testing;
 
-<<<<<<< HEAD
 TEST(ExpressionNodes, RecursiveNesting) {
 
   std::unique_ptr<AST::BinaryNode> bin = std::make_unique<AST::BinaryNode>(
@@ -51,7 +47,8 @@ TEST(ExpressionNodes, ExpressionFunctions) {
           std::move(args));
 
   EXPECT_EQ(func->getFunctionName().getLexeme(), "collect");
-=======
+}
+
 TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
   auto enviro = std::make_unique<AST::Environment>();
@@ -117,5 +114,4 @@ TEST(ASTprinter, ParallelForandInput) {
       "GlobalMessage(FormatNode \"Message One\"))(InputText(FormatNode \"How "
       "are you\")(Variable\"player\")(VarDeclaration\"response\"))))";
   EXPECT_EQ(output, answer);
->>>>>>> develop
 }

@@ -1,23 +1,23 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
 #include "ExpressionParser.h"
-#include "gtest/gtest.h"
 
-#include <iostream>
-#include <map>
-#include <string>
+
+
 #include <task.h>
-#include <variant>
+
 
 namespace AST {
 
 struct RDP {
   RDP(std::string str) : safe(parseToType(str)) {}
 
-  std::unique_ptr<ExpressionNode> parse_S() { // S -> E END_TOKEN
+    std::unique_ptr<ExpressionNode> parse_S() { // S -> E END_TOKEN
+    auto &&result = empty_parse();
     while (safe.getTerminal() != Terminal::END) {
-      auto &&result = parse_E();
+      result = parse_E();
     }
+    return std::move(result);
   }
 
   std::unique_ptr<ExpressionNode> parse_E() { // E -> T E'
@@ -119,6 +119,8 @@ struct RDP {
         (safe.getTerminal() == Terminal::ID) ||
         (safe.getTerminal() == Terminal::OPENPAR)) {
       return true;
+    } else {
+      return false;
     }
   }
 
