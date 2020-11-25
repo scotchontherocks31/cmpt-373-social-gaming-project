@@ -126,15 +126,7 @@ private:
 public:
   Awaitable(coroutine::coroutine_handle<typename Task<T>::Promise> coroutine)
       : coroutine{coroutine} {}
-  bool await_ready() const noexcept {
-    if (!coroutine) {
-      return true;
-    }
-    if (not coroutine.done()) {
-      coroutine.resume();
-    }
-    return coroutine.done();
-  }
+  bool await_ready() const noexcept { return !coroutine || coroutine.done(); }
   coroutine::coroutine_handle<>
   await_suspend(coroutine::coroutine_handle<> coroutine) noexcept {
     this->coroutine.promise().set_continuation(coroutine);
