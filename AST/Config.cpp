@@ -3,13 +3,14 @@
 
 using Json = nlohmann::json;
 
-coro::Task<Json> getSetupValueFromOwner(const std::string &key, Json &value,
-                                        AST::Communicator &com) {
+coro::Task<Json> getSetupValueFromOwner(Json value, AST::Communicator &com) {
   if (value.is_object() && value.contains("kind") && value.contains("prompt")) {
     com.sendToOwner(value["prompt"].get<std::string>());
     auto messages = com.receiveFromOwner();
+    std::cout << "Waiting for user's response\n";
     while (messages.empty()) {
       co_await coro::coroutine::suspend_always();
+      std::cout << "Got user's response\n";
       messages = com.receiveFromOwner();
     }
     auto kind = value["kind"].get<std::string>();
@@ -19,16 +20,17 @@ coro::Task<Json> getSetupValueFromOwner(const std::string &key, Json &value,
     // for a different value.
     if (kind == "integer") {
       int userValue = std::stoi(data);
-      co_return Json{userValue};
+      co_return Json(userValue);
     } else if (kind == "string") {
-      co_return Json{data};
+      co_return Json(data);
     } else if (kind == "boolean") {
       bool userValue = data.starts_with("true");
-      co_return Json{userValue};
+      co_return Json(userValue);
     } else {
       co_return nlohmann::json::parse(data);
     }
   }
+  std::cout << "getSetupValueFromOwner return same value\n";
   co_return std::move(value);
   // TODO: Handle overwrite default setup value
 }
@@ -43,14 +45,27 @@ bool Configurator::isSetupValid() {
 coro::Task<PopulatedEnvironment>
 Configurator::populateEnvironment(std::vector<Player> players,
                                   Communicator &com) {
-  co_await populateSetup(com);
+  std::cout << "Start populating Setup\n";
+  auto task = populateSetup(com);
+  while (not task.isDone()) {
+    co_await task;
+  }
+  std::cout << "Finished populating Setup\n";
   co_return createEnvironment(std::move(players));
 }
 
 coro::Task<> Configurator::populateSetup(Communicator &com) {
-  for (auto &[key, value] : setup.items()) {
-    value = co_await getSetupValueFromOwner(key, value, com);
+  std::cout << "Setup json: " << setup.dump() << std::endl;
+  coro::Task<Json> task;
+  for (auto &[key, value] : setup[0].items()) {
+    task = getSetupValueFromOwner(std::move(value), com);
+    while (not task.isDone()) {
+      std::cout << "co_await getSetupValueFromOwner\n";
+      value = std::move(co_await task);
+    }
+    std::cout << "Finished populating " << key << ": " << value << std::endl; 
   }
+  std::cout << "Setup json after populating: " << setup.dump() << std::endl;
 }
 
 PopulatedEnvironment

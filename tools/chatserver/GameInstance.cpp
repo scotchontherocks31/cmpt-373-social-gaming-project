@@ -63,10 +63,19 @@ coro::Task<> GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
     return AST::Player{player.id, player.name};
   };
   auto playersTran = players | std::views::transform(toAstPlayer);
-  auto env = co_await config.populateEnvironment(
+  auto populateTask = config.populateEnvironment(
       {playersTran.begin(), playersTran.end()}, *this);
+  AST::PopulatedEnvironment env;
+  while (not populateTask.isDone()) {
+    std::cout << "co_await populateEnvironment\n";
+    env = std::move(co_await populateTask);
+  }
   this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
-  co_await ast.accept(*(this->interpreter));
+  auto interpretTask = ast.accept(*(this->interpreter));
+  while (not interpretTask.isDone()) {
+    std::cout << "co_await ast->accept\n";
+    co_await interpretTask;
+  }
 }
 
 void GameInstance::resumeGame() {
