@@ -3,10 +3,12 @@
 
 #include "ASTNode.h"
 #include "DSLValue.h"
+#include "Environment.h"
 #include <algorithm>
 #include <iostream>
 #include <json.hpp>
 #include <map>
+#include <sstream>
 #include <string>
 #include <task.h>
 #include <variant>
@@ -24,36 +26,6 @@ class PrintCommunicator : public Communicator {
 public:
   void sendGlobalMessage(std::string message) override {
     std::cout << message << std::endl;
-  }
-};
-
-class Environment {
-public:
-  using Lexeme = std::string;
-
-private:
-  Environment *parent;
-  std::unique_ptr<Environment> child;
-  std::map<Lexeme, DSLValue> bindings;
-
-public:
-  Environment() : parent{nullptr} {}
-  explicit Environment(Environment *parent) : parent{parent} {}
-  DSLValue &getValue(const Lexeme &lexeme) noexcept { return bindings[lexeme]; }
-  void removeBinding(const Lexeme &lexeme) noexcept {
-    if (bindings.contains(lexeme)) {
-      bindings.erase(lexeme);
-    }
-  }
-  bool contains(const Lexeme &lexeme) noexcept {
-    return bindings.contains(lexeme);
-  }
-  void setBinding(const Lexeme &lexeme, DSLValue value) noexcept {
-    bindings.insert_or_assign(lexeme, std::move(value));
-  }
-  Environment &createChildEnvironment() noexcept {
-    child = std::make_unique<Environment>(this);
-    return *child;
   }
 };
 
@@ -91,7 +63,7 @@ private:
 // and Rules
 class Interpreter : public ASTVisitor {
 public:
-  Interpreter(Environment &&env, Communicator &communicator)
+  Interpreter(std::unique_ptr<Environment> &&env, Communicator &communicator)
       : environment{std::move(env)}, communicator{communicator} {}
 
 private:
@@ -231,7 +203,7 @@ private:
   void visitLeave(FunctionCallNode &node){};
 
 private:
-  Environment environment;
+  std::unique_ptr<Environment> environment;
   Communicator &communicator;
 };
 
@@ -339,22 +311,22 @@ private:
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(FormatNode &node) {
-    out << "(FormatNode \"" << node.getFormat() << "\" ";
+    out << "(FormatNode \"" << node.getFormat() << "\"";
   };
   void visitLeave(FormatNode &node) { out << ")"; };
-  void visitEnter(InputText &node) { out << "(InputText "; };
+  void visitEnter(InputText &node) { out << "(InputText"; };
   void visitLeave(InputText &node) { out << ")"; };
-  void visitEnter(Rules &node) { out << "(Rules "; };
+  void visitEnter(Rules &node) { out << "(Rules"; };
   void visitLeave(Rules &node) { out << ")"; };
   void visitEnter(Variable &node) {
-    out << "(Variable \"" << node.getLexeme() << "\" ";
+    out << "(Variable\"" << node.getLexeme() << "\"";
   };
   void visitLeave(Variable &node) { out << ")"; };
   void visitEnter(VarDeclaration &node) {
-    out << "(VarDeclaration \"" << node.getLexeme() << "\" ";
+    out << "(VarDeclaration\"" << node.getLexeme() << "\"";
   };
   void visitLeave(VarDeclaration &node) { out << ")"; };
-  void visitEnter(ParallelFor &node) { out << "(ParallelFor "; };
+  void visitEnter(ParallelFor &node) { out << "(ParallelFor"; };
   void visitLeave(ParallelFor &node) { out << ")"; };
 
   void visitEnter(BinaryNode &node) { out << "(BinaryNode "; };
@@ -371,6 +343,14 @@ private:
 
 private:
   std::ostream &out;
+
+public:
+  std::string returnOutput() {
+    std::stringstream newStream;
+    newStream << out.rdbuf();
+    std::string myString = newStream.str();
+    return myString;
+  }
 };
 
 } // namespace AST
