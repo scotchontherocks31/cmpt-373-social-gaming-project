@@ -1,6 +1,8 @@
 #include "Parser.h"
 #include "ASTVisitor.h"
 #include "ExpressionParser.h"
+#include "RDP.h"
+
 #include <assert.h>
 
 namespace AST {
@@ -63,133 +65,9 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
 
 std::unique_ptr<ASTNode>
 JSONToASTParser::parseExpression(const std::string &str) {
-  struct RDP {
-    RDP(std::string str) : safe(parseToType(str)) {}
 
-    /*
-    S -> E END_TOKEN
-    E -> T E'
-    E'-> BIN TE' | epsilon
-    T -> UN T | F | (E)
-    F -> P F'
-    F'-> DOT PF' | epsilon
-    P -> ID(arglist) | ID | epsilon
-    arglist -> E
-    arglist -> epsilon
-    arglist -> E, arglist
-    */
-
-    std::unique_ptr<ExpressionNode> parse_S() { // S -> E END_TOKEN
-      while (safe.getTerminal() != Terminal::END) {
-        auto &&result = parse_E();
-      }
-    }
-
-    std::unique_ptr<ExpressionNode> parse_E() { // E -> T E'
-      auto &&result = parse_T();
-
-      while (safe.getTerminal() == Terminal::BIN) { // E'-> BIN TE' | epsilon
-        Type binaryOperator = safe.getType();
-        safe.next_token();
-        auto &&right = parse_T();
-        result = std::make_unique<BinaryNode>( std::move(result) , std::move(right) , binaryOperator ); 
-      }
-      return std::move(result);
-    }
-
-    std::unique_ptr<ExpressionNode> parse_T() {  //T -> UN T | F | (E)
-      auto &&result = empty_parse();
-
-      if(safe.getTerminal() == Terminal::UN){ 
-        auto unaryOperator = safe.getType();
-        safe.next_token();
-        
-        auto &&operand = parse_T();
-        result = std::make_unique<UnaryNode>( std::move(operand) , unaryOperator ); 
-      }
-       
-      if(safe.getTerminal() == Terminal::ID){ 
-        result = parse_F();
-      }
-
-      if(safe.getTerminal() == Terminal::OPENPAR){
-        safe.next_token();
-        result = parse_E();
-        safe.next_token();
-      }
-
-      return std::move(result);
-    }
-
-    std::unique_ptr<ExpressionNode> parse_F(){ //F -> P F'
-      auto &&result = parse_P();
-
-      while(safe.getTerminal() == Terminal::DOT){ //F'-> DOT PF' | epsilon
-        Type DOT = safe.getType();
-        safe.next_token();
-
-        auto &&right = parse_P();
-        result = std::make_unique<BinaryNode>( std::move(result) , std::move(right) , DOT ); 
-      }
-      return std::move(result);
-    }
-
-    //------------------------------------
-    //P -> ID(arglist) | ID | epsilon
-    std::unique_ptr<ExpressionNode> parse_P(){
-  
-      auto && result = empty_parse();
-
-      if (safe.getTerminal() != Terminal::ID){  //epsilon
-        return std::move(result);
-      }
-
-      else {
-        result = std::make_unique<VariableExpression>( safe.getValue() );   
-        safe.next_token();
-
-        if(safe.getTerminal() == Terminal::OPENPAR){    
-          safe.next_token();
-          result = std::make_unique<FunctionCallNode>( std::move(result) , std::move( parse_arg()) );
-          safe.next_token();  // TODO: CHECK IF CLOSE PAR THEN THROW EXCEPTION INSTEAD
-        }
-      }
-     
-      return std::move(result);
-    }
-
-    std::vector<std::unique_ptr<ExpressionNode>> parse_arg() {
-
-      std::vector<std::unique_ptr<ExpressionNode>> args;
-      while(isE()){ 
-        args.push_back( parse_E() );
-        if( safe.getTerminal() == Terminal::COMMA){ // E, arglist
-          safe.next_token();
-        }
-      }
-      
-      return std::move(args);
-    }
-
-    std::unique_ptr<ExpressionNode> empty_parse() {
-      return std::make_unique<VariableExpression>("");
-    }
-
-    bool isE(){ // E -> T -> UN T | F | (E)         F -> P -> ID
-      if( (safe.getTerminal() == Terminal::UN)  || 
-          (safe.getTerminal() == Terminal::ID)  || 
-          (safe.getTerminal() == Terminal::OPENPAR)){
-              return true;
-      }
-    }
-
-  private:
-    std::vector<TokenType> tokens;
-    Safeway safe;
-  };
-
-  // auto tokens = parseToType(str);
-  // return parseToNodes(tokens);
+  RDP rdp(str);
+  return rdp.parse_S();
 }
 
 } // namespace AST

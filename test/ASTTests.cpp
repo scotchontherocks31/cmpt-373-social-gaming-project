@@ -43,7 +43,7 @@ TEST(ExpressionNodes, ExpressionFunctions) {
   std::unique_ptr<AST::FunctionCallNode> func =
       std::make_unique<AST::FunctionCallNode>(
           std::make_unique<AST::VariableExpression>(std::string{"collect"}),
-          std::move(args) );
+          std::move(args));
 
   EXPECT_EQ(func->getFunctionName().getLexeme(), "collect");
 }

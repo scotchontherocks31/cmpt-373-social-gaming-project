@@ -4,6 +4,7 @@ add_executable(runAllTests
     ASTTests.cpp
     DSLValueTest.cpp
     ParseToTypeTest.cpp
+    ExpressionParserTests.cpp
 )
 
 set_target_properties(runAllTests 
