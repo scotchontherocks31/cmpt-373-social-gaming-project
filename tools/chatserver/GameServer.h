@@ -21,7 +21,7 @@ struct DecoratedMessage {
 
 class GameManager;
 
-class AnyStrToCommandM;
+class BaseStringToCommandMap;
 class StrToCommandMap;
 class StrToGameCommandMap;
 
@@ -44,7 +44,8 @@ public:
   };
 
   GameServer(unsigned short port, std::string httpMessage,
-             AnyStrToCommandM &strToComm, AnyStrToCommandM &strToGameComm);
+             BaseStringToCommandMap &strToComm,
+             BaseStringToCommandMap &strToGameComm);
   void sendMessageToUser(const User &user, std::string message);
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
@@ -85,6 +86,8 @@ private:
 class BaseStringToCommandMap {
 public:
   virtual std::map<std::string, GameServer::Command> getMap() = 0;
+  virtual GameServer::Command getValue(std::string) = 0;
+  virtual bool have(std::string) = 0;
 };
 
 class StrToCommandMap : public BaseStringToCommandMap {
@@ -105,6 +108,8 @@ public:
   std::map<std::string, GameServer::Command> getMap() override {
     return theMap;
   }
+  GameServer::Command getValue(std::string) override { return theMap[value]; }
+  bool have(std::string) override { return theMap.contains(value); }
 };
 
 class StrToGameCommandMap : public BaseStringToCommandMap {
@@ -120,4 +125,8 @@ public:
   std::map<std::string, GameServer::Command> getMap() override {
     return theMap;
   }
+  GameServer::Command getValue(std::string value) override {
+    return theMap[value];
+  }
+  bool have(std::string value) override { return theMap.contains(value); }
 };
