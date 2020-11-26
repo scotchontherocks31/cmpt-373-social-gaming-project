@@ -78,17 +78,35 @@ static std::map<Type, Terminal> TypeToTerminal{
 // The Main feature is to make sure i do not go out of bounds
 struct Safeway {
   // I will use these Functions //
-  Safeway(std::vector<TokenType> tokens) {}
+  Safeway(std::vector<TokenType> tokens) {
+    size = tokens.size();
+    currentIndex = 0;
+    for(auto t : tokens){
+      tokensQueue.push(t);
+    }
+    
+    // Need a way for me to return Terminal::END at the very end
+  }
 
   Terminal getTerminal() {
-    return TypeToTerminal[tokensQueue.front().getType()];
+    if (currentIndex < size){
+      return TypeToTerminal[tokensQueue.front().getType()];
+    } else {
+      return Terminal::END;
+    }
+    
   } // If it is out of bounds, return Terminal::END.
   TokenType front() { return tokensQueue.front(); }
-  void next_token() { tokensQueue.pop(); }
+  void next_token() { 
+    tokensQueue.pop(); 
+    currentIndex ++;
+    }
   std::string getValue() { return tokensQueue.front().getValue(); }
   Type getType() { return tokensQueue.front().getType(); }
   // ----------------------------
 private:
+  int size ;
+  int currentIndex;
   std::queue<TokenType> tokensQueue;
 };
 
