@@ -91,9 +91,8 @@ public:
   Task<T> get_return_object() noexcept {
     return Task<T>{coroutine::coroutine_handle<Promise>::from_promise(*this)};
   }
-  coroutine::suspend_always initial_suspend() { return {}; }
-  coroutine::suspend_always final_suspend() { return {}; }
-  void return_void() {}
+  coroutine::suspend_always initial_suspend() noexcept { return {}; }
+  coroutine::suspend_always final_suspend() noexcept { return {}; }
   void unhandled_exception() noexcept { std::terminate(); }
   template <typename U,
             typename = std::enable_if_t<std::is_convertible_v<U &&, T>>>
