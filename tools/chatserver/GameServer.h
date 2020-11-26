@@ -106,7 +106,9 @@ public:
   std::map<std::string, GameServer::Command> getMap() override {
     return theMap;
   }
-  GameServer::Command getValue(std::string command) override { return theMap[command]; }
+  GameServer::Command getValue(std::string command) override {
+    return theMap[command];
+  }
   bool have(std::string command) override { return theMap.contains(command); }
 };
 
