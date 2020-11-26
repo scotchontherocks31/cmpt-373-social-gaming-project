@@ -20,7 +20,6 @@ struct DecoratedMessage {
 };
 
 class GameManager;
-
 class BaseStringToCommandMap;
 
 class GameServer {
