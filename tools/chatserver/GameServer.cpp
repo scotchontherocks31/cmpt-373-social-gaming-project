@@ -56,24 +56,25 @@ std::vector<std::string> tokenizeCommand(std::string command) {
 }
 
 GameServer::Command GameServer::matchCommand(const std::string &command) {
-  if (!strToGameCommandMap.contains(command)) {
+  if (!strToGameCommandMap.getMap().contains(command)) {
     return GameServer::Command::UNKNOWN;
   }
-  return GameServer::strToCommandMap[command];
+  return GameServer::strToCommandMap.getMap()[command];
 }
 
 GameServer::GameServer(
-    unsigned short port, std::string httpMessage, AnyStrToCommandM &strToComm,
-    AnyStrToCommandM &strToGameComm) // recieves maps to translate strings
-                                     // (possibly from any language)
+    unsigned short port, std::string httpMessage,
+    BaseStringToCommandMap &strToComm,
+    BaseStringToCommandMap &strToGameComm) // recieves maps to translate strings
+                                           // (possibly from any language)
 
     : server(
           port, std::move(httpMessage),
           [this](Connection c) { this->onConnect(c); },
           [this](Connection c) { this->onDisconnect(c); }),
       roomManager(), gameManager(*this, roomManager),
-      strToCommandMap(strToComm.getMap()),
-      strToGameCommandMap(strToGameComm.getMap()),
+      strToCommandMap(std::move(strToComm)),
+      strToGameCommandMap(std::move(strToGameComm)),
       commandToFunctionMap(initializeFunctionMap()),
       commandToGameFunctionMap(initializeGameFunctionMap()) {}
 
@@ -290,10 +291,10 @@ GameServer::initializeGameFunctionMap() {
 }
 
 GameServer::Command GameServer::matchGameCommand(const std::string &command) {
-  if (strToGameCommandMap.contains(command)) {
+  if (strToGameCommandMap.getMap().contains(command)) {
     return GameServer::Command::UNKNOWN_GAME;
   }
-  return GameServer::strToGameCommandMap[command];
+  return GameServer::strToGameCommandMap.getMap()[command];
 }
 
 std::string GameServer::processGameCommand(User &user,

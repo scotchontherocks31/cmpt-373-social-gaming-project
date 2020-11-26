@@ -66,8 +66,8 @@ private:
   std::map<userid, User> users;
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
-  std::map<std::string, GameServer::Command> strToCommandMap;
-  std::map<std::string, GameServer::Command> strToGameCommandMap;
+  BaseStringToCommandMap strToCommandMap;
+  BaseStringToCommandMap strToGameCommandMap;
   std::map<GameServer::Command, std::function<functionType>>
       commandToFunctionMap;
   std::map<GameServer::Command, std::function<functionType>>
@@ -82,12 +82,12 @@ private:
   void flush();
 };
 
-class AnyStrToCommandM {
+class BaseStringToCommandMap {
 public:
   virtual std::map<std::string, GameServer::Command> getMap() = 0;
 };
 
-class StrToCommandMap : public AnyStrToCommandM {
+class StrToCommandMap : public BaseStringToCommandMap {
 private:
   std::map<std::string, GameServer::Command> theMap;
 
@@ -107,7 +107,7 @@ public:
   }
 };
 
-class StrToGameCommandMap : public AnyStrToCommandM {
+class StrToGameCommandMap : public BaseStringToCommandMap {
 private:
   std::map<std::string, GameServer::Command> theMap;
 
