@@ -58,6 +58,19 @@ bool GameInstance::queueMessage(const User &user, std::string message) {
 }
 
 coro::Task<> GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
+  auto populateTask = populateEnvironment(config);
+  AST::PopulatedEnvironment env;
+  while (not populateTask.isDone()) {
+    env = co_await populateTask;
+  }
+  this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
+  auto interpretTask = ast.accept(*(this->interpreter));
+  while (not interpretTask.isDone()) {
+    co_await interpretTask;
+  }
+}
+
+coro::Task<AST::PopulatedEnvironment> GameInstance::populateEnvironment(AST::Configurator &config) {
   auto &players = this->getPlayers();
   auto toAstPlayer = [](auto &player) {
     return AST::Player{player.id, player.name};
@@ -67,20 +80,13 @@ coro::Task<> GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
       {playersTran.begin(), playersTran.end()}, *this);
   AST::PopulatedEnvironment env;
   while (not populateTask.isDone()) {
-    std::cout << "co_await populateEnvironment\n";
-    env = std::move(co_await populateTask);
+    env = co_await populateTask;
   }
-  this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
-  auto interpretTask = ast.accept(*(this->interpreter));
-  while (not interpretTask.isDone()) {
-    std::cout << "co_await ast->accept\n";
-    co_await interpretTask;
-  }
+  co_return env;
 }
 
 void GameInstance::resumeGame() {
-  if (!gameTask.isDone()) {
-    gameTask.resume();
+  while (gameTask.resume() && !waitingForUserInput()) {
   }
 }
 
@@ -89,4 +95,9 @@ void GameInstance::startGame(AST::AST &ast, AST::Configurator &config,
   ownerId = reversePlayerIdMapping.at(owner.getId());
   gameTask = loadGame(ast, config);
   resumeGame();
+}
+
+bool GameInstance::waitingForUserInput() const {
+  return std::any_of(playerMessageRequest.cbegin(), playerMessageRequest.cend(),
+                     [](auto &elem) { return elem.second; });
 }

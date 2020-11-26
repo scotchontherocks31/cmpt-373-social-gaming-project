@@ -53,6 +53,9 @@ public:
 
 private:
   coro::Task<> loadGame(AST::AST &ast, AST::Configurator &config);
+  coro::Task<AST::PopulatedEnvironment>
+  populateEnvironment(AST::Configurator &config);
+  bool waitingForUserInput() const;
   Room *room;
   GameServer *server;
   int ownerId = 0;

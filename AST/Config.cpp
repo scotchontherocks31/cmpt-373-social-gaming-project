@@ -7,10 +7,8 @@ coro::Task<Json> getSetupValueFromOwner(Json value, AST::Communicator &com) {
   if (value.is_object() && value.contains("kind") && value.contains("prompt")) {
     com.sendToOwner(value["prompt"].get<std::string>());
     auto messages = com.receiveFromOwner();
-    std::cout << "Waiting for user's response\n";
     while (messages.empty()) {
       co_await coro::coroutine::suspend_always();
-      std::cout << "Got user's response\n";
       messages = com.receiveFromOwner();
     }
     auto kind = value["kind"].get<std::string>();
@@ -30,7 +28,6 @@ coro::Task<Json> getSetupValueFromOwner(Json value, AST::Communicator &com) {
       co_return nlohmann::json::parse(data);
     }
   }
-  std::cout << "getSetupValueFromOwner return same value\n";
   co_return std::move(value);
   // TODO: Handle overwrite default setup value
 }
@@ -45,27 +42,20 @@ bool Configurator::isSetupValid() {
 coro::Task<PopulatedEnvironment>
 Configurator::populateEnvironment(std::vector<Player> players,
                                   Communicator &com) {
-  std::cout << "Start populating Setup\n";
   auto task = populateSetup(com);
   while (not task.isDone()) {
     co_await task;
   }
-  std::cout << "Finished populating Setup\n";
   co_return createEnvironment(std::move(players));
 }
 
 coro::Task<> Configurator::populateSetup(Communicator &com) {
-  std::cout << "Setup json: " << setup.dump() << std::endl;
-  coro::Task<Json> task;
   for (auto &[key, value] : setup[0].items()) {
-    task = getSetupValueFromOwner(std::move(value), com);
+    auto task = getSetupValueFromOwner(std::move(value), com);
     while (not task.isDone()) {
-      std::cout << "co_await getSetupValueFromOwner\n";
-      value = std::move(co_await task);
+      value = co_await task;
     }
-    std::cout << "Finished populating " << key << ": " << value << std::endl; 
   }
-  std::cout << "Setup json after populating: " << setup.dump() << std::endl;
 }
 
 PopulatedEnvironment
@@ -105,7 +95,7 @@ Configurator::createEnvironment(std::vector<Player> players) {
   for (auto &[key, value] : variables.items()) {
     envPtr->allocate(key, Symbol{DSLValue{value}});
   }
-  return {std::move(envPtr), PlayerList{playerBindings}};
+  return {std::move(envPtr), PlayerList{std::move(playerBindings)}};
 }
 
 } // namespace AST
