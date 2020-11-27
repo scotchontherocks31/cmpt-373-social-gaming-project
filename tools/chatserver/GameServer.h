@@ -78,17 +78,17 @@ private:
 
 class BaseStringToCommandMap {
 public:
-  virtual std::map<std::string, GameServer::Command> getMap() = 0;
+  virtual std::map<std::string, GameServer::Command> &getMap() = 0;
   virtual GameServer::Command getValue(std::string command) = 0;
   virtual bool have(std::string command) = 0;
 };
 
-class StrToCommandMap : public BaseStringToCommandMap {
+class StringToCommandMap : public BaseStringToCommandMap {
 private:
   std::map<std::string, GameServer::Command> theMap;
 
 public:
-  StrToCommandMap() {
+  StringToCommandMap() {
     theMap = {{"quit", GameServer::Command::QUIT},
               {"shutdown", GameServer::Command::SHUTDOWN},
               {"create", GameServer::Command::CREATE},
@@ -98,32 +98,36 @@ public:
               {"info", GameServer::Command::INFO},
               {"game", GameServer::Command::GAME}};
   }
-  std::map<std::string, GameServer::Command> getMap() override {
+  std::map<std::string, GameServer::Command> &getMap() override {
     return theMap;
   }
   GameServer::Command getValue(std::string command) override {
-    return theMap[command];
+    return theMap.at(command);
   }
-  bool have(std::string command) override { return theMap.contains(command); }
+  bool contains(std::string command) override {
+    return theMap.contains(command);
+  }
 };
 
-class StrToGameCommandMap : public BaseStringToCommandMap {
+class StringToGameCommandMap : public BaseStringToCommandMap {
 private:
   std::map<std::string, GameServer::Command> theMap;
 
 public:
-  StrToGameCommandMap() {
+  StringToGameCommandMap() {
     theMap = {{"create", GameServer::Command::CREATE_GAME},
               {"start", GameServer::Command::START_GAME},
               {"clean", GameServer::Command::CLEAN_GAME}};
   }
-  std::map<std::string, GameServer::Command> getMap() override {
+  std::map<std::string, GameServer::Command> &getMap() override {
     return theMap;
   }
   GameServer::Command getValue(std::string command) override {
-    return theMap[command];
+    return theMap.at(command);
   }
-  bool have(std::string command) override { return theMap.contains(command); }
+  bool contains(std::string command) override {
+    return theMap.contains(command);
+  }
 };
 
 // Struct to create a bundle of maps before passing into GameServer class
