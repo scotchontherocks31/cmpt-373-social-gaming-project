@@ -78,7 +78,6 @@ private:
 
 class BaseStringToCommandMap {
 public:
-  BaseStringToCommandMap(){};
   virtual std::map<std::string, GameServer::Command> getMap() = 0;
   virtual GameServer::Command getValue(std::string command) = 0;
   virtual bool have(std::string command) = 0;
@@ -129,6 +128,6 @@ public:
 
 // Struct to create a bundle of maps before passing into GameServer class
 struct CommandMappings {
-  BaseStringToCommandMap serverCommandMap;
-  BaseStringToCommandMap gameCommandMap;
+  BaseStringToCommandMap *ptrServerCommandMap;
+  BaseStringToCommandMap *ptrGameCommandMap;
 };
