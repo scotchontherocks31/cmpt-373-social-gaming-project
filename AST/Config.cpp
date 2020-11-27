@@ -43,23 +43,26 @@ coro::Task<PopulatedEnvironment>
 Configurator::populateEnvironment(std::vector<Player> players,
                                   Communicator &com) {
   auto task = populateSetup(com);
+  Json localSetup;
   while (not task.isDone()) {
-    co_await task;
+    localSetup = co_await task;
   }
-  co_return createEnvironment(std::move(players));
+  co_return createEnvironment(std::move(localSetup), std::move(players));
 }
 
-coro::Task<> Configurator::populateSetup(Communicator &com) {
-  for (auto &[key, value] : setup[0].items()) {
+coro::Task<Json> Configurator::populateSetup(Communicator &com) {
+  auto localSetup = this->setup[0]; // Copy setup
+  for (auto &[key, value] : localSetup.items()) {
     auto task = getSetupValueFromOwner(std::move(value), com);
     while (not task.isDone()) {
       value = co_await task;
     }
   }
+  co_return localSetup;
 }
 
 PopulatedEnvironment
-Configurator::createEnvironment(std::vector<Player> players) {
+Configurator::createEnvironment(Json setup, std::vector<Player> players) {
   auto envPtr = std::make_unique<Environment>();
 
   envPtr->allocate("configuration", Symbol{DSLValue{setup}});
