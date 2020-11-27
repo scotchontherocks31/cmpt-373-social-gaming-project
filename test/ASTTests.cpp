@@ -1,7 +1,7 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
-#include "ExpressionParser.h"
 #include "Environment.h"
+#include "ExpressionParser.h"
 #include "gtest/gtest.h"
 
 #include <iostream>

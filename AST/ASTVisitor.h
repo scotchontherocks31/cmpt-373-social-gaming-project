@@ -335,7 +335,7 @@ private:
   };
   void visitLeave(BinaryNode &node) { out << ")"; };
 
-   void visitEnter(UnaryNode &node) {
+  void visitEnter(UnaryNode &node) {
     out << "(UnaryNode:\"" << typeToString[node.getUnaryOperator()] << "\"";
   };
   void visitLeave(UnaryNode &node) { out << ")"; };
@@ -346,7 +346,8 @@ private:
   void visitLeave(VariableExpression &node) { out << ")"; };
 
   void visitEnter(FunctionCallNode &node) {
-  out << "(FunctionCallNode:\"" << (node.getFunctionName()).getLexeme() << "\"";
+    out << "(FunctionCallNode:\"" << (node.getFunctionName()).getLexeme()
+        << "\"";
   };
   void visitLeave(FunctionCallNode &node) { out << ")"; };
 

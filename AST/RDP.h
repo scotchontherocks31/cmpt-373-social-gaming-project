@@ -2,17 +2,14 @@
 #include "ASTVisitor.h"
 #include "ExpressionParser.h"
 
-
-
 #include <task.h>
-
 
 namespace AST {
 
 struct RDP {
   RDP(std::string str) : safe(parseToType(str)) {}
 
-    std::unique_ptr<ExpressionNode> parse_S() { // S -> E END_TOKEN
+  std::unique_ptr<ExpressionNode> parse_S() { // S -> E END_TOKEN
     auto &&result = empty_parse();
     while (safe.getTerminal() != Terminal::END) {
       result = parse_E();
