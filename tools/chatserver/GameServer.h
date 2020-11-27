@@ -49,10 +49,8 @@ public:
   void startRunningLoop();
   std::map<std::string, Command> initializeCommandMap();
   std::map<std::string, Command> initializeGameCommandMap();
-  std::map<Command, std::function<functionType>>
-  initializeFunctionMap();
-  std::map<Command, std::function<functionType>>
-  initializeGameFunctionMap();
+  std::map<Command, std::function<functionType>> initializeFunctionMap();
+  std::map<Command, std::function<functionType>> initializeGameFunctionMap();
 
   Command matchCommand(const std::string &command);
   Command matchGameCommand(const std::string &command);
@@ -66,10 +64,8 @@ private:
   std::deque<Message> outboundMessages;
   std::map<std::string, GameServer::Command> strToCommandMap;
   std::map<std::string, GameServer::Command> strToGameCommandMap;
-  std::map<Command, std::function<functionType>>
-      commandToFunctionMap;
-  std::map<Command, std::function<functionType>>
-      commandToGameFunctionMap;
+  std::map<Command, std::function<functionType>> commandToFunctionMap;
+  std::map<Command, std::function<functionType>> commandToGameFunctionMap;
   bool running = false;
   void onConnect(Connection c);
   void onDisconnect(Connection c);
