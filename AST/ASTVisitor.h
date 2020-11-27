@@ -335,7 +335,6 @@ private:
   };
   void visitLeave(BinaryNode &node) { out << ")"; };
 
-  //void visitEnter(UnaryNode &node) { out << "(UnaryNode"; };
    void visitEnter(UnaryNode &node) {
     out << "(UnaryNode:\"" << typeToString[node.getUnaryOperator()] << "\"";
   };

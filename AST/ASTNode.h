@@ -160,10 +160,10 @@ class BinaryNode : public ExpressionNode {
 public:
   BinaryNode(std::unique_ptr<ExpressionNode> &&operandLeft,
              std::unique_ptr<ExpressionNode> &&operandRight,
-             Type binOperator) {
+             Type binaryOper) {
     appendChild(std::move(operandLeft));
     appendChild(std::move(operandRight));
-    binaryOperator = binOperator;
+    binaryOperator = binaryOper;
   }
   const ExpressionNode &getArgOne() const {
     return *static_cast<ExpressionNode *>(children[0].get());
