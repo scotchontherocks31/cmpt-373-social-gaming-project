@@ -21,12 +21,7 @@ struct DecoratedMessage {
 
 class GameManager;
 class BaseStringToCommandMap;
-
-// Struct to create a bundle of maps before passing into GameServer class
-struct CommandMappings {
-  BaseStringToCommandMap serverCommandMap;
-  BaseStringToCommandMap gameCommandMap;
-};
+struct CommandMappings;
 
 class GameServer {
 public:
@@ -130,4 +125,10 @@ public:
     return theMap[command];
   }
   bool have(std::string command) override { return theMap.contains(command); }
+};
+
+// Struct to create a bundle of maps before passing into GameServer class
+struct CommandMappings {
+  BaseStringToCommandMap serverCommandMap;
+  BaseStringToCommandMap gameCommandMap;
 };
