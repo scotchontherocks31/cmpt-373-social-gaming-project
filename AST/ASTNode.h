@@ -160,16 +160,19 @@ class BinaryNode : public ExpressionNode {
 public:
   BinaryNode(std::unique_ptr<ExpressionNode> &&operandLeft,
              std::unique_ptr<ExpressionNode> &&operandRight,
-             Type binaryOperator) {
+             Type binOperator) {
     appendChild(std::move(operandLeft));
     appendChild(std::move(operandRight));
-    binaryOperator = binaryOperator;
+    binaryOperator = binOperator;
   }
   const ExpressionNode &getArgOne() const {
     return *static_cast<ExpressionNode *>(children[0].get());
   }
   const ExpressionNode &getArgTwo() const {
     return *static_cast<ExpressionNode *>(children[1].get());
+  }
+  const Type getBinaryOperator(){
+    return binaryOperator;
   }
 
 private:
@@ -179,12 +182,15 @@ private:
 
 class UnaryNode : public ExpressionNode {
 public:
-  UnaryNode(std::unique_ptr<ExpressionNode> &&operand, Type unaryOperator) {
+  UnaryNode(std::unique_ptr<ExpressionNode> &&operand, Type unaryOper) {
     appendChild(std::move(operand));
-    unaryOperator = unaryOperator;
+    unaryOperator = unaryOper;
   }
   const ExpressionNode &getArgOne() const {
     return *static_cast<ExpressionNode *>(children[0].get());
+  }
+  const Type getUnaryOperator(){
+    return unaryOperator;
   }
 
 private:

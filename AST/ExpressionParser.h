@@ -41,6 +41,19 @@ static std::map<std::string, Type> stringToType = { // name it better
     {"!", Type::NOT},
     {",", Type::COMMA}};
 
+static std::map<Type,std::string> typeToString = { // name it better
+    {Type::OPENPAR,"("},
+    {Type::CLOSEPAR, ")"},
+    {Type::DOT, "."},
+    {Type::EQUALS, "=="},
+    {Type::NOTEQUALS, "!="},
+    {Type::GREATER, ">"},
+    {Type::GREATEREQUALS, ">="},
+    {Type::LESS, "<"},
+    {Type::LESSEQUALS, "<="},
+    {Type::NOT, "!"},
+    {Type::COMMA, ","}};
+
 class TokenType {
 public:
   TokenType(Type t, std::string s) : type{t}, value{s} {}
