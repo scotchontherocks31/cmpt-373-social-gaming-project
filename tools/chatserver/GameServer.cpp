@@ -72,7 +72,7 @@ GameServer::GameServer(unsigned short port, std::string httpMessage,
           [this](Connection c) { this->onConnect(c); },
           [this](Connection c) { this->onDisconnect(c); }),
       roomManager(), gameManager(*this, roomManager),
-      strToCommandMap(std::mpve(strToComm.getMap())),
+      strToCommandMap(std::move(strToComm.getMap())),
       strToGameCommandMap(std::move(strToGameComm.getMap())),
       commandToFunctionMap(initializeFunctionMap()),
       commandToGameFunctionMap(initializeGameFunctionMap()) {}
