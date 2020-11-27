@@ -70,7 +70,8 @@ coro::Task<> GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
   }
 }
 
-coro::Task<AST::PopulatedEnvironment> GameInstance::populateEnvironment(AST::Configurator &config) {
+coro::Task<AST::PopulatedEnvironment>
+GameInstance::populateEnvironment(AST::Configurator &config) {
   auto &players = this->getPlayers();
   auto toAstPlayer = [](auto &player) {
     return AST::Player{player.id, player.name};

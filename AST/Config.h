@@ -34,7 +34,8 @@ public:
 private:
   bool isSetupValid();
   coro::Task<Json> populateSetup(Communicator &com);
-  PopulatedEnvironment createEnvironment(Json setup, std::vector<Player> players);
+  PopulatedEnvironment createEnvironment(Json setup,
+                                         std::vector<Player> players);
   ConfigParser parser;
   std::string name;
   std::pair<int, int> playerCount;
