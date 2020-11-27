@@ -20,6 +20,7 @@ struct DecoratedMessage {
 };
 
 class GameManager;
+class BaseStringToCommandMap;
 
 class GameServer {
 public:
@@ -46,11 +47,11 @@ public:
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
   void startRunningLoop();
-  std::map<std::string, GameServer::Command> initializeCommandMap();
-  std::map<std::string, GameServer::Command> initializeGameCommandMap();
-  std::map<GameServer::Command, std::function<functionType>>
+  std::map<std::string, Command> initializeCommandMap();
+  std::map<std::string, Command> initializeGameCommandMap();
+  std::map<Command, std::function<functionType>>
   initializeFunctionMap();
-  std::map<GameServer::Command, std::function<functionType>>
+  std::map<Command, std::function<functionType>>
   initializeGameFunctionMap();
 
   Command matchCommand(const std::string &command);
@@ -63,11 +64,11 @@ private:
   std::map<userid, User> users;
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
-  BaseStringToCommandMap strToCommandMap;
-  BaseStringToCommandMap strToGameCommandMap;
-  std::map<GameServer::Command, std::function<functionType>>
+  std::map<std::string, GameServer::Command> strToCommandMap;
+  std::map<std::string, GameServer::Command> strToGameCommandMap;
+  std::map<Command, std::function<functionType>>
       commandToFunctionMap;
-  std::map<GameServer::Command, std::function<functionType>>
+  std::map<Command, std::function<functionType>>
       commandToGameFunctionMap;
   bool running = false;
   void onConnect(Connection c);

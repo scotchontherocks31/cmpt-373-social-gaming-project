@@ -56,10 +56,10 @@ std::vector<std::string> tokenizeCommand(std::string command) {
 }
 
 GameServer::Command GameServer::matchCommand(const std::string &command) {
-  if (!strToGameCommandMap.have(command)) {
+  if (!strToCommandMap.contains(command)) {
     return GameServer::Command::UNKNOWN;
   }
-  return strToCommandMap.getValue(command);
+  return strToCommandMap[command];
 }
 
 GameServer::GameServer(unsigned short port, std::string httpMessage,
@@ -72,8 +72,8 @@ GameServer::GameServer(unsigned short port, std::string httpMessage,
           [this](Connection c) { this->onConnect(c); },
           [this](Connection c) { this->onDisconnect(c); }),
       roomManager(), gameManager(*this, roomManager),
-      strToCommandMap(std::mpve(strToComm)),
-      strToGameCommandMap(std::move(strToGameComm)),
+      strToCommandMap(std::mpve(strToComm.getMap())),
+      strToGameCommandMap(std::move(strToGameComm.getMap())),
       commandToFunctionMap(initializeFunctionMap()),
       commandToGameFunctionMap(initializeGameFunctionMap()) {}
 
@@ -290,10 +290,10 @@ GameServer::initializeGameFunctionMap() {
 }
 
 GameServer::Command GameServer::matchGameCommand(const std::string &command) {
-  if (!strToGameCommandMap.have(command)) {
+  if (!strToGameCommandMap.contains(command)) {
     return GameServer::Command::UNKNOWN_GAME;
   }
-  return strToGameCommandMap.getValue(command);
+  return strToGameCommandMap[command];
 }
 
 std::string GameServer::processGameCommand(User &user,
