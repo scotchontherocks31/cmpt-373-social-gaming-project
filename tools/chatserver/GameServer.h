@@ -80,7 +80,7 @@ class BaseStringToCommandMap {
 public:
   virtual std::map<std::string, GameServer::Command> &getMap() = 0;
   virtual GameServer::Command getValue(std::string command) = 0;
-  virtual bool have(std::string command) = 0;
+  virtual bool contains(std::string command) = 0;
 };
 
 class StringToCommandMap : public BaseStringToCommandMap {
