@@ -3,29 +3,46 @@
 
 using Json = nlohmann::json;
 
+bool isJsonValueValid(const std::string &kind, const Json &json) {
+  if (kind == "integer" && json.is_number_integer() ||
+      kind == "string" && json.is_string() ||
+      kind == "boolean" && json.is_boolean()) {
+    return true;
+  }
+  if (json.is_object() && json.contains("type")) {
+    // TODO: Check the schema for question-answer" and "multiple-choice"
+    if (kind == "question-answer" && json.at("type") == "question-answer") {
+      return true;
+    }
+    if (kind == "multiple-choice" && json.at("type") == "multiple-choice") {
+      return true;
+    }
+  }
+  return false;
+}
+
 coro::Task<Json> getSetupValueFromOwner(Json value, AST::Communicator &com) {
   if (value.is_object() && value.contains("kind") && value.contains("prompt")) {
-    com.sendToOwner(value["prompt"].get<std::string>());
-    auto messages = com.receiveFromOwner();
-    while (messages.empty()) {
-      co_await coro::coroutine::suspend_always();
-      messages = com.receiveFromOwner();
-    }
-    auto kind = value["kind"].get<std::string>();
-    auto &data = messages[0].message;
-    // TODO: Better type handling, prevent user from entering the wrong type
-    // One way to do it: Use Json::parse() -> check type -> give error and ask
-    // for a different value.
-    if (kind == "integer") {
-      int userValue = std::stoi(data);
-      co_return Json(userValue);
-    } else if (kind == "string") {
-      co_return Json(data);
-    } else if (kind == "boolean") {
-      bool userValue = data.starts_with("true");
-      co_return Json(userValue);
-    } else {
-      co_return nlohmann::json::parse(data);
+    while (true) {
+      com.sendToOwner(value["prompt"].get<std::string>());
+      auto messages = com.receiveFromOwner();
+      while (messages.empty()) {
+        co_await coro::coroutine::suspend_always();
+        messages = com.receiveFromOwner();
+      }
+      auto kind = value["kind"].get<std::string>();
+      auto &message = messages[0].message;
+      Json value;
+      if (Json::accept(message)) {
+        value = Json::parse(message);
+      } else {
+        value = Json(message);
+      }
+      if (isJsonValueValid(kind, value)) {
+        co_return value;
+      } else {
+        com.sendToOwner("Invalid value type entered! Please try again.");
+      }
     }
   }
   co_return std::move(value);
