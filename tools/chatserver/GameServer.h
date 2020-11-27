@@ -41,8 +41,7 @@ public:
   };
 
   GameServer(unsigned short port, std::string httpMessage,
-             BaseStringToCommandMap &strToComm,
-             BaseStringToCommandMap &strToGameComm);
+             CommandMappings &maps);
   void sendMessageToUser(const User &user, std::string message);
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
@@ -124,4 +123,10 @@ public:
     return theMap[command];
   }
   bool have(std::string command) override { return theMap.contains(command); }
+};
+
+// Struct to create a bundle of maps before passing into GameServer class
+struct CommandMappings {
+  BaseStringToCommandMap serverCommandMap;
+  BaseStringToCommandMap gameCommandMap;
 };

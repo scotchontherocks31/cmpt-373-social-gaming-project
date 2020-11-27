@@ -63,8 +63,7 @@ GameServer::Command GameServer::matchCommand(const std::string &command) {
 }
 
 GameServer::GameServer(unsigned short port, std::string httpMessage,
-                       BaseStringToCommandMap &strToComm,
-                       BaseStringToCommandMap &strToGameComm)
+                       CommandMappings &maps)
     // recieves maps to translate strings
     // (possibly from any language)
     : server(
@@ -72,8 +71,8 @@ GameServer::GameServer(unsigned short port, std::string httpMessage,
           [this](Connection c) { this->onConnect(c); },
           [this](Connection c) { this->onDisconnect(c); }),
       roomManager(), gameManager(*this, roomManager),
-      strToCommandMap(std::move(strToComm.getMap())),
-      strToGameCommandMap(std::move(strToGameComm.getMap())),
+      strToCommandMap(std::move(maps.serverCommandMap.getMap())),
+      strToGameCommandMap(std::move(maps.gameCommandMap.getMap())),
       commandToFunctionMap(initializeFunctionMap()),
       commandToGameFunctionMap(initializeGameFunctionMap()) {}
 
