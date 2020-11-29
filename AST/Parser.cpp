@@ -1,5 +1,7 @@
 #include "Parser.h"
 #include "ASTVisitor.h"
+#include "CFGParser.h"
+#include "ExpressionASTParser.h"
 #include <assert.h>
 
 namespace AST {
@@ -28,7 +30,6 @@ std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
 }
 
 std::unique_ptr<FormatNode> JSONToASTParser::parseFormatNode(const Json &json) {
-
   return std::make_unique<FormatNode>(json["value"]);
 }
 
@@ -60,4 +61,12 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
 
   return std::make_unique<Variable>(json["list"]);
 }
+
+std::unique_ptr<ASTNode>
+JSONToASTParser::parseExpression(const std::string &str) {
+
+  ExpressionASTParser expressionParse(str);
+  return expressionParse.parse_S();
+}
+
 } // namespace AST
