@@ -41,6 +41,19 @@ static std::map<std::string, Type> stringToType = { // name it better
     {"!", Type::NOT},
     {",", Type::COMMA}};
 
+static std::map<Type, std::string> typeToString = { // name it better
+    {Type::OPENPAR, "("},
+    {Type::CLOSEPAR, ")"},
+    {Type::DOT, "."},
+    {Type::EQUALS, "=="},
+    {Type::NOTEQUALS, "!="},
+    {Type::GREATER, ">"},
+    {Type::GREATEREQUALS, ">="},
+    {Type::LESS, "<"},
+    {Type::LESSEQUALS, "<="},
+    {Type::NOT, "!"},
+    {Type::COMMA, ","}};
+
 class TokenType {
 public:
   TokenType(Type t, std::string s) : type{t}, value{s} {}
@@ -81,31 +94,31 @@ struct Safeway {
   Safeway(std::vector<TokenType> tokens) {
     size = tokens.size();
     currentIndex = 0;
-    for(auto t : tokens){
+    for (auto t : tokens) {
       tokensQueue.push(t);
     }
-    
+
     // Need a way for me to return Terminal::END at the very end
   }
 
   Terminal getTerminal() {
-    if (currentIndex < size){
+    if (currentIndex < size) {
       return TypeToTerminal[tokensQueue.front().getType()];
     } else {
       return Terminal::END;
     }
-    
+
   } // If it is out of bounds, return Terminal::END.
   TokenType front() { return tokensQueue.front(); }
-  void next_token() { 
-    tokensQueue.pop(); 
-    currentIndex ++;
-    }
+  void next_token() {
+    tokensQueue.pop();
+    currentIndex++;
+  }
   std::string getValue() { return tokensQueue.front().getValue(); }
   Type getType() { return tokensQueue.front().getType(); }
   // ----------------------------
 private:
-  int size ;
+  int size;
   int currentIndex;
   std::queue<TokenType> tokensQueue;
 };

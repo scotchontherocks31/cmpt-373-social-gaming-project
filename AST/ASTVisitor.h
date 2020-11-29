@@ -4,6 +4,7 @@
 #include "ASTNode.h"
 #include "DSLValue.h"
 #include "Environment.h"
+#include "ExpressionParser.h"
 #include <algorithm>
 #include <iostream>
 #include <json.hpp>
@@ -308,10 +309,10 @@ private:
     co_return;
   }
 
-  void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
+  void visitEnter(GlobalMessage &node) { out << "(GlobalMessage"; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(FormatNode &node) {
-    out << "(FormatNode \"" << node.getFormat() << "\"";
+    out << "(FormatNode\"" << node.getFormat() << "\"";
   };
   void visitLeave(FormatNode &node) { out << ")"; };
   void visitEnter(InputText &node) { out << "(InputText"; };
@@ -329,16 +330,25 @@ private:
   void visitEnter(ParallelFor &node) { out << "(ParallelFor"; };
   void visitLeave(ParallelFor &node) { out << ")"; };
 
-  void visitEnter(BinaryNode &node) { out << "(BinaryNode "; };
+  void visitEnter(BinaryNode &node) {
+    out << "(BinaryNode:\"" << typeToString[node.getBinaryOperator()] << "\"";
+  };
   void visitLeave(BinaryNode &node) { out << ")"; };
 
-  void visitEnter(UnaryNode &node) { out << "(UnaryNode "; };
+  void visitEnter(UnaryNode &node) {
+    out << "(UnaryNode:\"" << typeToString[node.getUnaryOperator()] << "\"";
+  };
   void visitLeave(UnaryNode &node) { out << ")"; };
 
-  void visitEnter(VariableExpression &node) { out << "(UnaryNode "; };
+  void visitEnter(VariableExpression &node) {
+    out << "(VariableExpression\"" << node.getLexeme() << "\"";
+  };
   void visitLeave(VariableExpression &node) { out << ")"; };
 
-  void visitEnter(FunctionCallNode &node) { out << "(FunctionCallNode "; };
+  void visitEnter(FunctionCallNode &node) {
+    out << "(FunctionCallNode:\"" << (node.getFunctionName()).getLexeme()
+        << "\"";
+  };
   void visitLeave(FunctionCallNode &node) { out << ")"; };
 
 private:
