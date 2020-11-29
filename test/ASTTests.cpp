@@ -2,6 +2,9 @@
 #include "ASTVisitor.h"
 #include "CFGParser.h"
 #include "Environment.h"
+#include "ExpressionASTParser.h"
+#include "DSLValue.h"
+
 #include "gtest/gtest.h"
 
 #include <iostream>
@@ -11,6 +14,7 @@
 #include <variant>
 
 using namespace testing;
+using namespace AST;
 
 TEST(ExpressionNodes, RecursiveNesting) {
 
@@ -78,15 +82,22 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
 TEST(ASTprinter, GlobalMessageWithExpression) {
   // create environment
   
-  AST::Environment parent;
-  Symbol symbol = Symbol{2, false}; 
+  //AST::Environment parent;
+  auto parent = std::make_unique<AST::Environment>();
+
+
+  Json playerJson;
+  playerJson["id"] = 1;
+  playerJson["name"] = "Mike Tyson";
+
+
+  Symbol symbol = Symbol{DSLValue{playerJson}, false}; 
+
+
   AST::Environment::Name key = "A";
-  auto child = parent.createChildEnvironment();
+  auto child = parent->createChildEnvironment();
   child.allocate(key, symbol);
   EXPECT_EQ(symbol.dsl, child.find(key));
-
-//   Symbol secondSymbol = Symbol{std::string{"Environment"}, true};
-//   AST::Environment::Name secondKey = "B";
 
 
   // make ptinr visitor
@@ -95,7 +106,7 @@ TEST(ASTprinter, GlobalMessageWithExpression) {
 
   std::unique_ptr<AST::GlobalMessage> mess =
       std::make_unique<AST::GlobalMessage>(
-          std::make_unique<AST::FormatNode>(std::string{"Message One"}));
+          std::make_unique<AST::FormatNode>(std::string{"Hello, {player.name} is the {player.id} boxer in the world"}));
 
   auto root = AST::AST(std::move(mess));
 
