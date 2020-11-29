@@ -75,6 +75,44 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
   EXPECT_EQ(output, answer);
 }
 
+TEST(ASTprinter, GlobalMessageWithExpression) {
+  // create environment
+  
+  AST::Environment parent;
+  Symbol symbol = Symbol{2, false}; 
+  AST::Environment::Name key = "A";
+  auto child = parent.createChildEnvironment();
+  child.allocate(key, symbol);
+  EXPECT_EQ(symbol.dsl, child.find(key));
+
+//   Symbol secondSymbol = Symbol{std::string{"Environment"}, true};
+//   AST::Environment::Name secondKey = "B";
+
+
+  // make ptinr visitor
+  AST::PrintCommunicator printComm{};
+  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+
+  std::unique_ptr<AST::GlobalMessage> mess =
+      std::make_unique<AST::GlobalMessage>(
+          std::make_unique<AST::FormatNode>(std::string{"Message One"}));
+
+  auto root = AST::AST(std::move(mess));
+
+  std::stringstream stream;
+
+  AST::Printer printer = AST::Printer{stream};
+
+  auto task = root.accept(printer);
+  while (task.resume()) {
+  }
+
+  std::string answer = "(GlobalMessage(FormatNode\"Message One\"))";
+  std::string output = printer.returnOutput();
+
+  EXPECT_EQ(output, answer);
+}
+
 TEST(ASTprinter, ParallelForandInput) {
 
   auto enviro = std::make_unique<AST::Environment>();
