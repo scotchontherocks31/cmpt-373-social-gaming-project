@@ -22,17 +22,16 @@ using Map = std::map<std::string, DSLValue>;
 struct Nil {};
 
 template <typename T>
-concept BaseType = std::is_same_v<std::remove_cvref_t<T>, bool> ||
-                   std::is_same_v<std::remove_cvref_t<T>, std::string> ||
-                   std::is_same_v<std::remove_cvref_t<T>, int> ||
-                   std::is_same_v<std::remove_cvref_t<T>, double>;
+concept BaseType =
+    std::is_same_v<std::remove_cvref_t<T>, bool> ||
+    std::is_same_v<std::remove_cvref_t<T>, std::string> ||
+    std::is_same_v<std::remove_cvref_t<T>, int> || std::is_same_v<std::remove_cvref_t<T>, double>;
 
 template <typename T>
 concept DSLType = BaseType<T> || std::is_same_v<std::remove_cvref_t<T>, List> ||
                   std::is_same_v<std::remove_cvref_t<T>, Map>;
 
-template <typename T>
-concept DSL = std::is_same_v<DSLValue, std::remove_cvref_t<T>>;
+template <typename T> concept DSL = std::is_same_v<DSLValue, std::remove_cvref_t<T>>;
 
 template <typename F, typename... Types>
 concept BoundedUnaryOperation = requires(F &&f, Types &&...types) {
@@ -41,36 +40,26 @@ concept BoundedUnaryOperation = requires(F &&f, Types &&...types) {
 
 template <typename F, typename Type1, typename... Types2>
 requires requires(F &&f, Type1 &&type, Types2 &&...types) {
-  (std::invoke(std::forward<F>(f), std::forward<Type1>(type),
-               std::forward<Types2>(types)),
-   ...);
+  (std::invoke(std::forward<F>(f), std::forward<Type1>(type), std::forward<Types2>(types)), ...);
 }
-constexpr inline void NestedApply(F &&f, Type1 &&type, Types2 &&...types) {
-  return;
-}
+constexpr inline void NestedApply(F &&f, Type1 &&type, Types2 &&...types) { return; }
 
 template <typename F, typename... Types1>
-concept BoundedSymmetricBinaryOperation = requires(F &&f, Types1 &&...types1,
-                                                   Types1 &&...types2) {
-  (NestedApply(f, std::forward<Types1>(types1),
-               std::forward<Types1>(types2)...),
-   ...);
+concept BoundedSymmetricBinaryOperation = requires(F &&f, Types1 &&...types1, Types1 &&...types2) {
+  (NestedApply(f, std::forward<Types1>(types1), std::forward<Types1>(types2)...), ...);
 };
 
 template <typename F>
 concept UnaryDSLOperation =
-    BoundedUnaryOperation<F, std::monostate, bool, int, double, std::string,
-                          List, Map>;
+    BoundedUnaryOperation<F, std::monostate, bool, int, double, std::string, List, Map>;
 
 template <typename F>
 concept BinaryDSLOperation =
-    BoundedSymmetricBinaryOperation<F, std::monostate, bool, int, double,
-                                    std::string, List, Map>;
+    BoundedSymmetricBinaryOperation<F, std::monostate, bool, int, double, std::string, List, Map>;
 
 class DSLValue {
 private:
-  using InternalType =
-      std::variant<std::monostate, bool, std::string, int, double, List, Map>;
+  using InternalType = std::variant<std::monostate, bool, std::string, int, double, List, Map>;
   InternalType value;
 
 public:
@@ -79,8 +68,7 @@ public:
   // Constructors
   DSLValue() noexcept = default;
   DSLValue(const Json &json) noexcept;
-  template <DSLType T>
-  DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {};
+  template <DSLType T> DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {};
   DSLValue(const DSLValue &other) noexcept { value = other.value; }
   DSLValue(DSLValue &&other) noexcept { value = std::move(other.value); }
   template <DSLType T> DSLValue &operator=(T &&a) noexcept {
@@ -107,8 +95,7 @@ public:
     return *this;
   }
 
-  template <typename T>
-  std::optional<std::reference_wrapper<T>> get() noexcept {
+  template <typename T> std::optional<std::reference_wrapper<T>> get() noexcept {
     auto pointerToValue = std::get_if<T>(&value);
     if (not pointerToValue) {
       return std::nullopt;
@@ -124,8 +111,7 @@ public:
     return std::visit(f, value);
   }
 
-  template <DSL U, BinaryDSLOperation F>
-  decltype(auto) binaryOperation(U &&other, F &&f) {
+  template <DSL U, BinaryDSLOperation F> decltype(auto) binaryOperation(U &&other, F &&f) {
     return std::visit(f, value, other.value);
   }
 
@@ -134,23 +120,18 @@ public:
     return std::visit(f, value, other.value);
   }
 
-  std::optional<std::reference_wrapper<const DSLValue>>
-  at(const std::string &key) const noexcept;
+  std::optional<std::reference_wrapper<const DSLValue>> at(const std::string &key) const noexcept;
 
-  std::optional<std::reference_wrapper<DSLValue>>
-  operator[](const std::string &key) noexcept;
+  std::optional<std::reference_wrapper<DSLValue>> operator[](const std::string &key) noexcept;
 
-  std::optional<std::reference_wrapper<DSLValue>>
-  operator[](size_t index) noexcept;
+  std::optional<std::reference_wrapper<DSLValue>> operator[](size_t index) noexcept;
 
-  std::optional<std::reference_wrapper<const DSLValue>>
-  operator[](size_t index) const noexcept;
+  std::optional<std::reference_wrapper<const DSLValue>> operator[](size_t index) const noexcept;
 
   std::optional<DSLValue> createSlice(const std::string &key) const noexcept;
   size_t size() const noexcept;
 
-  friend std::partial_ordering
-  operator<=>(const DSLValue &x, const DSLValue &y) noexcept = default;
+  friend std::partial_ordering operator<=>(const DSLValue &x, const DSLValue &y) noexcept = default;
 };
 
 bool isSortableType(const DSLValue &x) noexcept;
