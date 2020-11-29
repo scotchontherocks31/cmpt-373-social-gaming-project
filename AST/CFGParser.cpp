@@ -1,5 +1,4 @@
-#include "ExpressionParser.h"
-#include "RDP.h"
+#include "CFGParser.h"
 #include <algorithm>
 #include <exception>
 #include <iostream>
@@ -52,15 +51,15 @@ std::optional<std::string> getFirstMatch(std::string str) {
   return std::nullopt;
 }
 
-std::vector<TokenType> parseToType(std::string str) {
+std::vector<CFGExpression> parseToCFGExpression(std::string str) {
   std::string::iterator end_pos = std::remove(str.begin(), str.end(), ' ');
   str.erase(end_pos, str.end());
-  std::vector<TokenType> tokens;
+  std::vector<CFGExpression> tokens;
 
   while (!str.empty()) {
     try {
       std::string match = getFirstMatch(str).value();
-      TokenType t(getStringToType(match), match);
+      CFGExpression t(getStringToType(match), match);
       tokens.push_back(t);
       str = str.substr(match.length());
 

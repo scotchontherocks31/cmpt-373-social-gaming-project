@@ -1,5 +1,5 @@
-#include "ExpressionParser.h"
-#include "RDP.h"
+#include "CFGParser.h"
+#include "ExpressionASTParser.h"
 #include "gtest/gtest.h"
 #include <iostream>
 #include <vector>
@@ -7,7 +7,7 @@ using namespace testing;
 
 TEST(ExpressionParser, simple) {
 
-  AST::RDP rdp("Weapon==Player");
+  AST::ExpressionASTParser rdp("Weapon==Player");
   std::unique_ptr<AST::ExpressionNode> result = rdp.parse_S();
 
   std::unique_ptr<AST::BinaryNode> expected = std::make_unique<AST::BinaryNode>(
@@ -18,7 +18,7 @@ TEST(ExpressionParser, simple) {
 
 TEST(ExpressionASTStructure, UnaryWithSize) {
 
-  AST::RDP rdp("winners.size");
+  AST::ExpressionASTParser rdp("winners.size");
 
   std::unique_ptr<AST::ExpressionNode> result = rdp.parse_S();
   auto enviro = std::make_unique<AST::Environment>();
@@ -41,7 +41,7 @@ TEST(ExpressionASTStructure, UnaryWithSize) {
 
 TEST(ExpressionASTStructure, BinaryWithEquals) {
 
-  AST::RDP rdp("winners.size == players.size");
+  AST::ExpressionASTParser rdp("winners.size == players.size");
   std::unique_ptr<AST::ExpressionNode> result = rdp.parse_S();
 
   auto enviro = std::make_unique<AST::Environment>();
@@ -67,7 +67,7 @@ TEST(ExpressionASTStructure, BinaryWithEquals) {
 
 TEST(ExpressionASTStructure, UnaryandFunction) {
 
-  AST::RDP rdp("!players.elements.weapon.contains(weapon.name)");
+  AST::ExpressionASTParser rdp("!players.elements.weapon.contains(weapon.name)");
   std::unique_ptr<AST::ExpressionNode> result = rdp.parse_S();
   auto enviro = std::make_unique<AST::Environment>();
   AST::PrintCommunicator printComm{};

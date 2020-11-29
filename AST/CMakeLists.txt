@@ -1,4 +1,4 @@
-add_library(AST ASTNode.cpp ASTVisitor.cpp Parser.cpp DSLValue.cpp Environment.cpp ExpressionParser.cpp RDP.h)
+add_library(AST ASTNode.cpp ASTVisitor.cpp Parser.cpp DSLValue.cpp Environment.cpp CFGParser.cpp ExpressionTreeParser.h)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/sample.json
      DESTINATION ${CMAKE_BINARY_DIR})
@@ -11,5 +11,5 @@ set_target_properties(AST
 target_include_directories(AST INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 target_link_libraries(AST 
-    task json PEGParser
+    task json
 )

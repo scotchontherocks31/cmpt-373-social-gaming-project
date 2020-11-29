@@ -3,7 +3,7 @@ enable_testing()
 add_executable(runAllTests
     ASTTests.cpp
     DSLValueTest.cpp
-    ParseToTypeTest.cpp
+    ParseToCFGTest.cpp
     ExpressionParserTests.cpp
     EnvironmentTest.cpp
 )

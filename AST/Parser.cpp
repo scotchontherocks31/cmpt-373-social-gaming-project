@@ -1,8 +1,7 @@
 #include "Parser.h"
 #include "ASTVisitor.h"
-#include "ExpressionParser.h"
-#include "RDP.h"
-
+#include "ExpressionASTParser.h"
+#include "CFGParser.h"
 #include <assert.h>
 
 namespace AST {
@@ -66,8 +65,8 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
 std::unique_ptr<ASTNode>
 JSONToASTParser::parseExpression(const std::string &str) {
 
-  RDP rdp(str);
-  return rdp.parse_S();
+  ExpressionASTParser expressionParse(str);
+  return expressionParse.parse_S();
 }
 
 } // namespace AST
