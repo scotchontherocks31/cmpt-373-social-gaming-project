@@ -300,7 +300,7 @@ std::string GameServer::processGameCommand(User &user,
   }
   auto command = matchGameCommand(tokens[1]);
 
-  if (command == GameServer::Command::UNKNOWN) {
+  if (command == BaseStringToGameCommandMap::Command::UNKNOWN) {
     return "Bad input\n";
   }
 

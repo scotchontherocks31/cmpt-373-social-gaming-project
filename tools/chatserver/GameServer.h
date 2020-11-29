@@ -31,15 +31,17 @@ public:
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
   void startRunningLoop();
-  std::map<std::string, Command> initializeCommandMap();
-  std::map<std::string, Command> initializeGameCommandMap();
+  std::map<std::string, BaseStringToCommandMap::Command> initializeCommandMap();
+  std::map<std::string, BaseStringToGameCommandMap::Command>
+  initializeGameCommandMap();
   std::map<BaseStringToCommandMap::Command, std::function<functionType>>
   initializeFunctionMap();
   std::map<BaseStringToGameCommandMap::Command, std::function<functionType>>
   initializeGameFunctionMap();
 
-  Command matchCommand(const std::string &command);
-  Command matchGameCommand(const std::string &command);
+  BaseStringToCommandMap::Command matchCommand(const std::string &command);
+  BaseStringToGameCommandMap::Command
+  matchGameCommand(const std::string &command);
 
 private:
   Server server;
