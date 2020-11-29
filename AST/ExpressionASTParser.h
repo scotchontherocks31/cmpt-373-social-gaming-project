@@ -141,7 +141,7 @@ struct ExpressionASTParser {
         result = std::make_unique<FunctionCallNode>(std::move(result),
                                                     std::move(parse_arg()));
         CFGTokens.next_token(); // TODO: CHECK IF CLOSE PAR THEN THROW EXCEPTION
-                           // INSTEAD
+                                // INSTEAD
       }
     }
 

@@ -9,8 +9,8 @@ TEST(parseToCFGExpressionTest, simpleDot) {
   std::vector<CFGExpression> result = parseToCFGExpression(input);
 
   std::vector<CFGExpression> expected = {{CFGExpression(Type::ID, "winners")},
-                                     {CFGExpression(Type::DOT, ".")},
-                                     {CFGExpression(Type::ID, "size")}};
+                                         {CFGExpression(Type::DOT, ".")},
+                                         {CFGExpression(Type::ID, "size")}};
   ASSERT_EQ(result.size(), expected.size());
 
   for (int i = 0; i < result.size(); i++) {
@@ -24,8 +24,8 @@ TEST(parseToCFGExpressionTest, simpleEquals) {
   std::vector<CFGExpression> result = parseToCFGExpression(input);
 
   std::vector<CFGExpression> expected = {{CFGExpression(Type::ID, "winners")},
-                                     {CFGExpression(Type::EQUALS, "==")},
-                                     {CFGExpression(Type::ID, "size")}};
+                                         {CFGExpression(Type::EQUALS, "==")},
+                                         {CFGExpression(Type::ID, "size")}};
   ASSERT_EQ(result.size(), expected.size());
 
   for (int i = 0; i < result.size(); i++) {
@@ -58,14 +58,22 @@ TEST(parseToCFGExpressionTest, complex2) {
   std::vector<CFGExpression> result = parseToCFGExpression(input);
 
   std::vector<CFGExpression> expected = {
-      {CFGExpression(Type::ID, "players")},  {CFGExpression(Type::DOT, ".")},
-      {CFGExpression(Type::ID, "elements")}, {CFGExpression(Type::DOT, ".")},
-      {CFGExpression(Type::ID, "collect")},  {CFGExpression(Type::OPENPAR, "(")},
-      {CFGExpression(Type::ID, "player")},   {CFGExpression(Type::COMMA, ",")},
-      {CFGExpression(Type::ID, "player")},   {CFGExpression(Type::DOT, ".")},
-      {CFGExpression(Type::ID, "weapon")},   {CFGExpression(Type::LESSEQUALS, "<=")},
-      {CFGExpression(Type::ID, "weapon")},   {CFGExpression(Type::DOT, ".")},
-      {CFGExpression(Type::ID, "beats")},    {CFGExpression(Type::CLOSEPAR, ")")}};
+      {CFGExpression(Type::ID, "players")},
+      {CFGExpression(Type::DOT, ".")},
+      {CFGExpression(Type::ID, "elements")},
+      {CFGExpression(Type::DOT, ".")},
+      {CFGExpression(Type::ID, "collect")},
+      {CFGExpression(Type::OPENPAR, "(")},
+      {CFGExpression(Type::ID, "player")},
+      {CFGExpression(Type::COMMA, ",")},
+      {CFGExpression(Type::ID, "player")},
+      {CFGExpression(Type::DOT, ".")},
+      {CFGExpression(Type::ID, "weapon")},
+      {CFGExpression(Type::LESSEQUALS, "<=")},
+      {CFGExpression(Type::ID, "weapon")},
+      {CFGExpression(Type::DOT, ".")},
+      {CFGExpression(Type::ID, "beats")},
+      {CFGExpression(Type::CLOSEPAR, ")")}};
 
   ASSERT_EQ(result.size(), expected.size());
 

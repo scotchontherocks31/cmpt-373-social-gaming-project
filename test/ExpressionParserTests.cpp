@@ -67,7 +67,8 @@ TEST(ExpressionASTStructure, BinaryWithEquals) {
 
 TEST(ExpressionASTStructure, UnaryandFunction) {
 
-  AST::ExpressionASTParser rdp("!players.elements.weapon.contains(weapon.name)");
+  AST::ExpressionASTParser rdp(
+      "!players.elements.weapon.contains(weapon.name)");
   std::unique_ptr<AST::ExpressionNode> result = rdp.parse_S();
   auto enviro = std::make_unique<AST::Environment>();
   AST::PrintCommunicator printComm{};

@@ -1,7 +1,7 @@
 #include "Parser.h"
 #include "ASTVisitor.h"
-#include "ExpressionASTParser.h"
 #include "CFGParser.h"
+#include "ExpressionASTParser.h"
 #include <assert.h>
 
 namespace AST {

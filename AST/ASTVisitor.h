@@ -2,9 +2,9 @@
 #define AST_VISITOR_H
 
 #include "ASTNode.h"
+#include "CFGParser.h"
 #include "DSLValue.h"
 #include "Environment.h"
-#include "CFGParser.h"
 #include <algorithm>
 #include <iostream>
 #include <json.hpp>
