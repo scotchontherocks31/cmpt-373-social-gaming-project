@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
   StringToCommandMap *ptrStrToComm;
   StringToGameCommandMap strToGameComm;
   StringToGameCommandMap *ptrStrToGameComm;
-  struct CommandMappings maps = {ptrStrToComm, ptrStrToGameComm};
+  struct CommandMappings maps(ptrStrToComm, ptrStrToGameComm);
   GameServer server{port, getHTTPMessage(argv[2]), maps};
   server.startRunningLoop();
 
