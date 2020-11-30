@@ -142,9 +142,9 @@ private:
   BaseStringToGameCommandMap *gameCommandMap;
 
 public:
-  CommandMappings(BaseStringToServerCommandMap serverCommandMap,
-                  BaseStringToGameCommandMap gameCommandMap)
-      : serverCommandMap(&serverCommandMap), gameCommandMap(&gameCommandMap) {}
+  /*CommandMappings(BaseStringToServerCommandMap *serverCommandMap,
+                  BaseStringToGameCommandMap *gameCommandMap)
+      : serverCommandMap(serverCommandMap), gameCommandMap(gameCommandMap) {}*/
   BaseStringToServerCommandMap *getServerMap() { return serverCommandMap; }
   BaseStringToGameCommandMap *getGameMap() { return gameCommandMap; }
 };
