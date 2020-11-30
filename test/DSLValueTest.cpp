@@ -12,3 +12,9 @@ TEST(DSLValueTest, Simple) {
   DSLValue expected = Map{{"Rounds", 10}};
   EXPECT_EQ(expected, myJson);
 }
+
+TEST(DSLValueTest, get) {
+  DSLValue expected = Map{{"Rounds", 10}};
+  Map &map = *expected.get<Map>();
+  EXPECT_EQ(expected, map);
+}
