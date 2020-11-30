@@ -21,8 +21,7 @@ struct DecoratedMessage {
 
 class GameManager;
 class BaseStringToCommandMap;
-class BaseStringToGameCommandMap;
-class CommandMappings;
+struct CommandMappings;
 
 class GameServer {
 public:
