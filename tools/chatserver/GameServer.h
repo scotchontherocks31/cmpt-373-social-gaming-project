@@ -138,13 +138,13 @@ public:
 // Struct to create a bundle of maps before passing into GameServer class
 class CommandMappings {
 private:
-  BaseStringToServerCommandMap serverCommandMap;
-  BaseStringToGameCommandMap gameCommandMap;
+  BaseStringToServerCommandMap *serverCommandMap;
+  BaseStringToGameCommandMap *gameCommandMap;
 
 public:
   CommandMappings(BaseStringToServerCommandMap serverCommandMap,
                   BaseStringToGameCommandMap gameCommandMap)
-      : serverCommandMap(serverCommandMap), gameCommandMap(gameCommandMap) {}
-  BaseStringToServerCommandMap getServerMap() { return serverCommandMap; }
-  BaseStringToGameCommandMap getGameMap() { return gameCommandMap; }
+      : serverCommandMap(&serverCommandMap), gameCommandMap(&gameCommandMap) {}
+  BaseStringToServerCommandMap *getServerMap() { return serverCommandMap; }
+  BaseStringToGameCommandMap *getGameMap() { return gameCommandMap; }
 };
