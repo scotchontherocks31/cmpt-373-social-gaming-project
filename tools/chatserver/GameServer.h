@@ -25,7 +25,7 @@ struct CommandMappings;
 
 class GameServer {
 public:
-  enum Command {
+  enum class ServerCommand {
     QUIT,
     SHUTDOWN,
     CREATE,
@@ -34,12 +34,9 @@ public:
     LIST,
     INFO,
     GAME,
-    UNKNOWN,
-    CREATE_GAME,
-    START_GAME,
-    CLEAN_GAME,
-    UNKNOWN_GAME
+    UNKNOWN
   };
+  enum class GameCommand { CREATE, START, CLEAN, UNKNOWN };
 
   GameServer(unsigned short port, std::string httpMessage,
              CommandMappings &maps);
@@ -47,13 +44,14 @@ public:
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
   void startRunningLoop();
-  std::map<std::string, Command> initializeCommandMap();
-  std::map<std::string, Command> initializeGameCommandMap();
-  std::map<Command, std::function<functionType>> initializeFunctionMap();
-  std::map<Command, std::function<functionType>> initializeGameFunctionMap();
+  std::map<std::string, ServerCommand> initializeCommandMap();
+  std::map<std::string, GameCommand> initializeGameCommandMap();
+  std::map<ServerCommand, std::function<functionType>> initializeFunctionMap();
+  std::map<GameCommand, std::function<functionType>>
+  initializeGameFunctionMap();
 
-  Command matchCommand(const std::string &command);
-  Command matchGameCommand(const std::string &command);
+  ServerCommand matchCommand(const std::string &command);
+  GameCommand matchGameCommand(const std::string &command);
 
 private:
   Server server;
@@ -62,10 +60,10 @@ private:
   std::map<userid, User> users;
   std::deque<Message> inboundMessages;
   std::deque<Message> outboundMessages;
-  std::map<std::string, GameServer::Command> strToCommandMap;
-  std::map<std::string, GameServer::Command> strToGameCommandMap;
-  std::map<Command, std::function<functionType>> commandToFunctionMap;
-  std::map<Command, std::function<functionType>> commandToGameFunctionMap;
+  std::map<std::string, ServerCommand> strToCommandMap;
+  std::map<std::string, GameCommand> strToGameCommandMap;
+  std::map<ServerCommand, std::function<functionType>> commandToFunctionMap;
+  std::map<GameCommand, std::function<functionType>> commandToGameFunctionMap;
   bool running = false;
   void onConnect(Connection c);
   void onDisconnect(Connection c);
@@ -76,32 +74,32 @@ private:
   void flush();
 };
 
-class BaseStringToCommandMap {
+class BaseStringToServerCommandMap {
 public:
-  virtual std::map<std::string, GameServer::Command> &getMap() = 0;
-  virtual GameServer::Command getValue(std::string command) = 0;
+  virtual std::map<std::string, GameServer::ServerCommand> &getMap() = 0;
+  virtual GameServer::ServerCommand getValue(std::string command) = 0;
   virtual bool contains(std::string command) = 0;
 };
 
-class StringToCommandMap : public BaseStringToCommandMap {
+class StringToCommandMap : public BaseStringToServerCommandMap {
 private:
-  std::map<std::string, GameServer::Command> theMap;
+  std::map<std::string, GameServer::ServerCommand> theMap;
 
 public:
   StringToCommandMap() {
-    theMap = {{"quit", GameServer::Command::QUIT},
-              {"shutdown", GameServer::Command::SHUTDOWN},
-              {"create", GameServer::Command::CREATE},
-              {"join", GameServer::Command::JOIN},
-              {"leave", GameServer::Command::LEAVE},
-              {"list", GameServer::Command::LIST},
-              {"info", GameServer::Command::INFO},
-              {"game", GameServer::Command::GAME}};
+    theMap = {{"quit", GameServer::ServerCommand::QUIT},
+              {"shutdown", GameServer::ServerCommand::SHUTDOWN},
+              {"create", GameServer::ServerCommand::CREATE},
+              {"join", GameServer::ServerCommand::JOIN},
+              {"leave", GameServer::ServerCommand::LEAVE},
+              {"list", GameServer::ServerCommand::LIST},
+              {"info", GameServer::ServerCommand::INFO},
+              {"game", GameServer::ServerCommand::GAME}};
   }
-  std::map<std::string, GameServer::Command> &getMap() override {
+  std::map<std::string, GameServer::ServerCommand> &getMap() override {
     return theMap;
   }
-  GameServer::Command getValue(std::string command) override {
+  GameServer::ServerCommand getValue(std::string command) override {
     return theMap.at(command);
   }
   bool contains(std::string command) override {
@@ -109,20 +107,27 @@ public:
   }
 };
 
-class StringToGameCommandMap : public BaseStringToCommandMap {
+class BaseStringToGameCommandMap {
+public:
+  virtual std::map<std::string, GameServer::GameCommand> &getMap() = 0;
+  virtual GameServer::GameCommand getValue(std::string command) = 0;
+  virtual bool contains(std::string command) = 0;
+};
+
+class StringToGameCommandMap : public BaseStringToGameCommandMap {
 private:
-  std::map<std::string, GameServer::Command> theMap;
+  std::map<std::string, GameServer::GameCommand> theMap;
 
 public:
   StringToGameCommandMap() {
-    theMap = {{"create", GameServer::Command::CREATE_GAME},
-              {"start", GameServer::Command::START_GAME},
-              {"clean", GameServer::Command::CLEAN_GAME}};
+    theMap = {{"create", GameServer::GameCommand::CREATE},
+              {"start", GameServer::GameCommand::START},
+              {"clean", GameServer::GameCommand::CLEAN}};
   }
-  std::map<std::string, GameServer::Command> &getMap() override {
+  std::map<std::string, GameServer::GameCommand> &getMap() override {
     return theMap;
   }
-  GameServer::Command getValue(std::string command) override {
+  GameServer::GameCommand getValue(std::string command) override {
     return theMap.at(command);
   }
   bool contains(std::string command) override {
@@ -132,6 +137,6 @@ public:
 
 // Struct to create a bundle of maps before passing into GameServer class
 struct CommandMappings {
-  BaseStringToCommandMap *ptrServerCommandMap;
-  BaseStringToCommandMap *ptrGameCommandMap;
+  BaseStringToServerCommandMap *ptrServerCommandMap;
+  BaseStringToGameCommandMap *ptrGameCommandMap;
 };
