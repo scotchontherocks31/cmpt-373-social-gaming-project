@@ -53,12 +53,9 @@ public:
                           std::vector<std::unique_ptr<ExpressionNode>>())
       : format{std::move(format)} {
     for (auto &arg : expressions) {
-      // arg->getLexeme();
       appendChild(std::move(arg));
     }
-    // appendChild(std::move(expr));
   }
-  // getExpressionArguments    this will get them in order right?
   const std::string &getFormat() const { return format; }
 
 private:
