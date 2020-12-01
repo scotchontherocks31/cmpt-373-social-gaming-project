@@ -43,7 +43,7 @@ coro::Task<Json> getSetupValueFromOwner(Json value,
         messages = communicator.receiveFromOwner();
       }
       auto kind = value["kind"].get<std::string>();
-      auto &message = messages[0].message;
+      auto &message = messages.front().message;
       auto value = Json::accept(message) ? Json::parse(message) : Json(message);
       if (isJsonValueValid(kind, value)) {
         co_return value;
