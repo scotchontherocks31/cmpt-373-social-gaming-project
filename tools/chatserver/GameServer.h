@@ -21,7 +21,8 @@ struct DecoratedMessage {
 
 class GameManager;
 class BaseStringToCommandMap;
-struct CommandMappings;
+class BaseStringToGameCommandMap;
+// struct CommandMappings;
 
 class GameServer {
 public:
@@ -39,7 +40,8 @@ public:
   enum class GameCommand { CREATE, START, CLEAN, UNKNOWN };
 
   GameServer(unsigned short port, std::string httpMessage,
-             CommandMappings &maps);
+             BaseStringToCommandMap &serverMap,
+             BaseStringToGameCommandMap &gameMap);
   void sendMessageToUser(const User &user, std::string message);
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
@@ -136,7 +138,7 @@ public:
 };
 
 // Struct to create a bundle of maps before passing into GameServer class
-class CommandMappings {
+/*class CommandMappings {
 private:
   BaseStringToServerCommandMap *serverCommandMap;
   BaseStringToGameCommandMap *gameCommandMap;
@@ -147,4 +149,4 @@ public:
       : serverCommandMap(serverCommandMap), gameCommandMap(gameCommandMap) {}
   BaseStringToServerCommandMap *getServerMap() { return serverCommandMap; }
   BaseStringToGameCommandMap *getGameMap() { return gameCommandMap; }
-};
+};*/
