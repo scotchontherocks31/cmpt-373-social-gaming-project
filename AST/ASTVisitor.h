@@ -69,7 +69,7 @@ public:
 
 private:
   coro::Task<> visitHelper(GlobalMessage &node) override {
-    visitEnter(node);
+    co_await visitEnter(node);
     // for (auto &&child : node.getChildren()) {
     //   co_await child->accept(*this);
     // }
@@ -77,10 +77,10 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(FormatNode &node) override {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
-    }
+    co_await visitEnter(node);
+    // for (auto &&child : node.getChildren()) {
+    //   co_await child->accept(*this);
+    // }
     visitLeave(node);
     co_return;
   }
@@ -158,33 +158,33 @@ private:
     co_return;
   }
 
-  void visitEnter(GlobalMessage &node){};
-  void visitLeave(GlobalMessage &node) {
-    auto &formatMessageNode = node.getFormatNode(); 
+  coro::Task<>  visitEnter(GlobalMessage &node){
+     auto &formatMessageNode = node.getFormatNode(); 
     //auto &&formatMessage = formatMessageNode.getFormat(); // delete
 
-    // auto task = formatMessageNode.accept(*this);  // accept on it's child is already being called by its parent
-    // while (not task.isDone()) {
-    //   co_await task;
-    // }
+    auto task = formatMessageNode.accept(*this);  // accept on it's child is already being called by its parent
+    while (not task.isDone()) {
+      co_await task;
+    }
 
     // call accept on format node
     // get back the formatted string and send to communicator, how do I do this?
     communicator.sendGlobalMessage("implementing expressions in format node");
   };
+  void visitLeave(GlobalMessage &node) {};
 
-  void visitEnter(FormatNode &node){
+  coro::Task<> visitEnter(FormatNode &node){
     auto &&formatMessage = node.getFormat();
     std::cout<<"the formatnode visitor is being called"<<std::endl;
     // call visit on each child
   
-    // for (auto &&child : node.getChildren()) {
-    //   auto task = child->accept(*this);
-    //   while (not task.isDone()) {
-    //     co_await task;
-    //   }
-    //   // collect the results  in vector
-    // }
+    for (auto &&child : node.getChildren()) {
+      auto task = child->accept(*this);
+      while (not task.isDone()) {
+        co_await task;
+      }
+      // collect the results  in vector
+    }
       
     
     // replace the placeholders in the format node one by one
@@ -215,6 +215,7 @@ private:
   void visitLeave(ParallelFor &node){};
 
   void visitEnter(BinaryNode &node){
+    // this doenst have to be concurrent and use coawait?
     std::cout<<"entering binary node"<<std::endl;
     //get left expression
     // call accept on left expressoin
