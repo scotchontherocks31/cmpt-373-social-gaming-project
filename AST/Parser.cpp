@@ -64,9 +64,8 @@ extractExpressionsHelper(std::string str) {
       str.erase(start_position_to_erase - 1, match.size() + 2);
 
       ExpressionASTParser rdp(match);
-      std::unique_ptr<ExpressionNode> result = rdp.parse_S();
-
-      expressions.push_back(std::move(result));
+    
+      expressions.push_back(rdp.parse_S());
       matchOpt = getFirstMatch(str);
 
     } catch (const std::bad_optional_access &e) {
