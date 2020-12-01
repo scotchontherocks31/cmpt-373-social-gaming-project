@@ -107,6 +107,15 @@ public:
     return *this;
   }
 
+  template <typename T>
+  std::optional<std::reference_wrapper<T>> get() noexcept {
+    auto pointerToValue = std::get_if<T>(&value);
+    if (not pointerToValue) {
+      return std::nullopt;
+    }
+    return std::optional{std::reference_wrapper<T>{*pointerToValue}};
+  }
+
   template <UnaryDSLOperation F> decltype(auto) unaryOperation(F &&f) {
     return std::visit(f, value);
   }
