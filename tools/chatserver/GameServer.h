@@ -20,7 +20,7 @@ struct DecoratedMessage {
 };
 
 class GameManager;
-class BaseStringToCommandMap;
+class BaseStringToServerCommandMap;
 class BaseStringToGameCommandMap;
 // struct CommandMappings;
 
@@ -40,7 +40,7 @@ public:
   enum class GameCommand { CREATE, START, CLEAN, UNKNOWN };
 
   GameServer(unsigned short port, std::string httpMessage,
-             BaseStringToCommandMap &serverMap,
+             BaseStringToServerCommandMap &serverMap,
              BaseStringToGameCommandMap &gameMap);
   void sendMessageToUser(const User &user, std::string message);
   void sendMessageToRoom(const Room &room, std::string message);

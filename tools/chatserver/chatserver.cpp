@@ -24,11 +24,11 @@ int main(int argc, char *argv[]) {
   }
 
   unsigned short port = std::stoi(argv[1]);
-  StringToCommandMap strToComm;
   // StringToCommandMap *ptrStrToComm;
-  StringToGameCommandMap strToGameComm;
   // StringToGameCommandMap *ptrStrToGameComm;
   // struct CommandMappings maps(ptrStrToComm, ptrStrToGameComm);
+  StringToCommandMap strToComm;
+  StringToGameCommandMap strToGameComm;
   GameServer server{port, getHTTPMessage(argv[2]), strToComm, strToGameComm};
   server.startRunningLoop();
 
