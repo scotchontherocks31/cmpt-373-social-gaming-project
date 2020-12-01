@@ -3,32 +3,44 @@
 
 using Json = nlohmann::json;
 
+inline bool isValidQuestionAnswer(const std::string &kind, const Json &json) {
+  // TODO: Check schema for "question-answer"
+  return kind == "question-answer" and json.at("type") == "question-answer";
+}
+
+inline bool isValidMutipleChoice(const std::string &kind, const Json &json) {
+  // TODO: Check schema for "multiple-choice"
+  return kind == "multiple-choice" and json.at("type") == "multiple-choice";
+}
+
 bool isJsonValueValid(const std::string &kind, const Json &json) {
-  if (kind == "integer" && json.is_number_integer() ||
-      kind == "string" && json.is_string() ||
-      kind == "boolean" && json.is_boolean()) {
+  if (kind == "integer" and json.is_number_integer() or
+      kind == "string" and json.is_string() or
+      kind == "boolean" and json.is_boolean()) {
     return true;
   }
-  if (json.is_object() && json.contains("type")) {
-    // TODO: Check the schema for question-answer" and "multiple-choice"
-    if (kind == "question-answer" && json.at("type") == "question-answer") {
-      return true;
-    }
-    if (kind == "multiple-choice" && json.at("type") == "multiple-choice") {
-      return true;
-    }
+  if (json.is_object() and json.contains("type")) {
+    return isValidQuestionAnswer(kind, json) or
+           isValidMutipleChoice(kind, json);
   }
   return false;
 }
 
-coro::Task<Json> getSetupValueFromOwner(Json value, AST::Communicator &com) {
-  if (value.is_object() && value.contains("kind") && value.contains("prompt")) {
+inline bool isValidPrompt(const Json &value) {
+  return value.is_object() and value.contains("kind") and
+         value.at("kind").is_string() and value.contains("prompt") and
+         value.at("prompt").is_string();
+}
+
+coro::Task<Json> getSetupValueFromOwner(Json value,
+                                        AST::Communicator &communicator) {
+  if (isValidPrompt(value)) {
     while (true) {
-      com.sendToOwner(value["prompt"].get<std::string>());
-      auto messages = com.receiveFromOwner();
+      communicator.sendToOwner(value["prompt"].get<std::string>());
+      auto messages = communicator.receiveFromOwner();
       while (messages.empty()) {
         co_await coro::coroutine::suspend_always();
-        messages = com.receiveFromOwner();
+        messages = communicator.receiveFromOwner();
       }
       auto kind = value["kind"].get<std::string>();
       auto &message = messages[0].message;
@@ -36,11 +48,12 @@ coro::Task<Json> getSetupValueFromOwner(Json value, AST::Communicator &com) {
       if (isJsonValueValid(kind, value)) {
         co_return value;
       } else {
-        com.sendToOwner("Invalid value type entered! Please try again.");
+        communicator.sendToOwner(
+            "Invalid value type entered! Please try again.");
       }
     }
   }
-  co_return std::move(value);
+  co_return value;
   // TODO: Handle overwrite default setup value
 }
 
@@ -53,8 +66,8 @@ bool Configurator::isSetupValid() {
 
 coro::Task<PopulatedEnvironment>
 Configurator::populateEnvironment(std::vector<Player> players,
-                                  Communicator &com) {
-  auto task = populateSetup(com);
+                                  Communicator &communicator) {
+  auto task = populateSetup(communicator);
   Json localSetup;
   while (not task.isDone()) {
     localSetup = co_await task;
@@ -62,10 +75,10 @@ Configurator::populateEnvironment(std::vector<Player> players,
   co_return createEnvironment(std::move(localSetup), std::move(players));
 }
 
-coro::Task<Json> Configurator::populateSetup(Communicator &com) {
+coro::Task<Json> Configurator::populateSetup(Communicator &communicator) {
   auto localSetup = this->setup[0]; // Copy setup
   for (auto &[key, value] : localSetup.items()) {
-    auto task = getSetupValueFromOwner(std::move(value), com);
+    auto task = getSetupValueFromOwner(std::move(value), communicator);
     while (not task.isDone()) {
       value = co_await task;
     }
@@ -73,13 +86,13 @@ coro::Task<Json> Configurator::populateSetup(Communicator &com) {
   co_return localSetup;
 }
 
-PopulatedEnvironment
-Configurator::createEnvironment(Json setup, std::vector<Player> players) {
-  auto envPtr = std::make_unique<Environment>();
+void allocateSetup(Environment &env, Json setup) {
+  env.allocate("configuration", Symbol{DSLValue{std::move(setup)}});
+}
 
-  envPtr->allocate("configuration", Symbol{DSLValue{setup}});
-
-  // add the current members into the game
+std::vector<DSLPlayer> allocatePlayers(Environment &env,
+                                       const std::vector<Player> &players,
+                                       const Json &perPlayer) {
   std::vector<DSLValue> playersDSL;
   for (auto &player : players) {
     Json playerJson;
@@ -91,25 +104,42 @@ Configurator::createEnvironment(Json setup, std::vector<Player> players) {
     playersDSL.push_back(DSLValue{playerJson});
   }
 
-  envPtr->allocate("players", Symbol{DSLValue{playersDSL}});
-  DSLValue &dsl = *envPtr->find("players");
+  env.allocate("players", Symbol{DSLValue{playersDSL}});
+  DSLValue &dsl = *env.find("players");
   auto &dslList = dsl.get<List>()->get();
   std::vector<DSLPlayer> playerBindings;
   for (auto &playerDsl : dslList) {
-    auto id = playerDsl["id"]->get().get<int>()->get();
-    auto name = playerDsl["name"]->get().get<std::string>()->get();
+    DSLValue &idDsl = *playerDsl["id"];
+    DSLValue &nameDsl = *playerDsl["name"];
+    int id = *idDsl.get<int>();
+    std::string name = *nameDsl.get<std::string>();
     playerBindings.push_back(DSLPlayer{id, std::move(name), &playerDsl});
   }
+  return playerBindings;
+}
 
-  // add constants
+void allocateConstants(Environment &env, const Json &constants) {
   for (auto &[key, value] : constants.items()) {
-    envPtr->allocate(key, Symbol{DSLValue{value}, true});
+    env.allocate(key, Symbol{DSLValue{value}, true});
   }
+}
 
-  // add variables
+void allocateVariables(Environment &env, const Json &variables) {
   for (auto &[key, value] : variables.items()) {
-    envPtr->allocate(key, Symbol{DSLValue{value}});
+    env.allocate(key, Symbol{DSLValue{value}});
   }
+}
+
+PopulatedEnvironment
+Configurator::createEnvironment(Json setup, std::vector<Player> players) {
+  auto envPtr = std::make_unique<Environment>();
+  auto &env = *envPtr;
+
+  allocateSetup(env, std::move(setup));
+  auto playerBindings = allocatePlayers(env, players, this->perPlayer);
+  allocateConstants(env, this->constants);
+  allocateVariables(env, this->variables);
+
   return {std::move(envPtr), PlayerList{std::move(playerBindings)}};
 }
 
