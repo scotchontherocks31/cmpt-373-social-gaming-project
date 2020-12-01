@@ -68,7 +68,7 @@ public:
   explicit GlobalMessage(std::unique_ptr<FormatNode> &&formatNode) {
     appendChild(std::move(formatNode));
   }
-  const FormatNode &getFormatNode() const {
+  FormatNode &getFormatNode() const {
     return *static_cast<FormatNode *>(children[0].get());
   }
 

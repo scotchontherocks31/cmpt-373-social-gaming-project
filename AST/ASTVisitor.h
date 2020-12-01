@@ -70,9 +70,9 @@ public:
 private:
   coro::Task<> visitHelper(GlobalMessage &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
-    }
+    // for (auto &&child : node.getChildren()) {
+    //   co_await child->accept(*this);
+    // }
     visitLeave(node);
     co_return;
   }
@@ -160,12 +160,35 @@ private:
 
   void visitEnter(GlobalMessage &node){};
   void visitLeave(GlobalMessage &node) {
-    const auto &formatMessageNode = node.getFormatNode();
-    auto &&formatMessage = formatMessageNode.getFormat();
-    communicator.sendGlobalMessage(formatMessage);
+    auto &formatMessageNode = node.getFormatNode(); 
+    //auto &&formatMessage = formatMessageNode.getFormat(); // delete
+
+    // auto task = formatMessageNode.accept(*this);  // accept on it's child is already being called by its parent
+    // while (not task.isDone()) {
+    //   co_await task;
+    // }
+
+    // call accept on format node
+    // get back the formatted string and send to communicator, how do I do this?
+    communicator.sendGlobalMessage("implementing expressions in format node");
   };
 
-  void visitEnter(FormatNode &node){};
+  void visitEnter(FormatNode &node){
+    auto &&formatMessage = node.getFormat();
+    std::cout<<"the formatnode visitor is being called"<<std::endl;
+    // call visit on each child
+  
+    // for (auto &&child : node.getChildren()) {
+    //   auto task = child->accept(*this);
+    //   while (not task.isDone()) {
+    //     co_await task;
+    //   }
+    //   // collect the results  in vector
+    // }
+      
+    
+    // replace the placeholders in the format node one by one
+  };
   void visitLeave(FormatNode &node){};
 
   void visitEnter(InputText &node){};
@@ -191,13 +214,29 @@ private:
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
 
-  void visitEnter(BinaryNode &node){};
+  void visitEnter(BinaryNode &node){
+    std::cout<<"entering binary node"<<std::endl;
+    //get left expression
+    // call accept on left expressoin
+    // retreive the result of the visit from the environment
+
+    // get right expression
+    // call accept
+    // retreive the result from the environment
+
+    // access the left variable with right variable
+
+    // put inside the environment for the parent to use
+  };
   void visitLeave(BinaryNode &node){};
 
   void visitEnter(UnaryNode &node){};
   void visitLeave(UnaryNode &node){};
 
-  void visitEnter(VariableExpression &node){};
+  void visitEnter(VariableExpression &node){
+    std::cout<<"entering variabel expression"<<std::endl;
+    // put the variable into the environment for parent to use
+  };
   void visitLeave(VariableExpression &node){};
 
   void visitEnter(FunctionCallNode &node){};
