@@ -12,8 +12,6 @@ struct Player {
 };
 
 struct DSLPlayer : Player {
-  DSLPlayer(Player player, DSLValue *handle)
-      : Player(std::move(player)), handle{handle} {}
   DSLValue *handle;
 };
 

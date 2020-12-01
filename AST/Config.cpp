@@ -98,12 +98,12 @@ Configurator::createEnvironment(Json setup, std::vector<Player> players) {
 
   envPtr->allocate("players", Symbol{DSLValue{playersDSL}});
   DSLValue &dsl = *envPtr->find("players");
+  auto &dslList = dsl.get<List>()->get();
   std::vector<DSLPlayer> playerBindings;
-  for (int i = 0; i < dsl.size(); i++) {
-    // Relying on DSLValue conversion to keep the ordering of players.
-    // It's terrible but it's the only way to get both id and DSLValue pointer
-    // at the same time.
-    playerBindings.push_back(DSLPlayer{std::move(players[i]), &dsl[i]->get()});
+  for (auto &playerDsl : dslList) {
+    auto id = playerDsl["id"]->get().get<int>()->get();
+    auto name = playerDsl["name"]->get().get<std::string>()->get();
+    playerBindings.push_back(DSLPlayer{id, std::move(name), &playerDsl});
   }
 
   // add constants
