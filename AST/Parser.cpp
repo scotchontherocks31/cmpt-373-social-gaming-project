@@ -2,8 +2,8 @@
 #include "ASTVisitor.h"
 #include "CFGParser.h"
 #include "ExpressionASTParser.h"
-#include <assert.h>
 #include <algorithm>
+#include <assert.h>
 #include <exception>
 #include <iostream>
 #include <map>
@@ -11,7 +11,7 @@
 
 namespace AST {
 
-AST JSONToASTParser::parseHelper() {return AST{parseRules(json[0]["rules"])}; }
+AST JSONToASTParser::parseHelper() { return AST{parseRules(json[0]["rules"])}; }
 
 std::unique_ptr<Rules> JSONToASTParser::parseRules(const Json &json) {
 
@@ -36,38 +36,40 @@ std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
 
 std::regex PLACEHOLDER("\\{([^}]*)\\}");
 
-
 class myexception : public std::exception {
-  virtual const char *what() const throw() { return "Expression is invalid in Format Parsing"; }
+  virtual const char *what() const throw() {
+    return "Expression is invalid in Format Parsing";
+  }
 };
 
 std::optional<std::string> getFirstMatch(std::string str) {
   std::smatch match;
-    if (std::regex_search(str, match, PLACEHOLDER)) {
-      return match.str(0);
-    }
+  if (std::regex_search(str, match, PLACEHOLDER)) {
+    return match.str(0);
+  }
   return {};
 }
 
-std::vector<std::unique_ptr<ExpressionNode>> extractExpressionsHelper(std::string str) {
-  
+std::vector<std::unique_ptr<ExpressionNode>>
+extractExpressionsHelper(std::string str) {
+
   std::vector<std::unique_ptr<ExpressionNode>> expressions;
 
   std::optional<std::string> matchOpt = getFirstMatch(str);
   while (matchOpt) {
     try {
-    
+
       auto match = (matchOpt.value()).substr(1, (matchOpt.value()).size() - 2);
       auto start_position_to_erase = str.find(match);
-      str.erase(start_position_to_erase-1, match.size()+2);
-  
+      str.erase(start_position_to_erase - 1, match.size() + 2);
+
       ExpressionASTParser rdp(match);
       std::unique_ptr<ExpressionNode> result = rdp.parse_S();
 
       expressions.push_back(std::move(result));
       matchOpt = getFirstMatch(str);
 
-    } catch (const std::bad_optional_access &e) { 
+    } catch (const std::bad_optional_access &e) {
       throw myexception();
     }
   }
@@ -75,10 +77,10 @@ std::vector<std::unique_ptr<ExpressionNode>> extractExpressionsHelper(std::strin
   return expressions;
 }
 
-
-std::unique_ptr<FormatNode> JSONToASTParser::parseFormatNode(const Json &json) {  
-  std::vector<std::unique_ptr<ExpressionNode>> expressions = extractExpressionsHelper(json["value"]);
-  return std::make_unique<FormatNode>(json["value"],std::move(expressions));
+std::unique_ptr<FormatNode> JSONToASTParser::parseFormatNode(const Json &json) {
+  std::vector<std::unique_ptr<ExpressionNode>> expressions =
+      extractExpressionsHelper(json["value"]);
+  return std::make_unique<FormatNode>(json["value"], std::move(expressions));
 }
 
 std::unique_ptr<GlobalMessage>

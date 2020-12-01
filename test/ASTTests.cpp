@@ -1,20 +1,20 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
 #include "CFGParser.h"
+#include "DSLValue.h"
 #include "Environment.h"
 #include "ExpressionASTParser.h"
-#include "DSLValue.h"
 #include "Parser.h"
 
 #include "gtest/gtest.h"
 
+#include "json.hpp"
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
 #include <task.h>
 #include <variant>
-#include "json.hpp"
-#include <fstream>
 
 using namespace testing;
 using namespace AST;
@@ -84,24 +84,20 @@ using namespace AST;
 
 // TEST(ASTprinter, GlobalMessageWithExpression) {
 //   // create environment
-  
+
 //   //AST::Environment parent;
 //   auto parent = std::make_unique<AST::Environment>();
-
 
 //   Json playerJson;
 //   playerJson["id"] = 1;
 //   playerJson["name"] = "Mike Tyson";
 
-
-//   Symbol symbol = Symbol{DSLValue{playerJson}, false}; 
-
+//   Symbol symbol = Symbol{DSLValue{playerJson}, false};
 
 //   AST::Environment::Name key = "A";
 //   auto child = parent->createChildEnvironment();
 //   child.allocate(key, symbol);
 //   EXPECT_EQ(symbol.dsl, child.find(key));
-
 
 //   // make ptinr visitor
 //   AST::PrintCommunicator printComm{};
@@ -109,7 +105,8 @@ using namespace AST;
 
 //   std::unique_ptr<AST::GlobalMessage> mess =
 //       std::make_unique<AST::GlobalMessage>(
-//           std::make_unique<AST::FormatNode>(std::string{"Hello, {player.name} is the {player.id} boxer in the world"}));
+//           std::make_unique<AST::FormatNode>(std::string{"Hello, {player.name}
+//           is the {player.id} boxer in the world"}));
 
 //   auto root = AST::AST(std::move(mess));
 
@@ -121,8 +118,9 @@ using namespace AST;
 //   while (task.resume()) {
 //   }
 
-//   std::string answer = "(GlobalMessage(FormatNode\"Hello, {player.name} is the {player.id} boxer in the world\"))";
-//   std::string output = printer.returnOutput();
+//   std::string answer = "(GlobalMessage(FormatNode\"Hello, {player.name} is
+//   the {player.id} boxer in the world\"))"; std::string output =
+//   printer.returnOutput();
 
 //   EXPECT_EQ(output, answer);
 // }
@@ -169,17 +167,22 @@ using namespace AST;
 //   EXPECT_EQ(output, answer);
 // }
 
-
 TEST(ExpressionNodes, FormatNodeExpressionParsing) {
   auto parent = std::make_unique<AST::Environment>();
- 
+
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
 
   std::cout << "Got the JSON..." << std::endl;
-  auto parser = AST::JSONToASTParser(std::string{"{\"configuration\":{\"name\":\"Rock,Paper,Scissors\",\"playercount\":{\"min\":2,\"max\":4},\"audience\":false,\"setup\":{\"Rounds\":10}},\"constants\":{},\"variables\":{},\"per-player\":{},\"per-audience\":{},\"rules\":[{\"rule\":\"global-message\",\"value\":\"{player.name}is your favorite person,fav food is {player.food},and # of players is{players.size}\"}]}"});
+  auto parser = AST::JSONToASTParser(std::string{
+      "{\"configuration\":{\"name\":\"Rock,Paper,Scissors\",\"playercount\":{"
+      "\"min\":2,\"max\":4},\"audience\":false,\"setup\":{\"Rounds\":10}},"
+      "\"constants\":{},\"variables\":{},\"per-player\":{},\"per-audience\":{},"
+      "\"rules\":[{\"rule\":\"global-message\",\"value\":\"{player.name}is "
+      "your favorite person,fav food is {player.food},and # of players "
+      "is{players.size}\"}]}"});
 
-  AST::AST ast = parser.parse();                // AST With GlobalMessage
+  AST::AST ast = parser.parse(); // AST With GlobalMessage
 
   auto root = AST::AST(std::move(ast));
   std::stringstream stream;
@@ -188,12 +191,13 @@ TEST(ExpressionNodes, FormatNodeExpressionParsing) {
   while (task.resume()) {
   }
   std::string answer =
-      "(Rules(GlobalMessage(FormatNode\"{player.name}is your favorite person,fav food is {player.food},and # of players is{players.size}\"(BinaryNode:\".\"(VariableExpression\"player\")(VariableExpression\"name\"))(BinaryNode:\".\"(VariableExpression\"player\")(VariableExpression\"food\"))(BinaryNode:\".\"(VariableExpression\"players\")(VariableExpression\"size\")))))";
+      "(Rules(GlobalMessage(FormatNode\"{player.name}is your favorite "
+      "person,fav food is {player.food},and # of players "
+      "is{players.size}\"(BinaryNode:\".\"(VariableExpression\"player\")("
+      "VariableExpression\"name\"))(BinaryNode:\".\"("
+      "VariableExpression\"player\")(VariableExpression\"food\"))(BinaryNode:"
+      "\".\"(VariableExpression\"players\")(VariableExpression\"size\")))))";
   std::string output = printer.returnOutput();
 
   EXPECT_EQ(output, answer);
-
 }
-
-
-

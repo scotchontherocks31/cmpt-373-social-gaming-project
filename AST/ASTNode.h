@@ -46,15 +46,17 @@ private:
 
 class ExpressionNode : public ASTNode {};
 
-
 class FormatNode : public ASTNode { // parser complete
 public:
-  explicit FormatNode(std::string format, std::vector<std::unique_ptr<ExpressionNode>> expressions = std::vector<std::unique_ptr<ExpressionNode>>()) : format{std::move(format)} {
+  explicit FormatNode(std::string format,
+                      std::vector<std::unique_ptr<ExpressionNode>> expressions =
+                          std::vector<std::unique_ptr<ExpressionNode>>())
+      : format{std::move(format)} {
     for (auto &arg : expressions) {
-      //arg->getLexeme();
+      // arg->getLexeme();
       appendChild(std::move(arg));
     }
-    //appendChild(std::move(expr));
+    // appendChild(std::move(expr));
   }
   // getExpressionArguments    this will get them in order right?
   const std::string &getFormat() const { return format; }
