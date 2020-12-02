@@ -62,21 +62,54 @@ std::unique_ptr<Variable> JSONToASTParser::parseVariable(const Json &json) {
   return std::make_unique<Variable>(json["list"]);
 }
 
-std::string ConfigParser::parseName() {
-  auto &config = json[0]["configuration"];
-  return config["name"].get<std::string>();
+inline bool isUnsignedInteger(const Json &json) {
+  return json.is_number_integer() and json.is_number_unsigned();
 }
 
-std::pair<int, int> ConfigParser::parsePlayerCount() {
+inline bool configHasValidName(const Json &config) {
+  return config.contains("name") and config["name"].is_string();
+}
+
+inline bool configHasValidPlayerCount(const Json &config) {
+  auto &playerCount = config["player count"];
+  return playerCount.contains("max") and
+         isUnsignedInteger(playerCount["max"]) and
+         playerCount.contains("min") and isUnsignedInteger(playerCount["min"]);
+}
+
+inline bool configHasValidAudience(const Json &config) {
+  return config.contains("audience") and config["audience"].is_boolean();
+}
+
+inline bool configHasValidSetup(const Json &config) {
+  return config.contains("setup") and config["setup"].is_object();
+}
+
+std::string ConfigParser::parseName() {
   auto &config = json[0]["configuration"];
-  auto playerMax = config["player count"]["max"].get<int>();
-  auto playerMin = config["player count"]["min"].get<int>();
-  return {playerMin, playerMax};
+  if (configHasValidName(config)) {
+    return config["name"].get<std::string>();
+  }
+  return {};
+}
+
+std::pair<size_t, size_t> ConfigParser::parsePlayerCount() {
+  auto &config = json[0]["configuration"];
+  if (configHasValidPlayerCount(config)) {
+    auto &playerCount = config["player count"];
+    auto playerMax = playerCount["max"].get<size_t>();
+    auto playerMin = playerCount["min"].get<size_t>();
+    return {playerMin, playerMax};
+  }
+  return {0, 0};
 }
 
 bool ConfigParser::parseHasAudience() {
   auto &config = json[0]["configuration"];
-  return config["audience"].get<bool>();
+  if (configHasValidAudience(config)) {
+    return config["audience"].get<bool>();
+  }
+  return false;
 }
 
 Json ConfigParser::parseSetup() { return json[0]["configuration"]["setup"]; }
@@ -89,12 +122,29 @@ Json ConfigParser::parseVariables() { return json[0]["variables"]; }
 
 Json ConfigParser::parseConstants() { return json[0]["constants"]; }
 
+bool ConfigParser::configJsonValid(const Json &json) {
+  if (not json.contains("configuration") or not json.contains("constants") or
+      not json.contains("variables") or not json.contains("per-player") or
+      not json.contains("per-audience")) {
+    return false;
+  }
+  auto &config = json["configuration"];
+  if (not configHasValidName(json) or not configHasValidPlayerCount(json) or
+      not configHasValidAudience(json) or not configHasValidSetup(json)) {
+    return false;
+  }
+  return true;
+}
+
 std::optional<CombinedParsers> generateParsers(std::string json) {
-  if (!Json::accept(json)) {
+  if (not Json::accept(json)) {
     return {};
   }
   auto jsonObj = Json::parse(std::move(json));
-  if (!jsonObj.contains("rules") || !jsonObj.contains("configuration")) {
+  if (not ConfigParser::configJsonValid(jsonObj)) {
+    return {};
+  }
+  if (not jsonObj.contains("rules") or not jsonObj.contains("configuration")) {
     return {};
   }
   auto astParser = JSONToASTParser{std::move(jsonObj.at("rules"))};

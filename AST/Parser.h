@@ -54,8 +54,9 @@ public:
   ConfigParser(std::string json)
       : json{nlohmann::json::parse(std::move(json))} {}
   ConfigParser(Json json) : json{std::move(json)} {}
+  static bool configJsonValid(const Json &json);
   std::string parseName();
-  std::pair<int, int> parsePlayerCount();
+  std::pair<size_t, size_t> parsePlayerCount();
   bool parseHasAudience();
   Json parseSetup();
   Json parsePerPlayer();

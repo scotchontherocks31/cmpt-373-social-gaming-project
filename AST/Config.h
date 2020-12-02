@@ -28,7 +28,7 @@ public:
   coro::Task<PopulatedEnvironment>
   populateEnvironment(std::vector<Player> players, Communicator &com);
   std::string getName() { return name; }
-  std::pair<int, int> getPlayerCount() { return playerCount; }
+  std::pair<size_t, size_t> getPlayerCount() { return playerCount; }
   bool getHasAudience() { return hasAudience; }
 
 private:
@@ -38,7 +38,7 @@ private:
                                          std::vector<Player> players);
   ConfigParser parser;
   std::string name;
-  std::pair<int, int> playerCount;
+  std::pair<size_t, size_t> playerCount;
   bool hasAudience;
   Json setup;
   Json perPlayer;
