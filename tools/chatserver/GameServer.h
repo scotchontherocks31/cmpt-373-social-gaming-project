@@ -79,8 +79,6 @@ private:
 class BaseStringToServerCommandMap {
 public:
   virtual std::map<std::string, GameServer::ServerCommand> &getMap() = 0;
-  virtual GameServer::ServerCommand getValue(std::string command) = 0;
-  virtual bool contains(std::string command) = 0;
 };
 
 class StringToCommandMap : public BaseStringToServerCommandMap {
@@ -101,19 +99,11 @@ public:
   std::map<std::string, GameServer::ServerCommand> &getMap() override {
     return theMap;
   }
-  GameServer::ServerCommand getValue(std::string command) override {
-    return theMap.at(command);
-  }
-  bool contains(std::string command) override {
-    return theMap.contains(command);
-  }
 };
 
 class BaseStringToGameCommandMap {
 public:
   virtual std::map<std::string, GameServer::GameCommand> &getMap() = 0;
-  virtual GameServer::GameCommand getValue(std::string command) = 0;
-  virtual bool contains(std::string command) = 0;
 };
 
 class StringToGameCommandMap : public BaseStringToGameCommandMap {
@@ -129,24 +119,4 @@ public:
   std::map<std::string, GameServer::GameCommand> &getMap() override {
     return theMap;
   }
-  GameServer::GameCommand getValue(std::string command) override {
-    return theMap.at(command);
-  }
-  bool contains(std::string command) override {
-    return theMap.contains(command);
-  }
 };
-
-// Struct to create a bundle of maps before passing into GameServer class
-/*class CommandMappings {
-private:
-  BaseStringToServerCommandMap *serverCommandMap;
-  BaseStringToGameCommandMap *gameCommandMap;
-
-public:
-  CommandMappings(BaseStringToServerCommandMap *serverCommandMap,
-                  BaseStringToGameCommandMap *gameCommandMap)
-      : serverCommandMap(serverCommandMap), gameCommandMap(gameCommandMap) {}
-  BaseStringToServerCommandMap *getServerMap() { return serverCommandMap; }
-  BaseStringToGameCommandMap *getGameMap() { return gameCommandMap; }
-};*/
