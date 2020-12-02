@@ -22,7 +22,6 @@ struct DecoratedMessage {
 class GameManager;
 class BaseStringToServerCommandMap;
 class BaseStringToGameCommandMap;
-// struct CommandMappings;
 
 class GameServer {
 public:
@@ -46,8 +45,6 @@ public:
   void sendMessageToRoom(const Room &room, std::string message);
   User &getUser(userid id) { return users.at(id); }
   void startRunningLoop();
-  std::map<std::string, ServerCommand> initializeCommandMap();
-  std::map<std::string, GameCommand> initializeGameCommandMap();
   std::map<ServerCommand, std::function<functionType>> initializeFunctionMap();
   std::map<GameCommand, std::function<functionType>>
   initializeGameFunctionMap();
