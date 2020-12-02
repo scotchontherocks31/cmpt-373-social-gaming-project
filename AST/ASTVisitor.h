@@ -217,6 +217,7 @@ private:
   void visitEnter(BinaryNode &node){
     // this doenst have to be concurrent and use coawait?
     std::cout<<"entering binary node"<<std::endl;
+    // switch
     //get left expression
     // call accept on left expressoin
     // retreive the result of the visit from the environment
@@ -225,7 +226,8 @@ private:
     // call accept
     // retreive the result from the environment
 
-    // access the left variable with right variable
+    // perform the binary operator the left variable with right variable
+      // if right doesnt exist in left
 
     // put inside the environment for the parent to use
   };
