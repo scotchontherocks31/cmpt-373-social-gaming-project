@@ -129,8 +129,8 @@ bool ConfigParser::configJsonValid(const Json &json) {
     return false;
   }
   auto &config = json["configuration"];
-  if (not configHasValidName(json) or not configHasValidPlayerCount(json) or
-      not configHasValidAudience(json) or not configHasValidSetup(json)) {
+  if (not configHasValidName(config) or not configHasValidPlayerCount(config) or
+      not configHasValidAudience(config) or not configHasValidSetup(config)) {
     return false;
   }
   return true;
@@ -141,10 +141,10 @@ std::optional<CombinedParsers> generateParsers(std::string json) {
     return {};
   }
   auto jsonObj = Json::parse(std::move(json));
-  if (not ConfigParser::configJsonValid(jsonObj)) {
+  if (not jsonObj.contains("rules") or not jsonObj.contains("configuration")) {
     return {};
   }
-  if (not jsonObj.contains("rules") or not jsonObj.contains("configuration")) {
+  if (not ConfigParser::configJsonValid(jsonObj)) {
     return {};
   }
   auto astParser = JSONToASTParser{std::move(jsonObj.at("rules"))};
