@@ -2,6 +2,7 @@
 #define AST_PLAYER_H
 
 #include "DSLValue.h"
+#include <algorithm>
 #include <string>
 
 namespace AST {
@@ -22,15 +23,17 @@ private:
 public:
   PlayerList() = default;
   PlayerList(std::vector<DSLPlayer> players) {
-    for (auto &player : players) {
-      playerMapping.insert({player.id, std::move(player)});
-    }
+    std::transform(
+        players.begin(), players.end(),
+        std::inserter(playerMapping, playerMapping.begin()), [](auto &player) {
+          return std::pair<int, DSLPlayer>{player.id, std::move(player)};
+        });
   }
-  std::optional<DSLPlayer *> at(int playerId) {
-    if (playerMapping.count(playerId)) {
-      return &playerMapping.at(playerId);
-    }
-    return {};
+  std::optional<std::reference_wrapper<DSLPlayer>> at(int playerId) {
+    auto it = playerMapping.find(playerId);
+    return it != playerMapping.end()
+               ? it->second
+               : std::optional<std::reference_wrapper<DSLPlayer>>{};
   }
   bool empty() const { return playerMapping.empty(); }
   auto size() const { return playerMapping.size(); }
