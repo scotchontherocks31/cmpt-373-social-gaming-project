@@ -85,7 +85,7 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
 TEST(ASTprinter, GlobalMessageWithExpression) {
   // create environment
 
-  //AST::Environment parent;
+  // AST::Environment parent;
   auto parent = std::make_unique<AST::Environment>();
 
   Json playerJson;
@@ -105,7 +105,8 @@ TEST(ASTprinter, GlobalMessageWithExpression) {
 
   std::unique_ptr<AST::GlobalMessage> mess =
       std::make_unique<AST::GlobalMessage>(
-          std::make_unique<AST::FormatNode>(std::string{"Hello, {player.name} is the {player.id} boxer in the world"}));
+          std::make_unique<AST::FormatNode>(std::string{
+              "Hello, {player.name} is the {player.id} boxer in the world"}));
 
   auto root = AST::AST(std::move(mess));
 
@@ -117,7 +118,8 @@ TEST(ASTprinter, GlobalMessageWithExpression) {
   while (task.resume()) {
   }
 
-  std::string answer = "(GlobalMessage(FormatNode\"Hello, {player.name} is the {player.id} boxer in the world\"))";
+  std::string answer = "(GlobalMessage(FormatNode\"Hello, {player.name} is the "
+                       "{player.id} boxer in the world\"))";
   std::string output = printer.returnOutput();
 
   EXPECT_EQ(output, answer);
@@ -199,7 +201,6 @@ TEST(ExpressionNodes, FormatNodeExpressionParsing) {
   EXPECT_EQ(output, answer);
 }
 
-
 TEST(ExpressionNodes, BinaryNodeVisitor) {
   auto parent = std::make_unique<AST::Environment>();
   Json playerJson;
@@ -207,13 +208,12 @@ TEST(ExpressionNodes, BinaryNodeVisitor) {
   playerJson["name"] = "Mike Tyson";
   playerJson["food"] = "Mike Tyson";
 
-  AST::Symbol symbol = AST::Symbol{DSLValue{playerJson}, false}; 
+  AST::Symbol symbol = AST::Symbol{DSLValue{playerJson}, false};
 
   AST::Environment::Name key = "player";
   auto child = parent->createChildEnvironment();
   child.allocate(key, symbol);
   EXPECT_EQ(symbol.dsl, child.find(key));
-  
 
   AST::ExpressionASTParser rdp("player.name");
   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
@@ -227,8 +227,7 @@ TEST(ExpressionNodes, BinaryNodeVisitor) {
 
   // check to see if "Mike Tyson" is in the environment
 
-//   EXPECT_EQ(output, answer);
-
+  //   EXPECT_EQ(output, answer);
 }
 
 TEST(ExpressionNodes, FormatNodeVisitors) {
@@ -238,23 +237,27 @@ TEST(ExpressionNodes, FormatNodeVisitors) {
   playerJson["name"] = "Mike Tyson";
   playerJson["food"] = "Mike Tyson";
 
-  Symbol symbol = Symbol{DSLValue{playerJson}, false}; 
+  Symbol symbol = Symbol{DSLValue{playerJson}, false};
 
   AST::Environment::Name key = "player";
   auto child = parent->createChildEnvironment();
   child.allocate(key, symbol);
   EXPECT_EQ(symbol.dsl, child.find(key));
-  
-  auto parser = AST::JSONToASTParser(std::string{"{\"configuration\":{\"name\":\"Rock,Paper,Scissors\",\"playercount\":{\"min\":2,\"max\":4},\"audience\":false,\"setup\":{\"Rounds\":10}},\"constants\":{},\"variables\":{},\"per-player\":{},\"per-audience\":{},\"rules\":[{\"rule\":\"global-message\",\"value\":\"{player.name}is your favorite person,fav food is {player.food},and # of players is.....\"}]}"});
 
-  AST::AST ast = parser.parse();      // AST With GlobalMessage
+  auto parser = AST::JSONToASTParser(std::string{
+      "{\"configuration\":{\"name\":\"Rock,Paper,Scissors\",\"playercount\":{"
+      "\"min\":2,\"max\":4},\"audience\":false,\"setup\":{\"Rounds\":10}},"
+      "\"constants\":{},\"variables\":{},\"per-player\":{},\"per-audience\":{},"
+      "\"rules\":[{\"rule\":\"global-message\",\"value\":\"{player.name}is "
+      "your favorite person,fav food is {player.food},and # of players "
+      "is.....\"}]}"});
+
+  AST::AST ast = parser.parse(); // AST With GlobalMessage
 
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
   auto root = AST::AST(std::move(ast));
   auto task = root.accept(interp);
-//   while (task.resume()) {
-//   }
-
-
+  //   while (task.resume()) {
+  //   }
 }

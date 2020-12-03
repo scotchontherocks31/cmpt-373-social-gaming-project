@@ -1,8 +1,8 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
 #include "CFGParser.h"
-#include <task.h>
 #include <assert.h>
+#include <task.h>
 namespace AST {
 
 enum class Terminal {
@@ -27,7 +27,7 @@ static std::map<Type, Terminal> TypeToTerminal{
 
 struct CFGExpressionWrapper {
   // I will use these Functions //
-  CFGExpressionWrapper(std::vector<CFGExpression> tokens) : index(0) { 
+  CFGExpressionWrapper(std::vector<CFGExpression> tokens) : index(0) {
     for (auto t : tokens) {
       tokensQueue.push(t);
     }
@@ -39,7 +39,7 @@ struct CFGExpressionWrapper {
     } else {
       return Terminal::END;
     }
-  } 
+  }
   CFGExpression front() { return tokensQueue.front(); }
   void next_token() {
     tokensQueue.pop();
@@ -127,18 +127,17 @@ struct ExpressionASTParser {
       return std::move(result);
     }
 
-    else if(CFGTokens.getTerminal() == Terminal::ID){
+    else if (CFGTokens.getTerminal() == Terminal::ID) {
       result = std::make_unique<VariableExpression>(CFGTokens.getValue());
       CFGTokens.next_token();
 
       if (CFGTokens.getTerminal() == Terminal::OPENPAR) {
         CFGTokens.next_token();
         result = std::make_unique<FunctionCallNode>(std::move(result),
-                                                    std::move(parse_arg())); 
-        
+                                                    std::move(parse_arg()));
+
         assert(CFGTokens.getTerminal() == Terminal::CLOSEPAR);
-        CFGTokens.next_token(); 
-                                
+        CFGTokens.next_token();
       }
     }
 
@@ -152,7 +151,7 @@ struct ExpressionASTParser {
       args.push_back(parse_E());
       if (CFGTokens.getTerminal() == Terminal::COMMA) { // E, arglist
         CFGTokens.next_token();
-        assert(isE());  //if there is a comma, we expect another E
+        assert(isE()); // if there is a comma, we expect another E
       }
     }
 
@@ -173,9 +172,9 @@ struct ExpressionASTParser {
       return false;
     }
   }
-  bool isE() { return isT() ;}
-  bool isP() { return (CFGTokens.getTerminal() == Terminal::ID) ; }
-  
+  bool isE() { return isT(); }
+  bool isP() { return (CFGTokens.getTerminal() == Terminal::ID); }
+
 private:
   CFGExpressionWrapper CFGTokens;
 };

@@ -158,11 +158,12 @@ private:
     co_return;
   }
 
-  coro::Task<>  visitEnter(GlobalMessage &node){
-     auto &formatMessageNode = node.getFormatNode(); 
-    //auto &&formatMessage = formatMessageNode.getFormat(); // delete
+  coro::Task<> visitEnter(GlobalMessage &node) {
+    auto &formatMessageNode = node.getFormatNode();
+    // auto &&formatMessage = formatMessageNode.getFormat(); // delete
 
-    auto task = formatMessageNode.accept(*this);  // accept on it's child is already being called by its parent
+    auto task = formatMessageNode.accept(
+        *this); // accept on it's child is already being called by its parent
     while (not task.isDone()) {
       co_await task;
     }
@@ -171,13 +172,13 @@ private:
     // get back the formatted string and send to communicator, how do I do this?
     communicator.sendGlobalMessage("implementing expressions in format node");
   };
-  void visitLeave(GlobalMessage &node) {};
+  void visitLeave(GlobalMessage &node){};
 
-  coro::Task<> visitEnter(FormatNode &node){
+  coro::Task<> visitEnter(FormatNode &node) {
     auto &&formatMessage = node.getFormat();
-    std::cout<<"the formatnode visitor is being called"<<std::endl;
+    std::cout << "the formatnode visitor is being called" << std::endl;
     // call visit on each child
-  
+
     for (auto &&child : node.getChildren()) {
       auto task = child->accept(*this);
       while (not task.isDone()) {
@@ -185,8 +186,7 @@ private:
       }
       // collect the results  in vector
     }
-      
-    
+
     // replace the placeholders in the format node one by one
   };
   void visitLeave(FormatNode &node){};
@@ -214,11 +214,11 @@ private:
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
 
-  void visitEnter(BinaryNode &node){
+  void visitEnter(BinaryNode &node) {
     // this doenst have to be concurrent and use coawait?
-    std::cout<<"entering binary node"<<std::endl;
+    std::cout << "entering binary node" << std::endl;
     // switch
-    //get left expression
+    // get left expression
     // call accept on left expressoin
     // retreive the result of the visit from the environment
 
@@ -227,7 +227,7 @@ private:
     // retreive the result from the environment
 
     // perform the binary operator the left variable with right variable
-      // if right doesnt exist in left
+    // if right doesnt exist in left
 
     // put inside the environment for the parent to use
   };
@@ -236,8 +236,8 @@ private:
   void visitEnter(UnaryNode &node){};
   void visitLeave(UnaryNode &node){};
 
-  void visitEnter(VariableExpression &node){
-    std::cout<<"entering variabel expression"<<std::endl;
+  void visitEnter(VariableExpression &node) {
+    std::cout << "entering variabel expression" << std::endl;
     // put the variable into the environment for parent to use
   };
   void visitLeave(VariableExpression &node){};
