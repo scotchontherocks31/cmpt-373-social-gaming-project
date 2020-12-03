@@ -82,8 +82,6 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
   EXPECT_EQ(output, answer);
 }
 
-
-
 TEST(ASTprinter, ParallelForandInput) {
 
   auto enviro = std::make_unique<AST::Environment>();
@@ -149,7 +147,8 @@ TEST(ExpressionNodes, FormatNodeExpressionParsing) {
   while (task.resume()) {
   }
   std::string answer =
-      "(Rules(GlobalMessage(FormatNode\"{player.name}is your favorite person,fav food is {player.food},and # of players is{players.size}\")))";
+      "(Rules(GlobalMessage(FormatNode\"{player.name}is your favorite "
+      "person,fav food is {player.food},and # of players is{players.size}\")))";
   std::string output = printer.returnOutput();
 
   EXPECT_EQ(output, answer);

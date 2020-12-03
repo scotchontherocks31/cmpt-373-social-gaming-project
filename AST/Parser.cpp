@@ -34,9 +34,8 @@ std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
   }
 }
 
-
 std::unique_ptr<FormatNode> JSONToASTParser::parseFormatNode(const Json &json) {
-    return std::make_unique<FormatNode>(json["value"]);
+  return std::make_unique<FormatNode>(json["value"]);
 }
 
 std::unique_ptr<GlobalMessage>
