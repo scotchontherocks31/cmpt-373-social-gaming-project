@@ -58,7 +58,10 @@ public:
   Interpreter(std::unique_ptr<Environment> &&env, Communicator &communicator)
       : environment{std::move(env)}, communicator{communicator} {}
 
+  bool hasError() { return errorThrown; }
+
 private:
+  bool errorThrown = false;
   coro::Task<> visitHelper(GlobalMessage &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {

@@ -58,7 +58,7 @@ void GameInstance::loadGame(AST::AST &ast,
 }
 
 void GameInstance::runGame() {
-  if (!gameTask.isDone()) {
+  if (!gameTask.isDone() and !this->interpreter->hasError()) {
     gameTask.resume();
   }
 }
