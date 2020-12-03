@@ -1,16 +1,9 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
 #include "CFGParser.h"
-#include <exception>
 #include <task.h>
 #include <assert.h>
 namespace AST {
-
-class CFGParsingException : public std::exception {
-  public: 
-
-  virtual const char *what() const throw() { return "Expression is invalid"; }
-};
 
 enum class Terminal {
   COMMA,
