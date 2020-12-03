@@ -1,10 +1,16 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
 #include "CFGParser.h"
-
+#include <exception>
 #include <task.h>
-
+#include <assert.h>
 namespace AST {
+
+class CFGParsingException : public std::exception {
+  public: 
+
+  virtual const char *what() const throw() { return "Expression is invalid"; }
+};
 
 enum class Terminal {
   COMMA,
@@ -28,35 +34,29 @@ static std::map<Type, Terminal> TypeToTerminal{
 
 struct CFGExpressionWrapper {
   // I will use these Functions //
-  CFGExpressionWrapper(std::vector<CFGExpression> tokens) {
-    size = tokens.size();
-    currentIndex = 0;
+  CFGExpressionWrapper(std::vector<CFGExpression> tokens) : index(0) { 
     for (auto t : tokens) {
       tokensQueue.push(t);
     }
-
-    // Need a way for me to return Terminal::END at the very end
   }
 
   Terminal getTerminal() {
-    if (currentIndex < size) {
+    if (index < tokensQueue.size()) {
       return TypeToTerminal[tokensQueue.front().getType()];
     } else {
       return Terminal::END;
     }
-
-  } // If it is out of bounds, return Terminal::END.
+  } 
   CFGExpression front() { return tokensQueue.front(); }
   void next_token() {
     tokensQueue.pop();
-    currentIndex++;
+    index++;
   }
   std::string getValue() { return tokensQueue.front().getValue(); }
   Type getType() { return tokensQueue.front().getType(); }
   // ----------------------------
 private:
-  int size;
-  int currentIndex;
+  int index;
   std::queue<CFGExpression> tokensQueue;
 };
 
@@ -64,7 +64,7 @@ struct ExpressionASTParser {
   ExpressionASTParser(std::string str) : CFGTokens(parseToCFGExpression(str)) {}
 
   std::unique_ptr<ExpressionNode> parse_S() { // S -> E END_TOKEN
-    auto &&result = empty_parse();
+    std::unique_ptr<ExpressionNode> result;
     while (CFGTokens.getTerminal() != Terminal::END) {
       result = parse_E();
     }
@@ -72,11 +72,12 @@ struct ExpressionASTParser {
   }
 
   std::unique_ptr<ExpressionNode> parse_E() { // E -> T E'
-    auto &&result = parse_T();
+    std::unique_ptr<ExpressionNode> result = parse_T();
 
     while (CFGTokens.getTerminal() == Terminal::BIN) { // E'-> BIN TE' | epsilon
       Type binaryOperator = CFGTokens.getType();
       CFGTokens.next_token();
+      assert(isT());
       auto &&right = parse_T();
       result = std::make_unique<BinaryNode>(std::move(result), std::move(right),
                                             binaryOperator);
@@ -85,7 +86,7 @@ struct ExpressionASTParser {
   }
 
   std::unique_ptr<ExpressionNode> parse_T() { // T -> UN T | F | (E)
-    auto &&result = empty_parse();
+    std::unique_ptr<ExpressionNode> result;
 
     if (CFGTokens.getTerminal() == Terminal::UN) {
       auto unaryOperator = CFGTokens.getType();
@@ -102,6 +103,7 @@ struct ExpressionASTParser {
     if (CFGTokens.getTerminal() == Terminal::OPENPAR) {
       CFGTokens.next_token();
       result = parse_E();
+      assert(CFGTokens.getTerminal() == Terminal::CLOSEPAR);
       CFGTokens.next_token();
     }
 
@@ -109,12 +111,12 @@ struct ExpressionASTParser {
   }
 
   std::unique_ptr<ExpressionNode> parse_F() { // F -> P F'
-    auto &&result = parse_P();
+    std::unique_ptr<ExpressionNode> result = parse_P();
 
     while (CFGTokens.getTerminal() == Terminal::DOT) { // F'-> DOT PF' | epsilon
       Type DOT = CFGTokens.getType();
       CFGTokens.next_token();
-
+      assert(isP());
       auto &&right = parse_P();
       result = std::make_unique<BinaryNode>(std::move(result), std::move(right),
                                             DOT);
@@ -126,22 +128,24 @@ struct ExpressionASTParser {
   // P -> ID(arglist) | ID | epsilon
   std::unique_ptr<ExpressionNode> parse_P() {
 
-    auto &&result = empty_parse();
+    std::unique_ptr<ExpressionNode> result;
 
     if (CFGTokens.getTerminal() != Terminal::ID) { // epsilon
       return std::move(result);
     }
 
-    else {
+    else if(CFGTokens.getTerminal() == Terminal::ID){
       result = std::make_unique<VariableExpression>(CFGTokens.getValue());
       CFGTokens.next_token();
 
       if (CFGTokens.getTerminal() == Terminal::OPENPAR) {
         CFGTokens.next_token();
         result = std::make_unique<FunctionCallNode>(std::move(result),
-                                                    std::move(parse_arg()));
-        CFGTokens.next_token(); // TODO: CHECK IF CLOSE PAR THEN THROW EXCEPTION
-                                // INSTEAD
+                                                    std::move(parse_arg())); 
+        
+        assert(CFGTokens.getTerminal() == Terminal::CLOSEPAR);
+        CFGTokens.next_token(); 
+                                
       }
     }
 
@@ -155,6 +159,7 @@ struct ExpressionASTParser {
       args.push_back(parse_E());
       if (CFGTokens.getTerminal() == Terminal::COMMA) { // E, arglist
         CFGTokens.next_token();
+        assert(isE());  //if there is a comma, we expect another E
       }
     }
 
@@ -165,7 +170,8 @@ struct ExpressionASTParser {
     return std::make_unique<VariableExpression>("");
   }
 
-  bool isE() { // E -> T -> UN T | F | (E)         F -> P -> ID
+  // E T F P arg
+  bool isT() { // E -> T -> UN T | F | (E)         F -> P -> ID
     if ((CFGTokens.getTerminal() == Terminal::UN) ||
         (CFGTokens.getTerminal() == Terminal::ID) ||
         (CFGTokens.getTerminal() == Terminal::OPENPAR)) {
@@ -174,7 +180,9 @@ struct ExpressionASTParser {
       return false;
     }
   }
-
+  bool isE() { return isT() ;}
+  bool isP() { return (CFGTokens.getTerminal() == Terminal::ID) ; }
+  
 private:
   CFGExpressionWrapper CFGTokens;
 };
