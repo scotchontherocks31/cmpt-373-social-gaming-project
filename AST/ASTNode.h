@@ -48,14 +48,7 @@ class ExpressionNode : public ASTNode {};
 
 class FormatNode : public ASTNode { // parser complete
 public:
-  explicit FormatNode(std::string format,
-                      std::vector<std::unique_ptr<ExpressionNode>> expressions =
-                          std::vector<std::unique_ptr<ExpressionNode>>())
-      : format{std::move(format)} {
-    for (auto &arg : expressions) {
-      appendChild(std::move(arg));
-    }
-  }
+  explicit FormatNode(std::string format) : format{std::move(format)} {}
   const std::string &getFormat() const { return format; }
 
 private:

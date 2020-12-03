@@ -82,48 +82,7 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
   EXPECT_EQ(output, answer);
 }
 
-TEST(ASTprinter, GlobalMessageWithExpression) {
-  // create environment
 
-  // AST::Environment parent;
-  auto parent = std::make_unique<AST::Environment>();
-
-  Json playerJson;
-  playerJson["id"] = 1;
-  playerJson["name"] = "Mike Tyson";
-
-  Symbol symbol = Symbol{DSLValue{playerJson}, false};
-
-  AST::Environment::Name key = "A";
-  auto child = parent->createChildEnvironment();
-  child.allocate(key, symbol);
-  EXPECT_EQ(symbol.dsl, child.find(key));
-
-  // make printer visitor
-  AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
-
-  std::unique_ptr<AST::GlobalMessage> mess =
-      std::make_unique<AST::GlobalMessage>(
-          std::make_unique<AST::FormatNode>(std::string{
-              "Hello, {player.name} is the {player.id} boxer in the world"}));
-
-  auto root = AST::AST(std::move(mess));
-
-  std::stringstream stream;
-
-  AST::Printer printer = AST::Printer{stream};
-
-  auto task = root.accept(printer);
-  while (task.resume()) {
-  }
-
-  std::string answer = "(GlobalMessage(FormatNode\"Hello, {player.name} is the "
-                       "{player.id} boxer in the world\"))";
-  std::string output = printer.returnOutput();
-
-  EXPECT_EQ(output, answer);
-}
 
 TEST(ASTprinter, ParallelForandInput) {
 
@@ -190,12 +149,7 @@ TEST(ExpressionNodes, FormatNodeExpressionParsing) {
   while (task.resume()) {
   }
   std::string answer =
-      "(Rules(GlobalMessage(FormatNode\"{player.name}is your favorite "
-      "person,fav food is {player.food},and # of players "
-      "is{players.size}\"(BinaryNode:\".\"(VariableExpression\"player\")("
-      "VariableExpression\"name\"))(BinaryNode:\".\"("
-      "VariableExpression\"player\")(VariableExpression\"food\"))(BinaryNode:"
-      "\".\"(VariableExpression\"players\")(VariableExpression\"size\")))))";
+      "(Rules(GlobalMessage(FormatNode\"{player.name}is your favorite person,fav food is {player.food},and # of players is{players.size}\")))";
   std::string output = printer.returnOutput();
 
   EXPECT_EQ(output, answer);
