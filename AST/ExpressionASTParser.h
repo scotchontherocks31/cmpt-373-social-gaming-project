@@ -109,7 +109,7 @@ struct ExpressionASTParser {
     while (CFGTokens.getTerminal() == Terminal::DOT) { // F'-> DOT PF' | epsilon
       Type DOT = CFGTokens.getType();
       CFGTokens.next_token();
-      assert(isP());
+      assert(  (isP() , "ID Expected for the next token") );
       auto &&right = parse_P();
       result = std::make_unique<BinaryNode>(std::move(result), std::move(right),
                                             DOT);
