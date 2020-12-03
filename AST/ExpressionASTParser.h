@@ -27,8 +27,8 @@ static std::map<Type, Terminal> TypeToTerminal{
 
 struct CFGExpressionWrapper {
   // I will use these Functions //
-  CFGExpressionWrapper(std::vector<CFGExpression> tokens){
-    
+  CFGExpressionWrapper(std::vector<CFGExpression> tokens) {
+
     for (auto t : tokens) {
       tokensQueue.push(t);
     }
@@ -42,10 +42,7 @@ struct CFGExpressionWrapper {
     }
   }
   CFGExpression front() { return tokensQueue.front(); }
-  void next_token() {
-    tokensQueue.pop();
-
-  }
+  void next_token() { tokensQueue.pop(); }
   std::string getValue() { return tokensQueue.front().getValue(); }
   Type getType() { return tokensQueue.front().getType(); }
   // ----------------------------
@@ -109,7 +106,7 @@ struct ExpressionASTParser {
     while (CFGTokens.getTerminal() == Terminal::DOT) { // F'-> DOT PF' | epsilon
       Type DOT = CFGTokens.getType();
       CFGTokens.next_token();
-      assert(  (isP() , "ID Expected for the next token") );
+      assert((isP(), "ID Expected for the next token"));
       auto &&right = parse_P();
       result = std::make_unique<BinaryNode>(std::move(result), std::move(right),
                                             DOT);
