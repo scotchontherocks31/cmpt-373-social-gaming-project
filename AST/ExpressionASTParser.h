@@ -27,14 +27,15 @@ static std::map<Type, Terminal> TypeToTerminal{
 
 struct CFGExpressionWrapper {
   // I will use these Functions //
-  CFGExpressionWrapper(std::vector<CFGExpression> tokens) : index(0) {
+  CFGExpressionWrapper(std::vector<CFGExpression> tokens){
+    
     for (auto t : tokens) {
       tokensQueue.push(t);
     }
   }
 
   Terminal getTerminal() {
-    if (index < tokensQueue.size()) {
+    if (!tokensQueue.empty()) {
       return TypeToTerminal[tokensQueue.front().getType()];
     } else {
       return Terminal::END;
@@ -43,13 +44,12 @@ struct CFGExpressionWrapper {
   CFGExpression front() { return tokensQueue.front(); }
   void next_token() {
     tokensQueue.pop();
-    index++;
+
   }
   std::string getValue() { return tokensQueue.front().getValue(); }
   Type getType() { return tokensQueue.front().getType(); }
   // ----------------------------
 private:
-  int index;
   std::queue<CFGExpression> tokensQueue;
 };
 
@@ -57,7 +57,7 @@ struct ExpressionASTParser {
   ExpressionASTParser(std::string str) : CFGTokens(parseToCFGExpression(str)) {}
 
   std::unique_ptr<ExpressionNode> parse_S() { // S -> E END_TOKEN
-    std::unique_ptr<ExpressionNode> result;
+    std::unique_ptr<ExpressionNode> result = empty_parse();
     while (CFGTokens.getTerminal() != Terminal::END) {
       result = parse_E();
     }
@@ -79,7 +79,7 @@ struct ExpressionASTParser {
   }
 
   std::unique_ptr<ExpressionNode> parse_T() { // T -> UN T | F | (E)
-    std::unique_ptr<ExpressionNode> result;
+    std::unique_ptr<ExpressionNode> result = empty_parse();
 
     if (CFGTokens.getTerminal() == Terminal::UN) {
       auto unaryOperator = CFGTokens.getType();
@@ -121,7 +121,7 @@ struct ExpressionASTParser {
   // P -> ID(arglist) | ID | epsilon
   std::unique_ptr<ExpressionNode> parse_P() {
 
-    std::unique_ptr<ExpressionNode> result;
+    std::unique_ptr<ExpressionNode> result = empty_parse();
 
     if (CFGTokens.getTerminal() != Terminal::ID) { // epsilon
       return std::move(result);
