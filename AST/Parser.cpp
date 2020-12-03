@@ -92,7 +92,7 @@ std::unique_ptr<AllSwitchCases> JSONToASTParser::parseSwitchCases(const Json &js
 
   for (const auto &node : json) {
     auto &&value = parseFormatNode(node["case"]);
-    auto &&rules = parseRule(node["rules"]);
+    auto &&rules = parseRules(node["rules"]);
     auto &&x = std::make_unique<SwitchCase>(std::move(value), std::move(rules));
     casePtr->appendChild(std::move(x));
   }
@@ -107,7 +107,7 @@ std::unique_ptr<AllWhenCases> JSONToASTParser::parseWhenCases(const Json &json){
 
   for (const auto &node : json) {
     auto &&cond = parseCondition(node["condition"]);
-    auto &&rules = parseRule(node["rules"]);
+    auto &&rules = parseRules(node["rules"]);
     auto &&x = std::make_unique<WhenCase>(std::move(cond), std::move(rules));
     casePtr->appendChild(std::move(x));
   }

@@ -83,6 +83,7 @@ public:
   const std::string &getCond() const { return cond; }
 private:
   std::string cond;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Message : public ASTNode {
@@ -113,13 +114,14 @@ private:
 class Scores : public ASTNode {
 public:
   explicit Scores(std::unique_ptr<Variable> &&score,
-                  bool& ascending){
+                  const bool& ascending){
     appendChild(std::move(score));
     this->ascending = ascending;
   }
 
 private:
   bool ascending;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Rules : public ASTNode {
@@ -139,6 +141,9 @@ public:
   void appendChild(std::unique_ptr<ASTNode> &&child) {
     ASTNode::appendChild(std::move(child));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class AllWhenCases : public ASTNode {
@@ -147,24 +152,33 @@ public:
   void appendChild(std::unique_ptr<ASTNode> &&child) {
     ASTNode::appendChild(std::move(child));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class WhenCase : public ASTNode {
 public:
   WhenCase(std::unique_ptr<Condition> &&cond,
-                std::unique_ptr<Rules> &&rules){
+           std::unique_ptr<Rules> &&rules){
     appendChild(std::move(cond));
     appendChild(std::move(rules));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class SwitchCase : public ASTNode {
 public:
   SwitchCase(std::unique_ptr<FormatNode> &&value,
-                  std::unique_ptr<Rules> &&rules){
+             std::unique_ptr<Rules> &&rules){
     appendChild(std::move(value));
     appendChild(std::move(rules));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class InputChoice : public ASTNode {
@@ -201,6 +215,7 @@ public:
 
 private:
   int timeout;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class InputText : public ASTNode {
@@ -269,6 +284,7 @@ public:
 
 private:
   int timeout;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class ParallelFor : public ASTNode {
@@ -294,6 +310,9 @@ public:
     appendChild(std::move(varDeclaration));
     appendChild(std::move(rules));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Loop : public ASTNode {
@@ -303,6 +322,9 @@ public:
     appendChild(std::move(condition));
     appendChild(std::move(rules));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class InParallel : public ASTNode {
@@ -310,6 +332,9 @@ public:
   InParallel(std::unique_ptr<Rules> &&rules){
     appendChild(std::move(rules));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Reverse : public ASTNode {
@@ -317,6 +342,9 @@ public:
   Reverse(std::unique_ptr<Variable> &&variable){
     appendChild(std::move(variable));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Switch : public ASTNode {
@@ -328,6 +356,9 @@ public:
     appendChild(std::move(list));
     appendChild(std::move(cases));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class When : public ASTNode {
@@ -335,6 +366,9 @@ public:
   When(std::unique_ptr<AllWhenCases> &&cases){
     appendChild(std::move(cases));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Extend : public ASTNode {
@@ -344,6 +378,9 @@ public:
     appendChild(std::move(target));
     appendChild(std::move(list));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Shuffle : public ASTNode {
@@ -351,6 +388,9 @@ public:
   Shuffle(std::unique_ptr<Variable> &&variable){
     appendChild(std::move(variable));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Sort : public ASTNode {
@@ -362,6 +402,9 @@ public:
   void addAttribute(std::unique_ptr<Variable> &&attr){
     appendChild(std::move(attr));
   }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Deal : public ASTNode{
@@ -373,8 +416,10 @@ public:
     appendChild(std::move(toList));
     
   }
+
 private:
   int count;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Discard : public ASTNode{
@@ -384,8 +429,10 @@ public:
     appendChild(std::move(fromList));
     this->count = count;
   }
+
 private:
   int count;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Add : public ASTNode{
@@ -395,8 +442,10 @@ public:
     appendChild(std::move(intVar));
     this->value = value;
   }
+
 private:
   int value;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class Timer : public ASTNode{//needs to be modified for modes
@@ -414,6 +463,7 @@ public:
 
 private:
   int duration;
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
 class AST {
