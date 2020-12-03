@@ -52,9 +52,9 @@ JSONToASTParser::parseGlobalMessage(const Json &json) {
 
 std::unique_ptr<Scores> JSONToASTParser::parseScores(const Json &json){
 
-  auto &&score = parseIntContainer(json["score"]);
-  auto &&ascending = parseCondition(json["ascending"]);
-  return std::make_unique<Scores>(std::move(score), std::move(ascending));
+  auto &&score = parseVariable(json["score"]);
+  auto ascending = json["ascending"];
+  return std::make_unique<Scores>(std::move(score), ascending);
 }
 
 std::unique_ptr<ParallelFor>
@@ -83,14 +83,7 @@ std::unique_ptr<Condition> JSONToASTParser::parseCondition(const std::string &st
 
   return std::make_unique<Condition>(std::move(str));
 }
-std::unique_ptr<Key> JSONToASTParser::parseKey(const std::string &str){
 
-  return std::make_unique<Key>(std::move(str));
-}
-std::unique_ptr<IntContainer> JSONToASTParser::parseIntContainer(const int &intVal){
-
-  return std::make_unique<IntContainer>(std::move(intVal));
-}
 std::unique_ptr<AllSwitchCases> JSONToASTParser::parseSwitchCases(const Json &json){
 
   auto casePtr = std::make_unique<AllSwitchCases>();
@@ -105,6 +98,7 @@ std::unique_ptr<AllSwitchCases> JSONToASTParser::parseSwitchCases(const Json &js
   }
   return casePtr;
 }
+
 std::unique_ptr<AllWhenCases> JSONToASTParser::parseWhenCases(const Json &json){
 
   auto casePtr = std::make_unique<AllWhenCases>();
@@ -129,6 +123,7 @@ std::unique_ptr<ForEach> JSONToASTParser::parseForEach(const Json &json){
   return std::make_unique<ForEach>(std::move(var), std::move(varDec),
                                        std::move(rules));
 }
+
 std::unique_ptr<Loop> JSONToASTParser::parseLoop(const Json &json){
 
   if(json.contains("until")){
@@ -143,6 +138,7 @@ std::unique_ptr<Loop> JSONToASTParser::parseLoop(const Json &json){
     return std::make_unique<Loop>(std::move(cond), std::move(rules));
   }
 }
+
 std::unique_ptr<InParallel> JSONToASTParser::parseInParallel(const Json &json){
   //may be subject to change to allow coroutines to facilitate the array of rules within
   auto &&rules = parseRules(json["rules"]);
@@ -190,7 +186,7 @@ std::unique_ptr<Sort> JSONToASTParser::parseSort(const Json &json){
   auto &&list = parseVariable(json["list"]);
   auto sortPointer = std::make_unique<Sort>(std::move(list));
   if(json.contains("key")){
-    auto&& key = parseKey(json["key"]);
+    auto&& key = parseVariable(json["key"]);
     sortPointer->addAttribute(std::move(key));
   }
 
@@ -200,31 +196,27 @@ std::unique_ptr<Deal> JSONToASTParser::parseDeal(const Json &json){
 
   auto &&from = parseVariable(json["from"]);
   auto &&to = parseVariable(json["to"]);
-  auto &&count = parseIntContainer(json["count"]);
 
-  return std::make_unique<Deal>(std::move(from), std::move(to), std::move(count));
+  return std::make_unique<Deal>(std::move(from), std::move(to), json["count"]);
 }
 std::unique_ptr<Discard> JSONToASTParser::parseDiscard(const Json &json){
 
   auto &&from = parseVariable(json["from"]);
-  auto &&count = parseIntContainer(json["count"]);
 
-  return std::make_unique<Discard>(std::move(from), std::move(count));
+  return std::make_unique<Discard>(std::move(from), json["count"]);
 }
 
 std::unique_ptr<Add> JSONToASTParser::parseAdd(const Json &json){
 
   auto &&var = parseVariable(json["to"]);
-  auto &&value = parseIntContainer(json["value"]);
 
-  return std::make_unique<Add>(std::move(var), std::move(value));
+  return std::make_unique<Add>(std::move(var), json["value"]);
 }
 std::unique_ptr<Timer> JSONToASTParser::parseTimer(const Json &json){
 
-  auto &&duration = parseIntContainer(json["duration"]);
   auto &&mode = parseVariable(json["mode"]);
   auto &&rules = parseRules(json["rules"]);
-  auto timerPointer = std::make_unique<Timer>(std::move(duration), std::move(mode), std::move(rules));
+  auto timerPointer = std::make_unique<Timer>(json["duration"], std::move(mode), std::move(rules));
 
   if(json.contains("flag")){
     auto&& flag = parseCondition(json["flag"]);
@@ -244,10 +236,8 @@ std::unique_ptr<InputChoice> JSONToASTParser::parseInputChoice(const Json &json)
   auto inputChoicePtr = std::make_unique<InputChoice>(std::move(prompt), std::move(to), std::move(choices), std::move(result));
 
   if(json.contains("timeout")){
-    auto &&timeout = parseIntContainer(json["timeout"]);
-    inputChoicePtr->addTimeout(std::move(timeout));
+    inputChoicePtr->setTimeout(json["timeout"]);
   }
-
   return inputChoicePtr;
 }
 std::unique_ptr<InputText> JSONToASTParser::parseInputText(const Json &json){
@@ -259,10 +249,8 @@ std::unique_ptr<InputText> JSONToASTParser::parseInputText(const Json &json){
   auto inputTextPtr = std::make_unique<InputText>(std::move(prompt), std::move(to), std::move(result));
 
   if(json.contains("timeout")){
-    auto &&timeout = parseIntContainer(json["timeout"]);
-    inputTextPtr->addTimeout(std::move(timeout));
+    inputTextPtr->setTimeout(json["timeout"]);
   }
-
   return inputTextPtr;
 }
 std::unique_ptr<InputVote> JSONToASTParser::parseInputVote(const Json &json){
@@ -275,10 +263,8 @@ std::unique_ptr<InputVote> JSONToASTParser::parseInputVote(const Json &json){
   auto inputVotePtr = std::make_unique<InputVote>(std::move(prompt), std::move(to), std::move(choices), std::move(result));
 
   if(json.contains("timeout")){
-    auto &&timeout = parseIntContainer(json["timeout"]);
-    inputVotePtr->addTimeout(std::move(timeout));
+    inputVotePtr->setTimeout(json["timeout"]);
   }
-
   return inputVotePtr;
 }
 } // namespace AST

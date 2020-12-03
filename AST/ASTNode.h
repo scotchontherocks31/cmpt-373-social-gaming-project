@@ -85,22 +85,6 @@ private:
   std::string cond;
 };
 
-class Key : public ASTNode {
-public:
-  explicit Key(std::string attribute) : attribute{std::move(attribute)} {}
-  const std::string &getAttr() const { return attribute; }
-private:
-  std::string attribute;
-};
-
-class IntContainer : public ASTNode {
-public:
-  explicit IntContainer(int value) : value{value} {}
-  const int &getValue() const { return value; }
-private:
-  int value;
-};
-
 class Message : public ASTNode {
 public:
   explicit Message(std::unique_ptr<VarDeclaration> &&to,
@@ -129,10 +113,13 @@ private:
 class Scores : public ASTNode {
 public:
   explicit Scores(std::unique_ptr<Variable> &&score,
-                  std::unique_ptr<Condition> &&ascending){
+                  bool& ascending){
     appendChild(std::move(score));
-    appendChild(std::move(ascending));
+    this->ascending = ascending;
   }
+
+private:
+  bool ascending;
 };
 
 class Rules : public ASTNode {
@@ -162,8 +149,6 @@ public:
   }
 };
 
-
-
 class WhenCase : public ASTNode {
 public:
   WhenCase(std::unique_ptr<Condition> &&cond,
@@ -176,7 +161,7 @@ public:
 class SwitchCase : public ASTNode {
 public:
   SwitchCase(std::unique_ptr<FormatNode> &&value,
-                      std::unique_ptr<Rules> &&rules){
+                  std::unique_ptr<Rules> &&rules){
     appendChild(std::move(value));
     appendChild(std::move(rules));
   }
@@ -192,10 +177,14 @@ public:
     appendChild(std::move(to));
     appendChild(std::move(choices));
     appendChild(std::move(result));
+    this->timeout = 0;
   }
 
-  void addTimeout(std::unique_ptr<IntContainer> &&duration) {//Optional timeout case
-    appendChild(std::move(duration));
+  void setTimeout(const int& timeout){
+    this->timeout = timeout;
+  }
+  int getTimeout() const{
+    return this->timeout;
   }
   const FormatNode &getPrompt() const {
     return *static_cast<FormatNode *>(children[0].get());
@@ -209,6 +198,9 @@ public:
   const VarDeclaration &getResult() const {
     return *static_cast<VarDeclaration *>(children[4].get());
   }
+
+private:
+  int timeout;
 };
 
 class InputText : public ASTNode {
@@ -219,10 +211,14 @@ public:
     appendChild(std::move(prompt));
     appendChild(std::move(to));
     appendChild(std::move(result));
+    this->timeout = 0;
   }
 
-  void addTimeout(std::unique_ptr<IntContainer> &&duration) {//Optional timeout case
-    appendChild(std::move(duration));
+  void setTimeout(const int& timeout){
+    this->timeout = timeout;
+  }
+  int getTimeout() const{
+    return this->timeout;
   }
   const FormatNode &getPrompt() const {
     return *static_cast<FormatNode *>(children[0].get());
@@ -235,6 +231,7 @@ public:
   }
 
 private:
+  int timeout;
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
@@ -248,10 +245,14 @@ public:
     appendChild(std::move(to));
     appendChild(std::move(choices));
     appendChild(std::move(result));
+    this->timeout = 0;
   }
 
-  void addTimeout(std::unique_ptr<IntContainer> &&duration) {//Optional timeout case
-    appendChild(std::move(duration));
+  void setTimeout(const int& timeout){
+    this->timeout = timeout;
+  }
+  int getTimeout() const{
+    return this->timeout;
   }
   const FormatNode &getPrompt() const {
     return *static_cast<FormatNode *>(children[0].get());
@@ -265,6 +266,9 @@ public:
   const VarDeclaration &getResult() const {
     return *static_cast<VarDeclaration *>(children[4].get());
   }
+
+private:
+  int timeout;
 };
 
 class ParallelFor : public ASTNode {
@@ -355,7 +359,7 @@ public:
     appendChild(std::move(listToSort));
   }
 
-  void addAttribute(std::unique_ptr<Key> &&attr){
+  void addAttribute(std::unique_ptr<Variable> &&attr){
     appendChild(std::move(attr));
   }
 };
@@ -364,37 +368,42 @@ class Deal : public ASTNode{
 public:
   Deal(std::unique_ptr<Variable> &&fromList,
        std::unique_ptr<Variable> &&toList,
-       std::unique_ptr<IntContainer> &&count){
+       const int& count){
     appendChild(std::move(fromList));
     appendChild(std::move(toList));
-    appendChild(std::move(count));
+    
   }
+private:
+  int count;
 };
 
 class Discard : public ASTNode{
 public:
   Discard(std::unique_ptr<Variable> &&fromList,
-          std::unique_ptr<IntContainer> &&count){
+          const int& count){
     appendChild(std::move(fromList));
-    appendChild(std::move(count));
+    this->count = count;
   }
+private:
+  int count;
 };
 
 class Add : public ASTNode{
 public:
   Add(std::unique_ptr<Variable> &&intVar,
-      std::unique_ptr<IntContainer> &&Add){
+      const int& value){
     appendChild(std::move(intVar));
-    appendChild(std::move(Add));
+    this->value = value;
   }
+private:
+  int value;
 };
 
 class Timer : public ASTNode{//needs to be modified for modes
 public:
-  Timer(std::unique_ptr<IntContainer> &&duration,
+  Timer(const int& duration,
         std::unique_ptr<Variable> &&mode,
         std::unique_ptr<Rules> &&rules){
-    appendChild(std::move(duration));
     appendChild(std::move(mode));
     appendChild(std::move(rules));
   }
@@ -402,6 +411,9 @@ public:
   void addFlag(std::unique_ptr<Condition> &&cond){
     appendChild(std::move(cond));
   }
+
+private:
+  int duration;
 };
 
 class AST {

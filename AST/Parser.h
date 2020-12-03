@@ -47,8 +47,6 @@ private:
   std::unique_ptr<VarDeclaration> parseVarDeclaration(const std::string &);
   std::unique_ptr<Variable> parseVariable(const std::string &);
   std::unique_ptr<Condition> parseCondition(const std::string &);
-  std::unique_ptr<Key> parseKey(const std::string &);
-  std::unique_ptr<IntContainer> parseIntContainer(const int &);
   std::unique_ptr<AllSwitchCases> parseSwitchCases(const Json &);
   std::unique_ptr<AllWhenCases> parseWhenCases(const Json &);
 
