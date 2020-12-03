@@ -34,47 +34,6 @@ std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
   }
 }
 
-std::regex PLACEHOLDER("\\{([^}]*)\\}");
-
-class myexception : public std::exception {
-  virtual const char *what() const throw() {
-    return "Expression is invalid in Format Parsing";
-  }
-};
-
-std::optional<std::string> getFirstMatch(std::string str) {
-  std::smatch match;
-  if (std::regex_search(str, match, PLACEHOLDER)) {
-    return match.str(0);
-  }
-  return {};
-}
-
-std::vector<std::unique_ptr<ExpressionNode>>
-extractExpressionsHelper(std::string str) {
-
-  std::vector<std::unique_ptr<ExpressionNode>> expressions;
-
-  std::optional<std::string> matchOpt = getFirstMatch(str);
-  while (matchOpt) {
-    try {
-
-      auto match = (matchOpt.value()).substr(1, (matchOpt.value()).size() - 2);
-      auto start_position_to_erase = str.find(match);
-      str.erase(start_position_to_erase - 1, match.size() + 2);
-
-      ExpressionASTParser rdp(match);
-
-      expressions.push_back(rdp.parse_S());
-      matchOpt = getFirstMatch(str);
-
-    } catch (const std::bad_optional_access &e) {
-      throw myexception();
-    }
-  }
-
-  return expressions;
-}
 
 std::unique_ptr<FormatNode> JSONToASTParser::parseFormatNode(const Json &json) {
   std::vector<std::unique_ptr<ExpressionNode>> expressions =
