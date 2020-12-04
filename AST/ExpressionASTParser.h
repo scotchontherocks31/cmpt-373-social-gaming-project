@@ -1,9 +1,13 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
 #include "CFGParser.h"
-#include <assert.h>
 #include <task.h>
+#include <exception>
 namespace AST {
+
+struct ExpressionASTParserException : public std::exception {
+  virtual const char *what() const throw() { return "Expression is invalid"; }
+};
 
 enum class Terminal {
   COMMA,
@@ -67,7 +71,7 @@ struct ExpressionASTParser {
     while (CFGTokens.getTerminal() == Terminal::BIN) { // E'-> BIN TE' | epsilon
       Type binaryOperator = CFGTokens.getType();
       CFGTokens.next_token();
-      assert(isT());
+      assure(isT());
       auto &&right = parse_T();
       result = std::make_unique<BinaryNode>(std::move(result), std::move(right),
                                             binaryOperator);
@@ -93,7 +97,8 @@ struct ExpressionASTParser {
     if (CFGTokens.getTerminal() == Terminal::OPENPAR) {
       CFGTokens.next_token();
       result = parse_E();
-      assert(CFGTokens.getTerminal() == Terminal::CLOSEPAR);
+      if(CFGTokens.getTerminal() == Terminal::CLOSEPAR){}
+      assure(CFGTokens.getTerminal() == Terminal::CLOSEPAR);
       CFGTokens.next_token();
     }
 
@@ -106,7 +111,7 @@ struct ExpressionASTParser {
     while (CFGTokens.getTerminal() == Terminal::DOT) { // F'-> DOT PF' | epsilon
       Type DOT = CFGTokens.getType();
       CFGTokens.next_token();
-      assert((isP(), "ID Expected for the next token"));
+      assure(isP());
       auto &&right = parse_P();
       result = std::make_unique<BinaryNode>(std::move(result), std::move(right),
                                             DOT);
@@ -133,7 +138,7 @@ struct ExpressionASTParser {
         result = std::make_unique<FunctionCallNode>(std::move(result),
                                                     std::move(parse_arg()));
 
-        assert(CFGTokens.getTerminal() == Terminal::CLOSEPAR);
+        assure(CFGTokens.getTerminal() == Terminal::CLOSEPAR);
         CFGTokens.next_token();
       }
     }
@@ -148,7 +153,7 @@ struct ExpressionASTParser {
       args.push_back(parse_E());
       if (CFGTokens.getTerminal() == Terminal::COMMA) { // E, arglist
         CFGTokens.next_token();
-        assert(isE()); // if there is a comma, we expect another E
+        assure(isE());
       }
     }
 
@@ -171,6 +176,20 @@ struct ExpressionASTParser {
   }
   bool isE() { return isT(); }
   bool isP() { return (CFGTokens.getTerminal() == Terminal::ID); }
+
+  void assure(bool cond){
+    try{
+      if(cond == false){
+        throw ExpressionASTParserException();
+      }
+    } catch (ExpressionASTParserException& e){
+      e.what();
+      exit( EXIT_FAILURE );
+    }
+    
+  }
+
+  
 
 private:
   CFGExpressionWrapper CFGTokens;
