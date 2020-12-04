@@ -1,8 +1,8 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
 #include "CFGParser.h"
-#include <task.h>
 #include <exception>
+#include <task.h>
 namespace AST {
 
 struct ExpressionASTParserException : public std::exception {
@@ -97,7 +97,8 @@ struct ExpressionASTParser {
     if (CFGTokens.getTerminal() == Terminal::OPENPAR) {
       CFGTokens.next_token();
       result = parse_E();
-      if(CFGTokens.getTerminal() == Terminal::CLOSEPAR){}
+      if (CFGTokens.getTerminal() == Terminal::CLOSEPAR) {
+      }
       assure(CFGTokens.getTerminal() == Terminal::CLOSEPAR);
       CFGTokens.next_token();
     }
@@ -177,19 +178,16 @@ struct ExpressionASTParser {
   bool isE() { return isT(); }
   bool isP() { return (CFGTokens.getTerminal() == Terminal::ID); }
 
-  void assure(bool cond){
-    try{
-      if(cond == false){
+  void assure(bool cond) {
+    try {
+      if (cond == false) {
         throw ExpressionASTParserException();
       }
-    } catch (ExpressionASTParserException& e){
+    } catch (ExpressionASTParserException &e) {
       e.what();
-      exit( EXIT_FAILURE );
+      exit(EXIT_FAILURE);
     }
-    
   }
-
-  
 
 private:
   CFGExpressionWrapper CFGTokens;
