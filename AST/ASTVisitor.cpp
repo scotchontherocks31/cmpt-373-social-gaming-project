@@ -44,4 +44,32 @@ coro::Task<> ASTVisitor::visit(ParallelFor &node) {
   }
 }
 
+coro::Task<> ASTVisitor::visit(BinaryNode &node) {
+  auto coroutine = visitHelper(node);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
+coro::Task<> ASTVisitor::visit(UnaryNode &node) {
+  auto coroutine = visitHelper(node);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
+coro::Task<> ASTVisitor::visit(VariableExpression &node) {
+  auto coroutine = visitHelper(node);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
+coro::Task<> ASTVisitor::visit(FunctionCallNode &node) {
+  auto coroutine = visitHelper(node);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
 } // namespace AST
