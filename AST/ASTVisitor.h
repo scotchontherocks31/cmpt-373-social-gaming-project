@@ -710,7 +710,6 @@ private:
 
   void visitEnter(Message &node) { out << "(Message "; };
   void visitLeave(Message &node) { out << ")"; };
-  void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage"; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(Scores &node) { out << "(Scores "; };
