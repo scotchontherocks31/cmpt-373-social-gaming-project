@@ -139,7 +139,6 @@ TEST(ExpressionNodes, FormatNodeExpressionParsing) {
       "is{players.size}\"}]}"});
 
   AST::AST ast = parser.parse(); // AST With GlobalMessage
-
   auto root = AST::AST(std::move(ast));
   std::stringstream stream;
   AST::Printer printer = AST::Printer{stream};
