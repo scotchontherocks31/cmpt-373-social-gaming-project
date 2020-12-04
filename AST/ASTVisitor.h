@@ -2,13 +2,20 @@
 #define AST_VISITOR_H
 
 #include "ASTNode.h"
+#include "DSLValue.h"
+#include "Environment.h"
+#include <algorithm>
 #include <iostream>
+#include <json.hpp>
 #include <map>
+#include <sstream>
 #include <string>
 #include <task.h>
 #include <variant>
 
 namespace AST {
+
+using Json = nlohmann::json;
 
 class Communicator {
 public:
@@ -19,92 +26,6 @@ class PrintCommunicator : public Communicator {
 public:
   void sendGlobalMessage(std::string message) override {
     std::cout << message << std::endl;
-  }
-};
-
-class DSLValue;
-using List = std::vector<DSLValue>;
-using Map = std::map<std::string, DSLValue>;
-
-template <typename T>
-concept DSLType =
-    std::is_convertible<T, bool>::value ||
-    std::is_convertible<T, std::string>::value ||
-    std::is_convertible<T, int>::value ||
-    std::is_convertible<T, double>::value ||
-    std::is_convertible<T, List>::value || std::is_convertible<T, Map>::value;
-
-class DSLValue {
-private:
-  using InternalType =
-      std::variant<std::monostate, bool, std::string, int, double, List, Map>;
-  InternalType value;
-
-public:
-  template <DSLType T>
-  DSLValue(T &&value) noexcept : value{std::forward<T>(value)} {}
-  DSLValue() noexcept = default;
-  DSLValue(const DSLValue &other) noexcept { this->value = other.value; }
-  DSLValue(DSLValue &&other) noexcept { this->value = std::move(other.value); }
-  template <DSLType T> T &get() { return std::get<T>(value); }
-  template <DSLType T> auto &get_if() noexcept { return std::get_if<T>(value); }
-  template <DSLType T> DSLValue &operator=(T &&a) noexcept {
-    value = std::forward<T>(a);
-    return *this;
-  }
-  DSLValue &operator=(const DSLValue &other) noexcept {
-    this->value = other.value;
-    return *this;
-  }
-  DSLValue &operator=(DSLValue &&other) noexcept {
-    this->value = std::move(other.value);
-    return *this;
-  }
-  DSLValue &operator[](const std::string &key) {
-    Map &map = get<Map>();
-    return map[key];
-  }
-  DSLValue &operator[](size_t index) {
-    List &list = get<List>();
-    return list[index];
-  }
-  List createKeyList(const std::string &key) {
-    List returnList{};
-    Map map = get<Map>();
-    for (const auto &[x, y] : map) {
-      returnList.push_back(y);
-    }
-    return returnList;
-  }
-};
-
-class Environment {
-public:
-  using Lexeme = std::string;
-
-private:
-  Environment *parent;
-  std::unique_ptr<Environment> child;
-  std::map<Lexeme, DSLValue> bindings;
-
-public:
-  Environment() : parent{nullptr} {}
-  explicit Environment(Environment *parent) : parent{parent} {}
-  DSLValue &getValue(const Lexeme &lexeme) noexcept { return bindings[lexeme]; }
-  void removeBinding(const Lexeme &lexeme) noexcept {
-    if (bindings.contains(lexeme)) {
-      bindings.erase(lexeme);
-    }
-  }
-  bool contains(const Lexeme &lexeme) noexcept {
-    return bindings.contains(lexeme);
-  }
-  void setBinding(const Lexeme &lexeme, DSLValue value) noexcept {
-    bindings.insert_or_assign(lexeme, std::move(value));
-  }
-  Environment &createChildEnvironment() noexcept {
-    child = std::make_unique<Environment>(this);
-    return *child;
   }
 };
 
@@ -190,10 +111,14 @@ private:
 // and Rules
 class Interpreter : public ASTVisitor {
 public:
-  Interpreter(Environment &&env, Communicator &communicator)
+  Interpreter(std::unique_ptr<Environment> &&env, Communicator &communicator)
       : environment{std::move(env)}, communicator{communicator} {}
 
+  bool hasError() { return errorThrown; }
+
 private:
+  bool errorThrown = false;
+
   coro::Task<> visitHelper(Message &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
@@ -253,13 +178,7 @@ private:
   }
 
   coro::Task<> visitHelper(Rules &node) override {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      auto task = child->accept(*this);
-      while (not task.isDone()) {
-        co_await task;
-      }
-    }
+    co_await visitEnter(node);
     visitLeave(node);
     co_return;
   }
@@ -468,7 +387,15 @@ private:
   void visitEnter(Condition &node){};
   void visitLeave(Condition &node){};
 
-  void visitEnter(Rules &node){};
+  coro::Task<> visitEnter(Rules &node) {
+
+    for (auto &&child : node.getChildren()) {
+      auto task = child->accept(*this);
+      while (not task.isDone()) {
+        co_await task;
+      }
+    }
+  };
   void visitLeave(Rules &node){};
   void visitEnter(AllSwitchCases &node){};
   void visitLeave(AllSwitchCases &node){};
@@ -518,7 +445,7 @@ private:
   void visitLeave(InputVote &node){};
 
 private:
-  Environment environment;
+  std::unique_ptr<Environment> environment;
   Communicator &communicator;
 };
 
@@ -784,20 +711,21 @@ private:
   void visitEnter(Message &node) { out << "(Message "; };
   void visitLeave(Message &node) { out << ")"; };
   void visitEnter(GlobalMessage &node) { out << "(GlobalMessage "; };
+  void visitEnter(GlobalMessage &node) { out << "(GlobalMessage"; };
   void visitLeave(GlobalMessage &node) { out << ")"; };
   void visitEnter(Scores &node) { out << "(Scores "; };
   void visitLeave(Scores &node) { out << ")"; };
 
   void visitEnter(FormatNode &node) {
-    out << "(FormatNode \"" << node.getFormat() << "\" ";
+    out << "(FormatNode \"" << node.getFormat() << "\"";
   };
   void visitLeave(FormatNode &node) { out << ")"; };
   void visitEnter(Variable &node) {
-    out << "(Variable \"" << node.getLexeme() << "\" ";
+    out << "(Variable\"" << node.getLexeme() << "\"";
   };
   void visitLeave(Variable &node) { out << ")"; };
   void visitEnter(VarDeclaration &node) {
-    out << "(VarDeclaration \"" << node.getLexeme() << "\" ";
+    out << "(VarDeclaration\"" << node.getLexeme() << "\"";
   };
   void visitLeave(VarDeclaration &node) { out << ")"; };
   void visitEnter(Condition &node) {
@@ -854,8 +782,15 @@ private:
   void visitEnter(InputVote &node) { out << "(InputVote "; };
   void visitLeave(InputVote &node) { out << ")"; };
 
-private:
   std::ostream &out;
+
+public:
+  std::string returnOutput() {
+    std::stringstream newStream;
+    newStream << out.rdbuf();
+    std::string myString = newStream.str();
+    return myString;
+  }
 };
 
 } // namespace AST

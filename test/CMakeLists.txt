@@ -2,6 +2,8 @@ enable_testing()
 
 add_executable(runAllTests
     ASTTests.cpp
+    DSLValueTest.cpp
+    EnvironmentTest.cpp
 )
 
 set_target_properties(runAllTests 
@@ -10,6 +12,6 @@ set_target_properties(runAllTests
     CXX_STANDARD 20
 )
 
-target_link_libraries(runAllTests gtest gmock gtest_main)
+target_link_libraries(runAllTests json AST gtest gmock gtest_main)
 
 add_test(NAME AllTests COMMAND runAllTests)

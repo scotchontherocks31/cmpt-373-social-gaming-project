@@ -25,7 +25,7 @@ public:
     return returnValue;
   }
   const ASTNode &getParent() const { return *parent; }
-  void setParent(ASTNode *parent) { parent = parent; }
+  void setParent(ASTNode *parent) { this->parent = parent; }
   coro::Task<> accept(ASTVisitor &visitor) {
     auto coroutine = acceptHelper(visitor);
     while (not coroutine.isDone()) {
@@ -296,6 +296,13 @@ public:
     appendChild(std::move(varDeclaration));
     appendChild(std::move(rules));
   }
+  Variable &getListName() const {
+    return *static_cast<Variable *>(children[0].get());
+  }
+  VarDeclaration &getElementName() const {
+    return *static_cast<VarDeclaration *>(children[1].get());
+  }
+  Rules &getRules() const { return *static_cast<Rules *>(children[2].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
