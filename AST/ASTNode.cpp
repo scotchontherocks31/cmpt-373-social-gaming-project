@@ -114,6 +114,20 @@ coro::Task<> InParallel::acceptHelper(ASTVisitor &visitor) {
     co_await coroutine;
   }
 }
+
+coro::Task<> Switch::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
+
+coro::Task<> When::acceptHelper(ASTVisitor &visitor) {
+  auto coroutine = visitor.visit(*this);
+  while (not coroutine.isDone()) {
+    co_await coroutine;
+  }
+}
 //LIST
 coro::Task<> Reverse::acceptHelper(ASTVisitor &visitor) {
   auto coroutine = visitor.visit(*this);
