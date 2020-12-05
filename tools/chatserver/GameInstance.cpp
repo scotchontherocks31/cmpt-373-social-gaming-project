@@ -87,7 +87,8 @@ GameInstance::populateEnvironment(AST::Configurator &config) {
 }
 
 void GameInstance::resumeGame() {
-  while (gameTask.resume() && !waitingForUserInput()) {
+  while (gameTask.resume() and not waitingForUserInput() and
+         not interpreter->hasError()) {
   }
 }
 

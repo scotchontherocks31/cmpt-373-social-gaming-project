@@ -77,7 +77,10 @@ public:
       : environment{std::move(env.envPtr)}, players{std::move(env.players)},
         communicator{communicator} {}
 
+  bool hasError() { return errorThrown; }
+
 private:
+  bool errorThrown = false;
   coro::Task<> visitHelper(GlobalMessage &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {

@@ -65,5 +65,5 @@ private:
   std::map<userid, int> reversePlayerIdMapping;
   std::list<AST::PlayerMessage> inboundMessageQueue;
   coro::Task<> gameTask;
-  std::unique_ptr<AST::ASTVisitor> interpreter;
+  std::unique_ptr<AST::Interpreter> interpreter;
 };
