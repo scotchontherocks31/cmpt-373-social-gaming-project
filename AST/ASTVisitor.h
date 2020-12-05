@@ -68,6 +68,9 @@ public:
       : environment{std::move(env)}, communicator{communicator} {}
 
   bool hasError() { return errorThrown; }
+  std::unique_ptr<Environment> getEnvironment() {
+    return std::move(environment);
+  }
 
 private:
   bool errorThrown = false;
@@ -187,230 +190,231 @@ private:
   void visitEnter(ParallelFor &node){};
   void visitLeave(ParallelFor &node){};
 
-  coro::Task<> visitEnter(BinaryNode &node){
-    auto env = environment->createChildEnvironment(); 
-    std::cout << "(BinaryNode:\"" << typeToString[node.getBinaryOperator()] << "\"";
-    auto &leftChild  = node.getArgOne();
-    auto &rightChild = node.getArgTwo(); 
+  coro::Task<> visitEnter(BinaryNode &node) {
+    auto env = environment->createChildEnvironment();
 
+    auto &leftChild = node.getArgOne();
+    auto &rightChild = node.getArgTwo();
 
-    switch(node.getBinaryOperator()) {
+    if (node.getBinaryOperator() == Type::DOT) {
+
+      auto leftChildTask = leftChild.accept(*this);
+      DSLValue valueLeft;
+      while (not leftChildTask.isDone()) {
+        co_await leftChildTask;
+      }
+
+      auto handleLeft = environment->getReturnValue();
+
+      if (handleLeft) {
+        valueLeft = *handleLeft;
+
+      } else {
+        errorThrown = true;
+        co_return;
+      }
+
+      VariableExpression *rightChildVar =
+          static_cast<VariableExpression *>(&rightChild);
+
+      auto varName = rightChildVar->getLexeme();
+      // std::cout<<"\nleftValue is "<<valueLeft;
+      // std::cout<<"\nwhat is the var name??"<<varName;
+
+      // check to see if the left child is a list or map
+      if (varName == "elements") { // return list as is
+        Symbol symbol = Symbol{valueLeft, false};
+        env.allocateReturn(symbol);
+
+      } else if (true) { // transform into new list, Need to first do check to
+                         // see if it is a list
+
+        // temproray transform
+        std::vector<DSLValue> weapons;
+        for (size_t i = 0; i < valueLeft.size(); ++i) {
+          DSLValue &map = *valueLeft[i];
+          DSLValue &weapon = *map["weapon"];
+          weapons.push_back(weapon);
+        }
+        Symbol symbol = Symbol{weapons, false};
+
+        env.allocateReturn(symbol);
+      } else { // not a list
+        env.allocateReturn(Symbol{*valueLeft[varName], false});
+      }
+    } else {
+      auto leftChildTask = leftChild.accept(*this);
+      DSLValue valueLeft;
+      while (not leftChildTask.isDone()) {
+        co_await leftChildTask;
+      }
+
+      auto handleLeft = environment->getReturnValue();
+
+      if (handleLeft) {
+        valueLeft = *handleLeft;
+
+      } else {
+
+        errorThrown = true;
+        co_return;
+      }
+      auto rightChildTask = rightChild.accept(*this);
+      DSLValue valueRight;
+      while (not rightChildTask.isDone()) {
+        co_await rightChildTask;
+      }
+
+      auto handleRight = environment->getReturnValue();
+
+      if (handleRight) {
+        valueRight = *handleRight;
+
+      } else {
+        errorThrown = true;
+        co_return;
+      }
+
+      switch (node.getBinaryOperator()) {
       case Type::CLOSEPAR:
-        std::cout<<"this is closepar\n";
+
         // TODO
         break;
       case Type::ID:
-        std::cout<<"this is id\n";
+
         // TODO
         break;
-      case Type::DOT:
-      {
-        std::cout<<"this is dot\n";
-        auto leftChildTask = leftChild.accept(*this);
-        DSLValue valueLeft;
-        while (not leftChildTask.isDone()) {
-          co_await leftChildTask;
-        }
-        
-        auto handleLeft = environment->getReturnValue();
+      case Type::EQUALS: {
 
-        if(handleLeft){
-              valueLeft = *handleLeft;
-              std::cout<<"\nthe return value from left child is "<<valueLeft;
-
-        }
-        else{
-          std::cout<<"handle did not work";
+        if (!isSameType(valueRight, valueLeft)) {
+          errorThrown = true;
+          co_return;
         }
 
+        if (valueRight == valueLeft) {
 
-        VariableExpression* rightChildVar = static_cast<VariableExpression*>(&rightChild);
-
-        auto varName = rightChildVar->getLexeme();
-        std::cout<<"\nwhat is the var name??"<<varName;
-
-      
-        // check to see if the left child is a list or map
-        
-        if(varName == "elements"){  // return list as is
-            std::cout<<"\n Encountered elementsc, just return list as is";
-            Symbol symbol = Symbol{valueLeft, false};
-            env.allocateReturn(symbol);
-
-        }
-        else if(true){ // transform into new list
-          std::cout<<"\n size is "<<valueLeft.size();
-          std::vector<DSLValue> elements;
-          //std::map<std::string, DSLValue>;
-
-          for(int i = 0 ; i<valueLeft.size();i++){
-            std::cout<<"\n elem: "<<*valueLeft[i];
-          }
-
-          std::vector<DSL> weaponNames= valueLeft.transform([varName](DSL aMap) -> DSL{aMap[varName]});
-          valueLeft.transform()
-        }
-        else{ // not a list
-          std::cout<<"\n and the name is: "<<*valueLeft[varName];
-          Symbol symbol = Symbol{*valueLeft[varName], false};
-
+          Symbol symbol = Symbol{DSLValue{true}, false};
           env.allocateReturn(symbol);
-          
+        } else {
 
+          Symbol symbol = Symbol{DSLValue{false}, false};
+          env.allocateReturn(symbol);
+        }
+      } break;
+      case Type::NOTEQUALS: {
+
+        if (!isSameType(valueRight, valueLeft)) {
+          errorThrown = true;
+          co_return;
         }
 
-        
+        if (valueRight != valueLeft) {
 
+          Symbol symbol = Symbol{DSLValue{true}, false};
+          env.allocateReturn(symbol);
+        } else {
 
+          Symbol symbol = Symbol{DSLValue{false}, false};
+          env.allocateReturn(symbol);
+        }
       }
-        break;
-      case Type::EQUALS:
-        {
-        std::cout<<"this is equals\n";
-        auto leftChildTask = leftChild.accept(*this);
-        DSLValue valueLeft;
-        while (not leftChildTask.isDone()) {
-          co_await leftChildTask;
-        }
-        
-        auto handleLeft = environment->getReturnValue();
-      
-        if(handleLeft){
-              valueLeft = *handleLeft;
-              std::cout<<"the return left value is "<<valueLeft;
-        }
-        else{
-          std::cout<<"handle did not work";
+
+      break;
+      case Type::GREATER: {
+
+        if (!isSameType(valueRight, valueLeft)) {
+          errorThrown = true;
+          co_return;
         }
 
-        std::cout<<"this is equals\n";
-        auto rightChildTask = rightChild.accept(*this);
-        DSLValue valueRight;
-        while (not rightChildTask.isDone()) {
-          co_await rightChildTask;
-        }
-        
-        auto handleRight = environment->getReturnValue();
-      
-        if(handleRight){
-              valueRight = *handleRight;
-              std::cout<<"the return right value is "<<valueRight;
-        }
-        else{
-          std::cout<<"handle did not work";
-        }
-        
-        // do type check to make sure it is string, int, double, bool
-        if(valueRight == valueLeft){
-          std::cout<<"\n Yes they are equal!\n";
-          Symbol symbol = Symbol{DSLValue{true}, false}; 
-          env.allocateReturn(symbol);
-        }
-        else{
-          std::cout<<"\n Yes they are not equal!\n";
-          Symbol symbol = Symbol{DSLValue{false}, false}; 
-          env.allocateReturn(symbol);
-        }
+        if (valueRight > valueLeft) {
 
-   
+          Symbol symbol = Symbol{DSLValue{true}, false};
+          env.allocateReturn(symbol);
+        } else {
+
+          Symbol symbol = Symbol{DSLValue{false}, false};
+          env.allocateReturn(symbol);
         }
-        break;
-      case Type::NOTEQUALS:
-        std::cout<<"this is NOTEQUALS\n";
-        // TODO
-        break;
-      case Type::GREATER:
-        std::cout<<"this is GREATER\n";
-        // TODO
-        break;
+      } break;
       case Type::LESS:
-        std::cout<<"this is LESS\n";
+
         // TODO
         break;
       case Type::LESSEQUALS:
-        std::cout<<"this is LESSEQUALS\n";
+
         // TODO
         break;
       case Type::COMMA:
-        std::cout<<"this is COMMA\n";
+
         // TODO
         break;
       default:
-          std::cout<<"default";
+        std::cout << "default";
         // code block
+      }
     }
-
-    
-
   };
   void visitLeave(BinaryNode &node){};
 
-  coro::Task<> visitEnter(UnaryNode &node){
-    auto env = environment->createChildEnvironment(); 
-    std::cout << "(UnaryNode:\"" << typeToString[node.getUnaryOperator()] << "\"";
-    auto &child  = node.getArgOne();
+  coro::Task<> visitEnter(UnaryNode &node) {
+    auto env = environment->createChildEnvironment();
 
+    auto &child = node.getArgOne();
 
-    switch(node.getUnaryOperator()) {
-    case Type::NOT:
-      {
-        std::cout<<"this is NOT\n";
-        // TODO
-        auto childTask = child.accept(*this);
-        DSLValue value;
-        while (not childTask.isDone()) {
-          co_await childTask;
-        }
-        
-        auto handle = environment->getReturnValue();
-      
-        if(handle){
-              value = *handle;
-              std::cout<<"the return value is "<<value;
-        }
-        else{
-          std::cout<<"handle did not work";
-        }
+    switch (node.getUnaryOperator()) {
+    case Type::NOT: {
 
-          std::cout<<"\n in unary, allocating ! of "<<value;
-          //Symbol symbol = Symbol{DSLValue{!value}, false}; 
-          Symbol symbol = Symbol{DSLValue{false}, false}; 
+      auto childTask = child.accept(*this);
+      DSLValue value;
+      while (not childTask.isDone()) {
+        co_await childTask;
+      }
 
-          env.allocateReturn(symbol);
+      auto handle = environment->getReturnValue();
+      // check to make sure this is bool
 
-        
-         }
-        break;
-     
-     default:
-          std::cout<<"default";
-        // code block
+      if (handle) {
+        value = *handle;
+      } else {
+        errorThrown = true;
+        co_return;
+      }
+
+      std::cout << "\n in unary, allocating ! of " << value;
+      // DSLValue notValue = value.unaryOperation(Not{});
+      // Symbol symbol = Symbol{notValue, false};
+
+      // env.allocateReturn(symbol);
+
+    } break;
+
+    default:
+      std::cout << "default";
+      // code block
     }
   };
   void visitLeave(UnaryNode &node){};
 
-  void visitEnter(VariableExpression &node){
+  void visitEnter(VariableExpression &node) {
 
-    auto env = environment->createChildEnvironment(); 
-    std::cout << "(VariableExpression\"" << node.getLexeme() << "\"";
+    auto env = environment->createChildEnvironment();
+
     // use find to find the variable
-    
+
     Environment::Name key = node.getLexeme();
-  auto handle = env.find(key);
-  std::cout<<"\n found value: "<<*handle;
+    auto handle = env.find(key);
+    if (!handle) {
+      errorThrown = true;
+      return;
+    }
 
     Symbol symbol = Symbol{*handle, false};
 
-
-    
-
     // set name of variable in allocate return
     env.allocateReturn(symbol);
-
-
   };
   void visitLeave(VariableExpression &node){};
-
 
   void visitEnter(FunctionCallNode &node){};
   void visitLeave(FunctionCallNode &node){};
