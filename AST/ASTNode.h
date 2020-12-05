@@ -46,7 +46,7 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) = 0;
 };
 
-class FormatNode : public ASTNode { // parser complete
+class FormatNode : public ASTNode {
 public:
   explicit FormatNode(std::string format) : format{std::move(format)} {}
   const std::string &getFormat() const { return format; }
@@ -69,7 +69,7 @@ private:
 
 class Condition : public ASTNode {
 public:
-  explicit Condition(std::string cond) : cond{std::move(cond)} {}
+  explicit Condition(std::string cond) : cond{std::move(cond)} {} //takes in an Expression str
   const std::string &getCond() const { return cond; }
 private:
   std::string cond;
@@ -78,12 +78,13 @@ private:
 
 class Message : public ASTNode {
 public:
-  explicit Message(std::unique_ptr<Variable> &&to,
-                   std::unique_ptr<FormatNode> &&value){
+  explicit Message(std::unique_ptr<Variable> &&to,      //assuming it has "player", just store variable name
+                   std::unique_ptr<FormatNode> &&value) //No example to derive from, possibly no Expression needed
+  {
     appendChild(std::move(to));
     appendChild(std::move(value));
   }
-  
+
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
@@ -103,8 +104,9 @@ private:
 
 class Scores : public ASTNode {
 public:
-  explicit Scores(std::unique_ptr<Variable> &&score,
-                  const bool& ascending){
+  explicit Scores(std::unique_ptr<Variable> &&score, //"wins" -> store variable name
+                  const bool &ascending)             //Strong type the incoming boolean
+  {
     appendChild(std::move(score));
     this->ascending = ascending;
   }
@@ -125,7 +127,7 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
-class AllSwitchCases : public ASTNode {
+class AllSwitchCases : public ASTNode {//container for SwitchCase
 public:
   explicit AllSwitchCases() = default;
   void appendChild(std::unique_ptr<ASTNode> &&child) {
@@ -136,7 +138,7 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
-class AllWhenCases : public ASTNode {
+class AllWhenCases : public ASTNode {//container for WhenCase
 public:
   explicit AllWhenCases() = default;
   void appendChild(std::unique_ptr<ASTNode> &&child) {
@@ -149,8 +151,9 @@ private:
 
 class WhenCase : public ASTNode {
 public:
-  WhenCase(std::unique_ptr<Condition> &&cond,
-           std::unique_ptr<Rules> &&rules){
+  WhenCase(std::unique_ptr<Condition> &&cond, //"!players.elements.weapon.contains(weapon.name)" -> Expression
+           std::unique_ptr<Rules> &&rules)
+  {
     appendChild(std::move(cond));
     appendChild(std::move(rules));
   }
@@ -161,7 +164,7 @@ private:
 
 class SwitchCase : public ASTNode {
 public:
-  SwitchCase(std::unique_ptr<FormatNode> &&value,
+  SwitchCase(std::unique_ptr<FormatNode> &&value, //Value to compare with original switch -> Expression
              std::unique_ptr<Rules> &&rules){
     appendChild(std::move(value));
     appendChild(std::move(rules));
@@ -173,10 +176,11 @@ private:
 
 class InputChoice : public ASTNode {
 public:
-  explicit InputChoice(std::unique_ptr<FormatNode> &&prompt,
-                       std::unique_ptr<Variable> &&to,
-                       std::unique_ptr<Variable> &&choices,
-                       std::unique_ptr<Variable> &&result) {
+  explicit InputChoice(std::unique_ptr<FormatNode> &&prompt, //"{player.name}, choose your weapon!" -> Expression
+                       std::unique_ptr<Variable> &&to,       //"player" -> just store variable name
+                       std::unique_ptr<Variable> &&choices,  //"weapons.name" -> Expression
+                       std::unique_ptr<Variable> &&result)   //"player.weapon" -> Expression
+  {
     appendChild(std::move(prompt));
     appendChild(std::move(to));
     appendChild(std::move(choices));
@@ -210,9 +214,10 @@ private:
 
 class InputText : public ASTNode {
 public:
-  explicit InputText(std::unique_ptr<FormatNode> &&prompt,
-                     std::unique_ptr<Variable> &&to,
-                     std::unique_ptr<Variable> &&result) {
+  explicit InputText(std::unique_ptr<FormatNode> &&prompt, //"{player.name}, choose your weapon!" -> Expression
+                     std::unique_ptr<Variable> &&to,       //"player" -> just store variable name
+                     std::unique_ptr<Variable> &&result)   //"player.weapon" -> Expression
+  {
     appendChild(std::move(prompt));
     appendChild(std::move(to));
     appendChild(std::move(result));
@@ -242,10 +247,11 @@ private:
 
 class InputVote : public ASTNode {
 public:
-  explicit InputVote(std::unique_ptr<FormatNode> &&prompt,
-                     std::unique_ptr<Variable> &&to,
-                     std::unique_ptr<Variable> &&choices,
-                     std::unique_ptr<Variable> &&result) {
+  explicit InputVote(std::unique_ptr<FormatNode> &&prompt, //"{player.name}, choose your weapon!" -> Expression
+                     std::unique_ptr<Variable> &&to,       //List variable, will need Expression in case of "a.b"
+                     std::unique_ptr<Variable> &&choices,  //"weapons.name" -> Expression
+                     std::unique_ptr<Variable> &&result)   //"player.weapon" -> Expression
+  {
     appendChild(std::move(prompt));
     appendChild(std::move(to));
     appendChild(std::move(choices));
@@ -279,9 +285,11 @@ private:
 
 class ParallelFor : public ASTNode {
 public:
-  ParallelFor(std::unique_ptr<Variable> &&variable,
-              std::unique_ptr<Variable> &&varDeclaration,
-              std::unique_ptr<Rules> &&rules) {
+  ParallelFor(std::unique_ptr<Variable> &&variable,       //"list": "players"
+                                                          // won't require Expression
+              std::unique_ptr<Variable> &&varDeclaration, //"element": "round", store as Variable string
+              std::unique_ptr<Rules> &&rules)
+  {
     appendChild(std::move(variable));
     appendChild(std::move(varDeclaration));
     appendChild(std::move(rules));
@@ -300,9 +308,11 @@ private:
 
 class ForEach : public ASTNode {
 public:
-  ForEach(std::unique_ptr<Variable> &&variable,
-          std::unique_ptr<Variable> &&varDeclaration,
-          std::unique_ptr<Rules> &&rules) {
+  ForEach(std::unique_ptr<Variable> &&variable,       //"list:" "configuration.Rounds.upfrom(1)"
+                                                      // Therefore, Expression
+          std::unique_ptr<Variable> &&varDeclaration, //"element": "round", store as Variable string
+          std::unique_ptr<Rules> &&rules)
+  {
     appendChild(std::move(variable));
     appendChild(std::move(varDeclaration));
     appendChild(std::move(rules));
@@ -314,8 +324,9 @@ private:
 
 class Loop : public ASTNode {
 public:
-  Loop(std::unique_ptr<Condition> &&condition,
-       std::unique_ptr<Rules> &&rules){
+  Loop(std::unique_ptr<Condition> &&condition, //<< Condition that may fail >> -> Expression
+       std::unique_ptr<Rules> &&rules)
+  {
     appendChild(std::move(condition));
     appendChild(std::move(rules));
   }
@@ -334,21 +345,12 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
-class Reverse : public ASTNode {
-public:
-  Reverse(std::unique_ptr<Variable> &&variable){
-    appendChild(std::move(variable));
-  }
-
-private:
-  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
-};
-
 class Switch : public ASTNode {
 public:
-  Switch(std::unique_ptr<FormatNode> &&value,
-         std::unique_ptr<Variable> &&list,
-         std::unique_ptr<AllSwitchCases> &&cases){
+  Switch(std::unique_ptr<FormatNode> &&value, //<< value to switch upon >> -> Expression
+         std::unique_ptr<Variable> &&list,    //<< name of a constant list of allowable values >> no Expression needed
+         std::unique_ptr<AllSwitchCases> &&cases)
+  {
     appendChild(std::move(value));
     appendChild(std::move(list));
     appendChild(std::move(cases));
@@ -368,10 +370,24 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
+class Reverse : public ASTNode
+{
+public:
+  Reverse(std::unique_ptr<Variable> &&variable) //<< variable name of a list to reverse >>
+  {
+    appendChild(std::move(variable));
+  }
+
+private:
+  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
+};
+
 class Extend : public ASTNode {
 public:
-  Extend(std::unique_ptr<Variable> &&target,
-         std::unique_ptr<Variable> &&list){
+  Extend(std::unique_ptr<Variable> &&target, //<< variable name of a list to extend with another list >>
+         std::unique_ptr<Variable> &&list)   //"players.elements.collect(player, player.weapon == weapon.beats)"
+                                             // Therefore, Expression for "list"
+  {
     appendChild(std::move(target));
     appendChild(std::move(list));
   }
@@ -382,7 +398,8 @@ private:
 
 class Shuffle : public ASTNode {
 public:
-  Shuffle(std::unique_ptr<Variable> &&variable){
+  Shuffle(std::unique_ptr<Variable> &&variable)       //<< variable name of a list to shuffle >>
+  {
     appendChild(std::move(variable));
   }
 
@@ -392,11 +409,16 @@ private:
 
 class Sort : public ASTNode {
 public:
-  Sort(std::unique_ptr<Variable> &&listToSort){
+  Sort(std::unique_ptr<Variable> &&listToSort)        //<< variable name of a list to sort >>
+  {
     appendChild(std::move(listToSort));
   }
 
-  void addAttribute(std::unique_ptr<Variable> &&attr){
+  void addAttribute(std::unique_ptr<Variable> &&attr) //<< Attribute of list elements to use for comparison.
+                                                      //   Only valid when the list contains maps.>>
+                                                      // Attribute has to be deciphered, therefore
+                                                      // EXPRESSION
+  {  
     appendChild(std::move(attr));
   }
 
@@ -406,12 +428,12 @@ private:
 
 class Deal : public ASTNode{
 public:
-  Deal(std::unique_ptr<Variable> &&fromList,
-       std::unique_ptr<Variable> &&toList,
-       const int& count){
+  Deal(std::unique_ptr<Variable> &&fromList, //<< variable name of a list to deal from >>
+       std::unique_ptr<Variable> &&toList,   //<< variable name of a list or list attribute to deal to >>
+       const int &count)                     //Expression, as per example: "count": "winners.size"
+  {
     appendChild(std::move(fromList));
     appendChild(std::move(toList));
-    
   }
 
 private:
@@ -421,8 +443,9 @@ private:
 
 class Discard : public ASTNode{
 public:
-  Discard(std::unique_ptr<Variable> &&fromList,
-          const int& count){
+  Discard(std::unique_ptr<Variable> &&fromList, //"winner.wins" -> Expression
+          const int &count)                     //Expression, as per example: "count": "winners.size"
+  {
     appendChild(std::move(fromList));
     this->count = count;
   }
@@ -434,8 +457,11 @@ private:
 
 class Add : public ASTNode{
 public:
-  Add(std::unique_ptr<Variable> &&intVar,
-      const int& value){
+  Add(std::unique_ptr<Variable> &&intVar, //"winner.wins" -> Expression
+      const int &value)                   //<< integer literal or name of a variable or
+                                          //  constant containing the value to add >>
+                                          //  "value": 1 -> example is an integer literal...
+  {
     appendChild(std::move(intVar));
     this->value = value;
   }
@@ -447,14 +473,18 @@ private:
 
 class Timer : public ASTNode{//needs to be modified for modes
 public:
-  Timer(const int& duration,
-        std::unique_ptr<Variable> &&mode,
-        std::unique_ptr<Rules> &&rules){
+  Timer(const int &duration,              //<< seconds >> -> has to be int
+        std::unique_ptr<Variable> &&mode, //Store "exact" OR "at most" OR "track", possibly use enum to track?
+        std::unique_ptr<Rules> &&rules)
+  {
     appendChild(std::move(mode));
     appendChild(std::move(rules));
   }
 
-  void addFlag(std::unique_ptr<Condition> &&cond){
+  void addFlag(std::unique_ptr<Condition> &&cond) //<< variable that evaluates to false when a "track" timer 
+                                                  //  has not expired and false afterward. >>
+                                                  // Guessing it's Expression
+  {
     appendChild(std::move(cond));
   }
 
