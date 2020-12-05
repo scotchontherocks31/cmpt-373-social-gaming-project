@@ -732,53 +732,53 @@ private:
   };
   void visitLeave(Condition &node) { out << ")"; };
 
-  void visitEnter(Rules &node) { out << "(Rules "; };
+  void visitEnter(Rules &node) { out << "(Rules"; };
   void visitLeave(Rules &node) { out << ")"; };
-  void visitEnter(AllSwitchCases &node) { out << "(AllSwitchCases "; };
+  void visitEnter(AllSwitchCases &node) { out << "(AllSwitchCases"; };
   void visitLeave(AllSwitchCases &node) { out << ")"; };
-  void visitEnter(AllWhenCases &node) { out << "(AllWhenCases "; };
+  void visitEnter(AllWhenCases &node) { out << "(AllWhenCases"; };
   void visitLeave(AllWhenCases &node) { out << ")"; };
-  void visitEnter(SwitchCase &node) { out << "(SwitchCase "; };
+  void visitEnter(SwitchCase &node) { out << "(SwitchCase"; };
   void visitLeave(SwitchCase &node) { out << ")"; };
-  void visitEnter(WhenCase &node) { out << "(WhenCase "; };
+  void visitEnter(WhenCase &node) { out << "(WhenCase"; };
   void visitLeave(WhenCase &node) { out << ")"; };
   
-  void visitEnter(ParallelFor &node) { out << "(ParallelFor "; };
+  void visitEnter(ParallelFor &node) { out << "(ParallelFor"; };
   void visitLeave(ParallelFor &node) { out << ")"; };
-  void visitEnter(ForEach &node) { out << "(ForEach "; };
+  void visitEnter(ForEach &node) { out << "(ForEach"; };
   void visitLeave(ForEach &node) { out << ")"; };
   void visitEnter(Loop &node) { out << "(Loop "; };
   void visitLeave(Loop &node) { out << ")"; };
-  void visitEnter(InParallel &node) { out << "(InParallel "; };
+  void visitEnter(InParallel &node) { out << "(InParallel"; };
   void visitLeave(InParallel &node) { out << ")"; };
-  void visitEnter(Switch &node) { out << "(Switch "; };
+  void visitEnter(Switch &node) { out << "(Switch"; };
   void visitLeave(Switch &node) { out << ")"; };
-  void visitEnter(When &node) { out << "(When "; };
+  void visitEnter(When &node) { out << "(When"; };
   void visitLeave(When &node) { out << ")"; };
 
-  void visitEnter(Reverse &node) { out << "(Reverse "; };
+  void visitEnter(Reverse &node) { out << "(Reverse"; };
   void visitLeave(Reverse &node) { out << ")"; };
-  void visitEnter(Extend &node) { out << "(Extend "; };
+  void visitEnter(Extend &node) { out << "(Extend"; };
   void visitLeave(Extend &node) { out << ")"; };
-  void visitEnter(Shuffle &node) { out << "(Shuffle "; };
+  void visitEnter(Shuffle &node) { out << "(Shuffle"; };
   void visitLeave(Shuffle &node) { out << ")"; };
-  void visitEnter(Sort &node) { out << "(Sort "; };
+  void visitEnter(Sort &node) { out << "(Sort"; };
   void visitLeave(Sort &node) { out << ")"; };
-  void visitEnter(Deal &node) { out << "(Deal "; };
+  void visitEnter(Deal &node) { out << "(Deal"; };
   void visitLeave(Deal &node) { out << ")"; };
-  void visitEnter(Discard &node) { out << "(Discard "; };
+  void visitEnter(Discard &node) { out << "(Discard"; };
   void visitLeave(Discard &node) { out << ")"; };
 
-  void visitEnter(Add &node) { out << "(Add "; };
+  void visitEnter(Add &node) { out << "(Add"; };
   void visitLeave(Add &node) { out << ")"; };
-  void visitEnter(Timer &node) { out << "(Timer "; };
+  void visitEnter(Timer &node) { out << "(Timer"; };
   void visitLeave(Timer &node) { out << ")"; };
 
-  void visitEnter(InputChoice &node) { out << "(InputChoice "; };
+  void visitEnter(InputChoice &node) { out << "(InputChoice"; };
   void visitLeave(InputChoice &node) { out << ")"; };
-  void visitEnter(InputText &node) { out << "(InputText "; };
+  void visitEnter(InputText &node) { out << "(InputText"; };
   void visitLeave(InputText &node) { out << ")"; };
-  void visitEnter(InputVote &node) { out << "(InputVote "; };
+  void visitEnter(InputVote &node) { out << "(InputVote"; };
   void visitLeave(InputVote &node) { out << ")"; };
 
   std::ostream &out;
