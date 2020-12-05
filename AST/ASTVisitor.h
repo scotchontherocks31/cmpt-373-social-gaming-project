@@ -327,7 +327,7 @@ private:
           co_return;
         }
 
-        if (valueRight > valueLeft) {
+        if (valueLeft > valueRight) {
 
           Symbol symbol = Symbol{DSLValue{true}, false};
           env.allocateReturn(symbol);
@@ -338,6 +338,20 @@ private:
         }
       } break;
       case Type::LESS:
+        if (!isSameType(valueRight, valueLeft)) {
+          errorThrown = true;
+          co_return;
+        }
+
+        if (valueLeft < valueRight) {
+
+          Symbol symbol = Symbol{DSLValue{true}, false};
+          env.allocateReturn(symbol);
+        } else {
+
+          Symbol symbol = Symbol{DSLValue{false}, false};
+          env.allocateReturn(symbol);
+        }
 
         // TODO
         break;
