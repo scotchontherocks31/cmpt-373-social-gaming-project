@@ -9,12 +9,60 @@ using Json = nlohmann::json;
 
 namespace AST {
 
-class DomainSpecificParser {
-public:
-  AST parse() { return parseHelper(); }
+  enum RuleID
+  {
+    MESSAGE,
+    GLOBAL_MESSAGE,
+    SCORES,
+    PARALLEL_FOR,
+    FOR_EACH,
+    LOOP,
+    IN_PARALLEL,
+    SWITCH,
+    WHEN,
+    REVERSE,
+    EXTEND,
+    SHUFFLE,
+    SORT,
+    DEAL,
+    DISCARD,
+    ADD,
+    TIMER,
+    INPUT_CHOICE,
+    INPUT_TEXT,
+    INPUT_VOTE
+  };
 
-private:
-  virtual AST parseHelper() = 0;
+  static std::map<std::string, RuleID> strToRules = {
+      {"message", RuleID::MESSAGE},
+      {"global-message", RuleID::GLOBAL_MESSAGE},
+      {"scores", RuleID::SCORES},
+      {"parallelfor", RuleID::PARALLEL_FOR},
+      {"foreach", RuleID::FOR_EACH},
+      {"loop", RuleID::LOOP},
+      {"inparallel", RuleID::IN_PARALLEL},
+      {"switch", RuleID::SWITCH},
+      {"when", RuleID::WHEN},
+      {"reverse", RuleID::REVERSE},
+      {"extend", RuleID::EXTEND},
+      {"shuffle", RuleID::SHUFFLE},
+      {"sort", RuleID::SORT},
+      {"deal", RuleID::DEAL},
+      {"discard", RuleID::DISCARD},
+      {"add", RuleID::ADD},
+      {"timer", RuleID::TIMER},
+      {"input-choice", RuleID::INPUT_CHOICE},
+      {"input-text", RuleID::INPUT_TEXT},
+      {"input-vote", RuleID::INPUT_VOTE}
+  };
+
+  class DomainSpecificParser
+  {
+  public:
+    AST parse() { return parseHelper(); }
+
+  private:
+    virtual AST parseHelper() = 0;
 };
 
 class ASTParser {

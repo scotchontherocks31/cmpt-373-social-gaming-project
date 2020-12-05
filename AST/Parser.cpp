@@ -21,14 +21,86 @@ std::unique_ptr<Rules> JSONToASTParser::parseRules(const Json &json) {
 }
 
 std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
-  if (json["rule"] == "global-message") {
-    return parseGlobalMessage(json);
-  } else if (json["rule"] == "parallelfor") {
-    return parseParallelFor(json);
-  } else {
-    assert("rule not implemented yet");
+
+  auto itr = strToRules.find(json["rule"]);
+  if(itr == strToRules.end())
     return std::unique_ptr<ASTNode>{};
-  }
+
+  switch(itr->second){
+    case RuleID::MESSAGE:
+      return parseMessage(json);
+      break;
+    case RuleID::GLOBAL_MESSAGE:
+      return parseGlobalMessage(json);
+      break;
+    case RuleID::SCORES:
+      return parseScores(json);
+      break;
+    case RuleID::PARALLEL_FOR:
+      return parseParallelFor(json);
+      break;
+    case RuleID::FOR_EACH:
+      return parseForEach(json);
+      break;
+    case RuleID::LOOP:
+      return parseLoop(json);
+      break;
+    case RuleID::IN_PARALLEL:
+      return parseInParallel(json);
+      break;
+    case RuleID::SWITCH:
+      return parseSwitch(json);
+      break;
+    case RuleID::WHEN:
+      return parseWhen(json);
+      break;
+    case RuleID::REVERSE:
+      return parseReverse(json);
+      break;
+    case RuleID::EXTEND:
+      return parseExtend(json);
+      break;
+    case RuleID::SHUFFLE:
+      return parseShuffle(json);
+      break;
+    case RuleID::SORT:
+      return parseSort(json);
+      break;
+    case RuleID::DEAL:
+      return parseDeal(json);
+      break;
+    case RuleID::DISCARD:
+      return parseDiscard(json);
+      break;
+    case RuleID::ADD:
+      return parseAdd(json);
+      break;
+    case RuleID::TIMER:
+      return parseTimer(json);
+      break;
+    case RuleID::INPUT_CHOICE:
+      return parseInputChoice(json);
+      break;
+    case RuleID::INPUT_TEXT:
+      return parseInputText(json);
+      break;
+    case RuleID::INPUT_VOTE:
+      return parseInputVote(json);
+      break;
+    }
+  // if (json["rule"] == "global-message")
+  // {
+  //   return parseGlobalMessage(json);
+  // }
+  // else if (json["rule"] == "parallelfor")
+  // {
+  //   return parseParallelFor(json);
+  // }
+  // else
+  // {
+  //   //assert("rule not implemented yet");
+  //   return std::unique_ptr<ASTNode>{};
+  // }
 }
 
 std::unique_ptr<FormatNode> JSONToASTParser::parseFormatNode(const std::string &str) {
