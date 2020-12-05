@@ -15,10 +15,10 @@ std::regex CLOSEPAR{"^[)]"};
 
 std::regex EQUALS{"^(==)"};
 std::regex NOTEQUALS{"^(!=)"};
-std::regex NOT{"^(!)"};
-std::regex GREATER{"^(>)"};
+std::regex NOT{"^(!(?!=))"};
+std::regex GREATER{"^(>(?!=))"};
 std::regex GREATEREQUALS{"^(>=)"};
-std::regex LESS{"^(>)"};
+std::regex LESS{"^(<(?!=))"};
 std::regex LESSEQUALS{"^(<=)"};
 std::regex COMMA{"^(,)"};
 

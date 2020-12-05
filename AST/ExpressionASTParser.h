@@ -21,7 +21,6 @@ enum class Terminal {
 };
 
 static std::map<Type, Terminal> TypeToTerminal{
-    // Anything that does not map is
     {Type::OPENPAR, Terminal::OPENPAR},   {Type::CLOSEPAR, Terminal::CLOSEPAR},
     {Type::DOT, Terminal::DOT},           {Type::EQUALS, Terminal::BIN},
     {Type::NOTEQUALS, Terminal::BIN},     {Type::GREATER, Terminal::BIN},
@@ -30,7 +29,6 @@ static std::map<Type, Terminal> TypeToTerminal{
     {Type::COMMA, Terminal::COMMA},       {Type::ID, Terminal::ID}};
 
 struct CFGExpressionWrapper {
-  // I will use these Functions //
   CFGExpressionWrapper(std::vector<CFGExpression> tokens) {
 
     for (auto t : tokens) {
@@ -97,8 +95,7 @@ struct ExpressionASTParser {
     if (CFGTokens.getTerminal() == Terminal::OPENPAR) {
       CFGTokens.next_token();
       result = parse_E();
-      if (CFGTokens.getTerminal() == Terminal::CLOSEPAR) {
-      }
+
       assure(CFGTokens.getTerminal() == Terminal::CLOSEPAR);
       CFGTokens.next_token();
     }

@@ -82,3 +82,83 @@ TEST(parseToCFGExpressionTest, complex2) {
     EXPECT_EQ(result[i].getValue(), expected[i].getValue());
   }
 }
+
+TEST(parseToCFGExpressionTest, regexCorrectnessLess) {
+  std::string input = "winners<size";
+  std::vector<CFGExpression> result = parseToCFGExpression(input);
+
+  std::vector<CFGExpression> expected = {{CFGExpression(Type::ID, "winners")},
+                                         {CFGExpression(Type::LESS, "<")},
+                                         {CFGExpression(Type::ID, "size")}};
+  ASSERT_EQ(result.size(), expected.size());
+
+  for (int i = 0; i < result.size(); i++) {
+    EXPECT_EQ(result[i].getType(), expected[i].getType());
+    EXPECT_EQ(result[i].getValue(), expected[i].getValue());
+  }
+}
+
+TEST(parseToCFGExpressionTest, regexCorrectnessLessEquals) {
+  std::string input = "winners<=size";
+  std::vector<CFGExpression> result = parseToCFGExpression(input);
+
+  std::vector<CFGExpression> expected = {
+      {CFGExpression(Type::ID, "winners")},
+      {CFGExpression(Type::LESSEQUALS, "<=")},
+      {CFGExpression(Type::ID, "size")}};
+  ASSERT_EQ(result.size(), expected.size());
+
+  for (int i = 0; i < result.size(); i++) {
+    EXPECT_EQ(result[i].getType(), expected[i].getType());
+    EXPECT_EQ(result[i].getValue(), expected[i].getValue());
+  }
+}
+
+TEST(parseToCFGExpressionTest, regexCorrectnessGreater) {
+  std::string input = "winners>size";
+  std::vector<CFGExpression> result = parseToCFGExpression(input);
+
+  std::vector<CFGExpression> expected = {{CFGExpression(Type::ID, "winners")},
+                                         {CFGExpression(Type::GREATER, ">")},
+                                         {CFGExpression(Type::ID, "size")}};
+  ASSERT_EQ(result.size(), expected.size());
+
+  for (int i = 0; i < result.size(); i++) {
+    EXPECT_EQ(result[i].getType(), expected[i].getType());
+    EXPECT_EQ(result[i].getValue(), expected[i].getValue());
+  }
+}
+
+TEST(parseToCFGExpressionTest, regexCorrectnessGreaterEquals) {
+  std::string input = "winners>=size";
+  std::vector<CFGExpression> result = parseToCFGExpression(input);
+
+  std::vector<CFGExpression> expected = {
+      {CFGExpression(Type::ID, "winners")},
+      {CFGExpression(Type::GREATEREQUALS, ">=")},
+      {CFGExpression(Type::ID, "size")}};
+  ASSERT_EQ(result.size(), expected.size());
+
+  for (int i = 0; i < result.size(); i++) {
+    EXPECT_EQ(result[i].getType(), expected[i].getType());
+    EXPECT_EQ(result[i].getValue(), expected[i].getValue());
+  }
+}
+
+TEST(parseToCFGExpressionTest, regexCorrectnessNot) {
+  std::string input = "!(winners!=size)";
+  std::vector<CFGExpression> result = parseToCFGExpression(input);
+
+  std::vector<CFGExpression> expected = {{CFGExpression(Type::NOT, "!")},
+                                         {CFGExpression(Type::OPENPAR, "(")},
+                                         {CFGExpression(Type::ID, "winners")},
+                                         {CFGExpression(Type::NOTEQUALS, "!=")},
+                                         {CFGExpression(Type::ID, "size")},
+                                         {CFGExpression(Type::CLOSEPAR, ")")}};
+  ASSERT_EQ(result.size(), expected.size());
+
+  for (int i = 0; i < result.size(); i++) {
+    EXPECT_EQ(result[i].getType(), expected[i].getType());
+    EXPECT_EQ(result[i].getValue(), expected[i].getValue());
+  }
+}
