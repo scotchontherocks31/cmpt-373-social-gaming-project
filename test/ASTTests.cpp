@@ -152,3 +152,172 @@ TEST(ExpressionNodes, FormatNodeExpressionParsing) {
 
   EXPECT_EQ(output, answer);
 }
+
+// TEST(ExpressionNodes, BinaryNodeVisitorDot) {
+//   auto parent = std::make_unique<AST::Environment>();
+//   AST::Json playerJson;
+//   playerJson["id"] = 1;
+//   playerJson["name"] = "Mike Tyson";
+//   playerJson["food"] = "Jones";
+
+//   AST::Symbol symbol = AST::Symbol{AST::DSLValue{playerJson}, false}; 
+
+//   AST::Environment::Name key = "player";
+//   parent->allocate(key, symbol);
+//   EXPECT_EQ(symbol.dsl, parent->find(key));
+  
+
+//   AST::ExpressionASTParser rdp("player.name");
+//   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
+
+//   AST::PrintCommunicator printComm{};
+//   AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+//   auto root = AST::AST(std::move(ast));
+//   auto task = root.accept(interp);
+//   while (task.resume()) {
+//   }
+  
+//   std::cout<<*(parent->getReturnValue());
+
+//   // check to see if "Mike Tyson" is in the environment
+
+// //   EXPECT_EQ(output, answer);
+
+// }
+
+TEST(ExpressionNodes, BinaryNodeVisitorDotList) {
+
+  auto parent = std::make_unique<AST::Environment>();
+  Json myJson = Json::parse("[{\"name\":\"Rock\",\"beats\":\"Scissors\"},{\"name\":\"Paper\",\"beats\":\"Rock\"},{\"name\":\"Scissors\",\"beats\":\"Paper\"}]");
+
+
+  AST::Symbol symbol = AST::Symbol{AST::DSLValue{myJson}, false}; 
+
+  AST::Environment::Name key = "weapons";
+  //auto child = parent->createChildEnvironment();
+  parent->allocate(key, symbol);
+  EXPECT_EQ(symbol.dsl, parent->find(key));
+  
+
+  AST::ExpressionASTParser rdp("weapons.name");
+  std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
+
+  AST::PrintCommunicator printComm{};
+  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+  auto root = AST::AST(std::move(ast));
+  auto task = root.accept(interp);
+  while (task.resume()) {
+  }
+
+  // check to see if "Mike Tyson" is in the environment
+
+//   EXPECT_EQ(output, answer);
+
+}
+
+// TEST(ExpressionNodes, BinaryNodeVisitorDotListElements) {
+
+//   auto parent = std::make_unique<AST::Environment>();
+//   Json myJson = Json::parse("[{\"name\":\"Rock\",\"weapon\":\"Scissors\"},{\"name\":\"Paper\",\"weapon\":\"Rock\"},{\"name\":\"Scissors\",\"weapon\":\"Paper\"}]");
+
+
+//   AST::Symbol symbol = AST::Symbol{AST::DSLValue{myJson}, false}; 
+
+//   AST::Environment::Name key = "players";
+//   parent->allocate(key, symbol);
+//   EXPECT_EQ(symbol.dsl, parent->find(key));
+  
+
+//   AST::ExpressionASTParser rdp("players.elements.weapon");
+//   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
+
+//   AST::PrintCommunicator printComm{};
+//   AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+//   auto root = AST::AST(std::move(ast));
+//   auto task = root.accept(interp);
+//   while (task.resume()) {
+//   }
+
+  
+//   // check to see if "Mike Tyson" is in the environment
+
+// //   EXPECT_EQ(output, answer);
+
+// }
+
+// TEST(ExpressionNodes, BinaryNodeVisitorEquals) {
+
+//   // Test Binary Node Equals
+//   auto parent = std::make_unique<AST::Environment>();
+
+//   AST::Symbol symbol = AST::Symbol{AST::DSLValue{100}, false}; 
+//   AST::Environment::Name key = "player1Score";
+//   parent->allocate(key, symbol);
+
+//   AST::Symbol symbol2 = AST::Symbol{AST::DSLValue{100}, false}; 
+//   AST::Environment::Name key2 = "player2Score";
+//   parent->allocate(key2, symbol2);
+
+  
+//   AST::ExpressionASTParser rdp("player1Score == player2Score");
+//   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
+
+//   AST::PrintCommunicator printComm{};
+//   AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+//   auto root = AST::AST(std::move(ast));
+//   auto task = root.accept(interp);
+//   while (task.resume()) {
+//   }
+
+//   // somehow test that parent->getReturnValue(); returns boolean true?
+
+//   auto parent2 = std::make_unique<AST::Environment>();
+//   //AST::Symbol symbol = AST::Symbol{AST::DSLValue{100}, false}; 
+//   //AST::Environment::Name key = "player1Score";
+//   parent2->allocate(key, symbol);
+
+//   AST::Symbol symbol3 = AST::Symbol{AST::DSLValue{200}, false}; 
+//   AST::Environment::Name key3 = "player3Score";
+//   parent2->allocate(key3, symbol3);
+
+//   AST::ExpressionASTParser rdp2("player1Score == player3Score");
+//   std::unique_ptr<AST::ExpressionNode> ast2 = rdp2.parse_S();
+//   AST::PrintCommunicator printComm2{};
+//   AST::Interpreter interp2 = AST::Interpreter{std::move(parent2), printComm2};
+//   auto root2 = AST::AST(std::move(ast2));
+//   auto task2 = root2.accept(interp2);
+//   while (task2.resume()) {
+//   }
+
+//   // somehow test that parent->getReturnValue(); returns boolean false?
+
+//   //   EXPECT_EQ(output, answer);
+// }
+
+
+// TEST(ExpressionNodes, UnaryNot) {
+
+//   // Test Binary Node Equals
+//   auto parent = std::make_unique<AST::Environment>();
+
+//   AST::Symbol symbol = AST::Symbol{AST::DSLValue{100}, false}; 
+//   AST::Environment::Name key = "player1Score";
+//   parent->allocate(key, symbol);
+
+//   AST::Symbol symbol2 = AST::Symbol{AST::DSLValue{200}, false}; 
+//   AST::Environment::Name key2 = "player2Score";
+//   parent->allocate(key2, symbol2);
+
+  
+//   AST::ExpressionASTParser rdp("!(player1Score == player2Score)");
+//   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
+
+//   AST::PrintCommunicator printComm{};
+//   AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+//   auto root = AST::AST(std::move(ast));
+//   auto task = root.accept(interp);
+//   while (task.resume()) {
+//   }
+
+//   // somehow test that parent->getReturnValue(); returns boolean true?
+// }

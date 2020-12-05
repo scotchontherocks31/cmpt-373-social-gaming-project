@@ -164,10 +164,10 @@ public:
     appendChild(std::move(operandRight));
     binaryOperator = binaryOper;
   }
-  const ExpressionNode &getArgOne() const {
+  ExpressionNode &getArgOne() const {
     return *static_cast<ExpressionNode *>(children[0].get());
   }
-  const ExpressionNode &getArgTwo() const {
+  ExpressionNode &getArgTwo() const {
     return *static_cast<ExpressionNode *>(children[1].get());
   }
   const Type getBinaryOperator() { return binaryOperator; }
@@ -183,7 +183,7 @@ public:
     appendChild(std::move(operand));
     unaryOperator = unaryOper;
   }
-  const ExpressionNode &getArgOne() const {
+  ExpressionNode &getArgOne() const {
     return *static_cast<ExpressionNode *>(children[0].get());
   }
   const Type getUnaryOperator() { return unaryOperator; }
