@@ -45,7 +45,7 @@ TEST(ASTprinter, ParallelForandInput) {
   std::unique_ptr<AST::InputText> in = std::make_unique<AST::InputText>(
       std::make_unique<AST::FormatNode>(std::string{"How are you"}),
       std::make_unique<AST::Variable>(std::string{"player"}),
-      std::make_unique<AST::VarDeclaration>(std::string{"response"}));
+      std::make_unique<AST::Variable>(std::string{"response"}));
 
   std::unique_ptr<AST::GlobalMessage> mess =
       std::make_unique<AST::GlobalMessage>(
@@ -57,7 +57,7 @@ TEST(ASTprinter, ParallelForandInput) {
 
   std::unique_ptr<AST::ParallelFor> par = std::make_unique<AST::ParallelFor>(
       std::make_unique<AST::Variable>(std::string{"players"}),
-      std::make_unique<AST::VarDeclaration>(std::string{"player"}),
+      std::make_unique<AST::Variable>(std::string{"player"}),
       std::move(rule));
 
   auto root = AST::AST(std::move(par));
@@ -72,8 +72,8 @@ TEST(ASTprinter, ParallelForandInput) {
   // retrieve print
   std::string output = printer.returnOutput();
   std::string answer =
-      "(ParallelFor(Variable\"players\")(VarDeclaration\"player\")(Rules("
+      "(ParallelFor(Variable\"players\")(Variable\"player\")(Rules("
       "GlobalMessage(FormatNode \"Message One\"))(InputText(FormatNode \"How "
-      "are you\")(Variable\"player\")(VarDeclaration\"response\"))))";
+      "are you\")(Variable\"player\")(Variable\"response\"))))";
   EXPECT_EQ(output, answer);
 }

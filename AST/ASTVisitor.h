@@ -38,7 +38,6 @@ public:
 
   coro::Task<> visit(FormatNode &node);
   coro::Task<> visit(Variable &node);
-  coro::Task<> visit(VarDeclaration &node);
   coro::Task<> visit(Condition &node);
 
   coro::Task<> visit(Rules &node);
@@ -76,7 +75,6 @@ private:
 
   virtual coro::Task<> visitHelper(FormatNode &) = 0;
   virtual coro::Task<> visitHelper(Variable &) = 0;
-  virtual coro::Task<> visitHelper(VarDeclaration &) = 0;
   virtual coro::Task<> visitHelper(Condition &) = 0;
 
   virtual coro::Task<> visitHelper(Rules &) = 0;
@@ -107,8 +105,7 @@ private:
   virtual coro::Task<> visitHelper(InputVote &) = 0;
 };
 
-// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
-// and Rules
+// TODO: Add new visitors for new nodes : ParallelFor, Variable & Rules
 class Interpreter : public ASTVisitor {
 public:
   Interpreter(std::unique_ptr<Environment> &&env, Communicator &communicator)
@@ -153,14 +150,6 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(Variable &node) final {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
-    }
-    visitLeave(node);
-    co_return;
-  }
-  coro::Task<> visitHelper(VarDeclaration &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -382,8 +371,6 @@ private:
   void visitLeave(FormatNode &node){};
   void visitEnter(Variable &node){};
   void visitLeave(Variable &node){};
-  void visitEnter(VarDeclaration &node){};
-  void visitLeave(VarDeclaration &node){};
   void visitEnter(Condition &node){};
   void visitLeave(Condition &node){};
 
@@ -449,8 +436,7 @@ private:
   Communicator &communicator;
 };
 
-// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
-// and Rules
+// TODO: Add new visitors for new nodes : ParallelFor, Variable & Rules
 class Printer : public ASTVisitor {
 public:
   virtual ~Printer() { std::cout << "\n"; }
@@ -491,14 +477,6 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(Variable &node) override {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
-    }
-    visitLeave(node);
-    co_return;
-  }
-  coro::Task<> visitHelper(VarDeclaration &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -723,10 +701,6 @@ private:
     out << "(Variable\"" << node.getLexeme() << "\"";
   };
   void visitLeave(Variable &node) { out << ")"; };
-  void visitEnter(VarDeclaration &node) {
-    out << "(VarDeclaration\"" << node.getLexeme() << "\"";
-  };
-  void visitLeave(VarDeclaration &node) { out << ")"; };
   void visitEnter(Condition &node) {
     out << "(Condition \"" << node.getCond() << "\" ";
   };

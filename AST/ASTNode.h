@@ -67,16 +67,6 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
-class VarDeclaration : public ASTNode {
-public:
-  explicit VarDeclaration(std::string lexeme) : lexeme{std::move(lexeme)} {}
-  const std::string &getLexeme() const { return lexeme; }
-
-private:
-  std::string lexeme;
-  virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
-};
-
 class Condition : public ASTNode {
 public:
   explicit Condition(std::string cond) : cond{std::move(cond)} {}
@@ -88,7 +78,7 @@ private:
 
 class Message : public ASTNode {
 public:
-  explicit Message(std::unique_ptr<VarDeclaration> &&to,
+  explicit Message(std::unique_ptr<Variable> &&to,
                    std::unique_ptr<FormatNode> &&value){
     appendChild(std::move(to));
     appendChild(std::move(value));
@@ -186,7 +176,7 @@ public:
   explicit InputChoice(std::unique_ptr<FormatNode> &&prompt,
                        std::unique_ptr<Variable> &&to,
                        std::unique_ptr<Variable> &&choices,
-                       std::unique_ptr<VarDeclaration> &&result) {
+                       std::unique_ptr<Variable> &&result) {
     appendChild(std::move(prompt));
     appendChild(std::move(to));
     appendChild(std::move(choices));
@@ -209,8 +199,8 @@ public:
   const Variable &getChoices() const {
     return *static_cast<Variable *>(children[3].get());
   }
-  const VarDeclaration &getResult() const {
-    return *static_cast<VarDeclaration *>(children[4].get());
+  const Variable &getResult() const {
+    return *static_cast<Variable *>(children[4].get());
   }
 
 private:
@@ -222,7 +212,7 @@ class InputText : public ASTNode {
 public:
   explicit InputText(std::unique_ptr<FormatNode> &&prompt,
                      std::unique_ptr<Variable> &&to,
-                     std::unique_ptr<VarDeclaration> &&result) {
+                     std::unique_ptr<Variable> &&result) {
     appendChild(std::move(prompt));
     appendChild(std::move(to));
     appendChild(std::move(result));
@@ -241,8 +231,8 @@ public:
   const Variable &getTo() const {
     return *static_cast<Variable *>(children[1].get());
   }
-  const VarDeclaration &getResult() const {
-    return *static_cast<VarDeclaration *>(children[2].get());
+  const Variable &getResult() const {
+    return *static_cast<Variable *>(children[2].get());
   }
 
 private:
@@ -255,7 +245,7 @@ public:
   explicit InputVote(std::unique_ptr<FormatNode> &&prompt,
                      std::unique_ptr<Variable> &&to,
                      std::unique_ptr<Variable> &&choices,
-                     std::unique_ptr<VarDeclaration> &&result) {
+                     std::unique_ptr<Variable> &&result) {
     appendChild(std::move(prompt));
     appendChild(std::move(to));
     appendChild(std::move(choices));
@@ -278,8 +268,8 @@ public:
   const Variable &getChoices() const {
     return *static_cast<Variable *>(children[3].get());
   }
-  const VarDeclaration &getResult() const {
-    return *static_cast<VarDeclaration *>(children[4].get());
+  const Variable &getResult() const {
+    return *static_cast<Variable *>(children[4].get());
   }
 
 private:
@@ -290,7 +280,7 @@ private:
 class ParallelFor : public ASTNode {
 public:
   ParallelFor(std::unique_ptr<Variable> &&variable,
-              std::unique_ptr<VarDeclaration> &&varDeclaration,
+              std::unique_ptr<Variable> &&varDeclaration,
               std::unique_ptr<Rules> &&rules) {
     appendChild(std::move(variable));
     appendChild(std::move(varDeclaration));
@@ -299,8 +289,8 @@ public:
   Variable &getListName() const {
     return *static_cast<Variable *>(children[0].get());
   }
-  VarDeclaration &getElementName() const {
-    return *static_cast<VarDeclaration *>(children[1].get());
+  Variable &getElementName() const {
+    return *static_cast<Variable *>(children[1].get());
   }
   Rules &getRules() const { return *static_cast<Rules *>(children[2].get()); }
 
@@ -311,7 +301,7 @@ private:
 class ForEach : public ASTNode {
 public:
   ForEach(std::unique_ptr<Variable> &&variable,
-          std::unique_ptr<VarDeclaration> &&varDeclaration,
+          std::unique_ptr<Variable> &&varDeclaration,
           std::unique_ptr<Rules> &&rules) {
     appendChild(std::move(variable));
     appendChild(std::move(varDeclaration));
