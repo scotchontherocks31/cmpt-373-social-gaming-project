@@ -1,4 +1,5 @@
 #include "DSLValue.h"
+
 #include <functional>
 #include <iostream>
 #include <ranges>
@@ -77,23 +78,23 @@ bool isUniType(const List &list) noexcept {
   });
 }
 
-
 struct Slice {
   const string &key;
   explicit Slice(const string &key) : key{key} {};
   using returnType = optional<DSLValue>;
 
   auto operator()(const List &list) noexcept -> returnType {
-    if (not (isUniType(list) and typeCheck(list.front(), DSLValue::Type::MAP))) {
+    if (not(isUniType(list) and typeCheck(list.front(), DSLValue::Type::MAP))) {
       return nullopt;
     }
-    auto it = list | ranges::views::filter([this](const auto &x) {
-                return x.at(key).has_value();
-              }) |
-              ranges::views::transform([this](const auto &x) { return *x.at(key); });
+    auto it =
+        list | ranges::views::filter([this](const auto &x) {
+          return x.at(key).has_value();
+        }) |
+        ranges::views::transform([this](const auto &x) { return *x.at(key); });
     DSLValue returnValue = List{it.begin(), it.end()};
     return (returnValue.size() == list.size()) ? returnType{returnValue}
-                                              : nullopt;
+                                               : nullopt;
   }
   auto operator()(const auto &discard) noexcept -> returnType {
     return nullopt;
@@ -277,7 +278,7 @@ struct TypeCheck {
   auto operator()(double x) noexcept -> bool {
     return type == DSLValue::Type::DOUBLE;
   }
-  auto operator()(int x) noexcept-> bool {
+  auto operator()(int x) noexcept -> bool {
     return type == DSLValue::Type::INT;
   }
   auto operator()(bool x) noexcept -> bool {
@@ -294,11 +295,8 @@ struct TypeCheck {
 struct Not {
   explicit Not() noexcept = default;
 
-  auto operator()(bool &x) noexcept {
-    x = not x;
-  }
-  auto operator()(auto &&discard) noexcept {
-  }
+  auto operator()(bool &x) noexcept { x = not x; }
+  auto operator()(auto &&discard) noexcept {}
 };
 
 struct Equal {
@@ -461,16 +459,13 @@ DSLValue::DSLValue(const Json &json) noexcept {
 bool typeCheck(const DSLValue &x, DSLValue::Type type) noexcept {
   return x.unaryOperation(TypeCheck{type});
 }
-std::optional<bool> 
-equal(const DSLValue &x, const DSLValue &y) noexcept {
+std::optional<bool> equal(const DSLValue &x, const DSLValue &y) noexcept {
   return x.binaryOperation(y, Equal{});
 }
-std::optional<bool> 
-greater(const DSLValue &x, const DSLValue &y) noexcept {
+std::optional<bool> greater(const DSLValue &x, const DSLValue &y) noexcept {
   return x.binaryOperation(y, Greater{});
 }
-std::optional<bool> 
-smaller(const DSLValue &x, const DSLValue &y) noexcept {
+std::optional<bool> smaller(const DSLValue &x, const DSLValue &y) noexcept {
   return x.binaryOperation(y, Smaller{});
 }
 
