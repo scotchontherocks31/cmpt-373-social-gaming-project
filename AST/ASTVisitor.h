@@ -195,9 +195,11 @@ private:
 
     auto &leftChild = node.getArgOne();
     auto &rightChild = node.getArgTwo();
+    coro::Task rightChildTask;
+    DSLValue valueRight;
+    
 
-    if (node.getBinaryOperator() == Type::DOT) {
-
+      // visit left child
       auto leftChildTask = leftChild.accept(*this);
       DSLValue valueLeft;
       while (not leftChildTask.isDone()) {
@@ -210,70 +212,29 @@ private:
         valueLeft = *handleLeft;
 
       } else {
+
         errorThrown = true;
         co_return;
       }
-
-      VariableExpression *rightChildVar =
-          static_cast<VariableExpression *>(&rightChild);
-
-      auto varName = rightChildVar->getLexeme();
-      // std::cout<<"\nleftValue is "<<valueLeft;
-      // std::cout<<"\nwhat is the var name??"<<varName;
-
-      // check to see if the left child is a list or map
-      if (varName == "elements") { // return list as is
-        Symbol symbol = Symbol{valueLeft, false};
-        env.allocateReturn(symbol);
-
-      } else if (true) { // transform into new list, Need to first do check to
-                         // see if it is a list
-
-        // temproray transform
-        std::vector<DSLValue> weapons;
-        for (size_t i = 0; i < valueLeft.size(); ++i) {
-          DSLValue &map = *valueLeft[i];
-          DSLValue &weapon = *map["weapon"];
-          weapons.push_back(weapon);
+      // only visit right child if not dot. We need the name.
+      if(node.getBinaryOperator() != Type::DOT){
+        rightChildTask = rightChild.accept(*this);
+        
+        while (not rightChildTask.isDone()) {
+          co_await rightChildTask;
         }
-        Symbol symbol = Symbol{weapons, false};
 
-        env.allocateReturn(symbol);
-      } else { // not a list
-        env.allocateReturn(Symbol{*valueLeft[varName], false});
+        auto handleRight = environment->getReturnValue();
+
+        if (handleRight) {
+          valueRight = *handleRight;
+
+        } else {
+          errorThrown = true;
+          co_return;
+        }
       }
-    } else {
-      auto leftChildTask = leftChild.accept(*this);
-      DSLValue valueLeft;
-      while (not leftChildTask.isDone()) {
-        co_await leftChildTask;
-      }
-
-      auto handleLeft = environment->getReturnValue();
-
-      if (handleLeft) {
-        valueLeft = *handleLeft;
-
-      } else {
-
-        errorThrown = true;
-        co_return;
-      }
-      auto rightChildTask = rightChild.accept(*this);
-      DSLValue valueRight;
-      while (not rightChildTask.isDone()) {
-        co_await rightChildTask;
-      }
-
-      auto handleRight = environment->getReturnValue();
-
-      if (handleRight) {
-        valueRight = *handleRight;
-
-      } else {
-        errorThrown = true;
-        co_return;
-      }
+      
 
       switch (node.getBinaryOperator()) {
       case Type::CLOSEPAR:
@@ -284,6 +245,40 @@ private:
 
         // TODO
         break;
+      case Type::DOT:
+        {
+          VariableExpression *rightChildVar =
+          static_cast<VariableExpression *>(&rightChild);
+
+          auto varName = rightChildVar->getLexeme();
+          // std::cout<<"\nleftValue is "<<valueLeft;
+          // std::cout<<"\nwhat is the var name??"<<varName;
+
+          // check to see if the left child is a list or map
+          if (varName == "elements") { // return list as is
+            Symbol symbol = Symbol{valueLeft, false};
+            env.allocateReturn(symbol);
+
+          } else if (true) { // transform into new list, Need to first do check to
+                            // see if it is a list
+            std::cout<<"\n\n\n\nleft value is "<<valueLeft;
+            // temproray transform
+            std::vector<DSLValue> weapons;
+            for (size_t i = 0; i < valueLeft.size(); ++i) {
+              DSLValue &map = *valueLeft[i];
+              DSLValue &weapon = *map["weapon"];
+              weapons.push_back(weapon);
+            }
+            Symbol symbol = Symbol{weapons, false};
+
+            env.allocateReturn(symbol);
+          } else { // not a list
+            env.allocateReturn(Symbol{*valueLeft[varName], false});
+          }
+          
+        }
+        // TODO
+        break;
       case Type::EQUALS: {
 
         if (!isSameType(valueRight, valueLeft)) {
@@ -291,15 +286,9 @@ private:
           co_return;
         }
 
-        if (valueRight == valueLeft) {
-
-          Symbol symbol = Symbol{DSLValue{true}, false};
-          env.allocateReturn(symbol);
-        } else {
-
-          Symbol symbol = Symbol{DSLValue{false}, false};
-          env.allocateReturn(symbol);
-        }
+        Symbol symbol = valueRight == valueLeft ? Symbol{DSLValue{true}, false}: Symbol{DSLValue{false}, false};
+ 
+        env.allocateReturn(symbol);
       } break;
       case Type::NOTEQUALS: {
 
@@ -308,16 +297,11 @@ private:
           co_return;
         }
 
-        if (valueRight != valueLeft) {
-
-          Symbol symbol = Symbol{DSLValue{true}, false};
-          env.allocateReturn(symbol);
-        } else {
-
-          Symbol symbol = Symbol{DSLValue{false}, false};
-          env.allocateReturn(symbol);
-        }
+        Symbol symbol = valueRight != valueLeft ? Symbol{DSLValue{true}, false}: Symbol{DSLValue{false}, false};
+ 
+        env.allocateReturn(symbol);
       }
+      
 
       break;
       case Type::GREATER: {
@@ -327,37 +311,34 @@ private:
           co_return;
         }
 
-        if (valueLeft > valueRight) {
-
-          Symbol symbol = Symbol{DSLValue{true}, false};
-          env.allocateReturn(symbol);
-        } else {
-
-          Symbol symbol = Symbol{DSLValue{false}, false};
-          env.allocateReturn(symbol);
-        }
+        Symbol symbol = valueLeft > valueRight ? Symbol{DSLValue{true}, false}:  Symbol{DSLValue{false}, false};
+ 
+        env.allocateReturn(symbol);
       } break;
       case Type::LESS:
+      {
         if (!isSameType(valueRight, valueLeft)) {
           errorThrown = true;
           co_return;
         }
 
-        if (valueLeft < valueRight) {
-
-          Symbol symbol = Symbol{DSLValue{true}, false};
-          env.allocateReturn(symbol);
-        } else {
-
-          Symbol symbol = Symbol{DSLValue{false}, false};
-          env.allocateReturn(symbol);
-        }
-
-        // TODO
+       Symbol symbol = valueLeft < valueRight ? Symbol{DSLValue{true}, false}:  Symbol{DSLValue{false}, false};
+ 
+        env.allocateReturn(symbol);
+      }
         break;
       case Type::LESSEQUALS:
+         {
+        if (!isSameType(valueRight, valueLeft)) {
+          errorThrown = true;
+          co_return;
+        }
 
-        // TODO
+       Symbol symbol = valueLeft <= valueRight ? Symbol{DSLValue{true}, false}:  Symbol{DSLValue{false}, false};
+ 
+        env.allocateReturn(symbol);
+      }
+
         break;
       case Type::COMMA:
 
@@ -367,7 +348,7 @@ private:
         std::cout << "default";
         // code block
       }
-    }
+    
   };
   void visitLeave(BinaryNode &node){};
 
