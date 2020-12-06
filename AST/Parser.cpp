@@ -1,6 +1,13 @@
 #include "Parser.h"
 #include "ASTVisitor.h"
+#include "CFGParser.h"
+#include "ExpressionASTParser.h"
+#include <algorithm>
 #include <assert.h>
+#include <exception>
+#include <iostream>
+#include <map>
+#include <regex>
 
 namespace AST {
 
@@ -320,4 +327,12 @@ std::unique_ptr<InputVote> JSONToASTParser::parseInputVote(const Json &json){
   }
   return inputVotePtr;
 }
+
+std::unique_ptr<ASTNode>
+JSONToASTParser::parseExpression(const std::string &str) {
+
+  ExpressionASTParser expressionParse(str);
+  return expressionParse.parse_S();
+}
+
 } // namespace AST
