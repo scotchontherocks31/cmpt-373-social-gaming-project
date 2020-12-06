@@ -1,4 +1,4 @@
-image: "kokoberry/team-f:latest"
+image: "kokoberry/team-f:c11"
 
 stages:
     - build
