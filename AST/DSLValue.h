@@ -74,7 +74,7 @@ private:
   InternalType value;
 
 public:
-  enum class Type { LIST, MAP, BOOLEAN, NUMBER, STRING, NIL };
+  enum class Type { LIST, MAP, BOOLEAN, DOUBLE, INT, STRING, NIL };
 
   // Constructors
   DSLValue() noexcept = default;
@@ -153,6 +153,7 @@ public:
   operator<=>(const DSLValue &x, const DSLValue &y) noexcept = default;
 };
 
+bool typeCheck(const DSLValue &x, DSLValue::Type type) noexcept;
 bool isSortableType(const DSLValue &x) noexcept;
 bool isSameType(const DSLValue &x, const DSLValue &y) noexcept;
 void extend(DSL auto &&to, DSL auto &&from) noexcept;
@@ -162,6 +163,10 @@ void sort(DSL auto &&x) noexcept;
 void sort(DSL auto &&x, const std::string &key) noexcept;
 void discard(DSL auto &&x, size_t count) noexcept;
 void deal(DSL auto &&from, DSL auto &&to, size_t count) noexcept;
+void notOperation(DSL auto &&x) noexcept;
+std::optional<bool> equal(const DSLValue &x, const DSLValue &y) noexcept;
+std::optional<bool> greater(const DSLValue &x, const DSLValue &y) noexcept;
+std::optional<bool> smaller(const DSLValue &x, const DSLValue &y) noexcept;
 std::ostream &operator<<(std::ostream &os, const DSLValue &x) noexcept;
 
 } // namespace AST
