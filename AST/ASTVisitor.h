@@ -798,7 +798,7 @@ private:
   void visitLeave(Scores &node) { out << ")"; };
 
   void visitEnter(FormatNode &node) {
-    out << "(FormatNode\"" << node.getFormat() << "\"";
+    out << "(FormatNode \"" << node.getFormat() << "\"";
   };
   void visitLeave(FormatNode &node) { out << ")"; };
   void visitEnter(Variable &node) {

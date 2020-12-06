@@ -125,7 +125,7 @@ private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
-class FormatNode : public ASTNode { // parser complete
+class FormatNode : public ASTNode {
 public:
   explicit FormatNode(std::string format) : format{std::move(format)} {}
   const std::string &getFormat() const { return format; }
