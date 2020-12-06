@@ -1,4 +1,5 @@
 #include "DSLValue.h"
+
 #include <functional>
 #include <iostream>
 #include <ranges>
@@ -67,19 +68,33 @@ struct Size {
   auto operator()(const auto &discard) noexcept -> size_t { return 0; }
 };
 
+bool isUniType(const List &list) noexcept {
+  if (list.size() <= 1) {
+    return true;
+  }
+  const auto &firstElement = list[0];
+  return ranges::all_of(list, [&firstElement](const auto &y) {
+    return isSameType(firstElement, y);
+  });
+}
+
 struct Slice {
   const string &key;
   explicit Slice(const string &key) : key{key} {};
   using returnType = optional<DSLValue>;
 
-  auto operator()(const Map &map) noexcept -> returnType {
-    auto it = map | ranges::views::filter([this](const auto &x) {
-                return x.first == key;
-              }) |
-              ranges::views::transform([](const auto &x) { return x.second; });
+  auto operator()(const List &list) noexcept -> returnType {
+    if (not(isUniType(list) and typeCheck(list.front(), DSLValue::Type::MAP))) {
+      return nullopt;
+    }
+    auto it =
+        list | ranges::views::filter([this](const auto &x) {
+          return x.at(key).has_value();
+        }) |
+        ranges::views::transform([this](const auto &x) { return *x.at(key); });
     DSLValue returnValue = List{it.begin(), it.end()};
-    return (returnValue.size() == map.size()) ? returnType{returnValue}
-                                              : nullopt;
+    return (returnValue.size() == list.size()) ? returnType{returnValue}
+                                               : nullopt;
   }
   auto operator()(const auto &discard) noexcept -> returnType {
     return nullopt;
@@ -114,16 +129,6 @@ struct Shuffle {
   }
   auto operator()(auto &&discard) noexcept { return; }
 };
-
-bool isUniType(const List &list) noexcept {
-  if (list.size() <= 1) {
-    return true;
-  }
-  const auto &firstElement = list[0];
-  return ranges::all_of(list, [&firstElement](const auto &y) {
-    return isSameType(firstElement, y);
-  });
-}
 
 bool isSortableList(const List &list) noexcept {
   if (list.size() <= 1) {
@@ -260,6 +265,115 @@ struct Print {
   }
 };
 
+struct TypeCheck {
+  const DSLValue::Type type;
+  explicit TypeCheck(DSLValue::Type type) noexcept : type{type} {}
+
+  auto operator()(const Map &map) noexcept -> bool {
+    return type == DSLValue::Type::MAP;
+  }
+  auto operator()(const List &list) noexcept -> bool {
+    return type == DSLValue::Type::LIST;
+  }
+  auto operator()(double x) noexcept -> bool {
+    return type == DSLValue::Type::DOUBLE;
+  }
+  auto operator()(int x) noexcept -> bool {
+    return type == DSLValue::Type::INT;
+  }
+  auto operator()(bool x) noexcept -> bool {
+    return type == DSLValue::Type::BOOLEAN;
+  }
+  auto operator()(const std::string &x) noexcept -> bool {
+    return type == DSLValue::Type::STRING;
+  }
+  auto operator()(std::monostate m) noexcept -> bool {
+    return type == DSLValue::Type::NIL;
+  }
+};
+
+struct Not {
+  explicit Not() noexcept = default;
+
+  auto operator()(bool &x) noexcept { x = not x; }
+  auto operator()(auto &&discard) noexcept {}
+};
+
+struct Equal {
+  explicit Equal() noexcept = default;
+  using returnType = std::optional<bool>;
+
+  auto operator()(double x, double y) noexcept -> returnType {
+    return std::optional<bool>{x == y};
+  }
+  auto operator()(int x, int y) noexcept -> returnType {
+    return std::optional<bool>{x == y};
+  }
+  auto operator()(int x, double y) noexcept -> returnType {
+    return std::optional<bool>{x == y};
+  }
+  auto operator()(double x, int y) noexcept -> returnType {
+    return std::optional<bool>{x == y};
+  }
+  auto operator()(bool x, bool y) noexcept -> returnType {
+    return std::optional<bool>{x == y};
+  }
+  auto operator()(const string &x, const string &y) noexcept -> returnType {
+    return std::optional<bool>{x == y};
+  }
+  auto operator()(const auto &x, const auto &y) noexcept -> returnType {
+    return std::nullopt;
+  }
+};
+
+struct Smaller {
+  explicit Smaller() noexcept = default;
+  using returnType = std::optional<bool>;
+
+  auto operator()(double x, double y) noexcept -> returnType {
+    return std::optional<bool>{x < y};
+  }
+  auto operator()(int x, int y) noexcept -> returnType {
+    return std::optional<bool>{x < y};
+  }
+  auto operator()(int x, double y) noexcept -> returnType {
+    return std::optional<bool>{x < y};
+  }
+  auto operator()(double x, int y) noexcept -> returnType {
+    return std::optional<bool>{x < y};
+  }
+  auto operator()(const string &x, const string &y) noexcept -> returnType {
+    return std::optional<bool>{x < y};
+  }
+  auto operator()(const auto &x, const auto &y) noexcept -> returnType {
+    return std::nullopt;
+  }
+};
+
+struct Greater {
+  explicit Greater() noexcept = default;
+  using returnType = std::optional<bool>;
+
+  auto operator()(double x, double y) noexcept -> returnType {
+    return std::optional<bool>{x > y};
+  }
+  auto operator()(int x, int y) noexcept -> returnType {
+    return std::optional<bool>{x > y};
+  }
+  auto operator()(int x, double y) noexcept -> returnType {
+    return std::optional<bool>{x > y};
+  }
+  auto operator()(double x, int y) noexcept -> returnType {
+    return std::optional<bool>{x > y};
+  }
+  auto operator()(const string &x, const string &y) noexcept -> returnType {
+    return std::optional<bool>{x > y};
+  }
+  auto operator()(const auto &x, const auto &y) noexcept -> returnType {
+    return std::nullopt;
+  }
+};
+
 } // namespace
 
 namespace AST {
@@ -309,7 +423,7 @@ void discard(DSL auto &&x, size_t count) noexcept {
   return x.unaryOperation(Discard{count});
 }
 void deal(DSL auto &&from, DSL auto &&to, size_t count) noexcept {
-  return to.binaryOperation(Deal{count});
+  return from.binaryOperation(to, Deal{count});
 }
 ostream &operator<<(ostream &os, const DSLValue &x) noexcept {
   return x.unaryOperation(Print{os});
@@ -341,6 +455,18 @@ DSLValue::DSLValue(const Json &json) noexcept {
     assert("json is of unknown type");
     value = std::monostate{};
   }
+}
+bool typeCheck(const DSLValue &x, DSLValue::Type type) noexcept {
+  return x.unaryOperation(TypeCheck{type});
+}
+std::optional<bool> equal(const DSLValue &x, const DSLValue &y) noexcept {
+  return x.binaryOperation(y, Equal{});
+}
+std::optional<bool> greater(const DSLValue &x, const DSLValue &y) noexcept {
+  return x.binaryOperation(y, Greater{});
+}
+std::optional<bool> smaller(const DSLValue &x, const DSLValue &y) noexcept {
+  return x.binaryOperation(y, Smaller{});
 }
 
 } // namespace AST
