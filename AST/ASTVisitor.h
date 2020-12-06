@@ -237,14 +237,7 @@ private:
       
 
       switch (node.getBinaryOperator()) {
-      case Type::CLOSEPAR:
-
-        // TODO
-        break;
-      case Type::ID:
-
-        // TODO
-        break;
+   
       case Type::DOT:
         {
           VariableExpression *rightChildVar =
@@ -280,7 +273,7 @@ private:
         // TODO
         break;
       case Type::EQUALS: {
-
+        // still string, interger,double,bool
         if (!isSameType(valueRight, valueLeft)) {
           errorThrown = true;
           co_return;
@@ -340,10 +333,7 @@ private:
       }
 
         break;
-      case Type::COMMA:
-
-        // TODO
-        break;
+  
       default:
         std::cout << "default";
         // code block
