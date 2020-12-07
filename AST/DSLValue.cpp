@@ -404,13 +404,16 @@ DSLValue::createSlice(const std::string &key) const noexcept {
 }
 
 size_t DSLValue::size() const noexcept { return unaryOperation(Size{}); }
-void extend(DSL auto &&to, DSL auto &&from) noexcept {
+void extend(DSLValue &to, DSLValue &from) noexcept {
   to.binaryOperation(from, Extend{});
 }
-void reverse(DSL auto &&x) noexcept { x.unaryOperation(Reverse{}); }
-void shuffle(DSL auto &&x) noexcept { x.unaryOperation(Shuffle{}); }
-void sort(DSL auto &&x) noexcept { x.unaryOperation(Sort{}); }
-void sort(DSL auto &&x, const std::string &key) noexcept {
+void extend(DSLValue &to, DSLValue &&from) noexcept {
+  to.binaryOperation(from, Extend{});
+}
+void reverse(DSLValue &x) noexcept { x.unaryOperation(Reverse{}); }
+void shuffle(DSLValue &x) noexcept { x.unaryOperation(Shuffle{}); }
+void sort(DSLValue &x) noexcept { x.unaryOperation(Sort{}); }
+void sort(DSLValue &x, const std::string &key) noexcept {
   x.unaryOperation(SortWithKey{key});
 }
 bool isSameType(const DSLValue &x, const DSLValue &y) noexcept {
@@ -419,10 +422,13 @@ bool isSameType(const DSLValue &x, const DSLValue &y) noexcept {
 bool isSortableType(const DSLValue &x) noexcept {
   return x.unaryOperation(SortableType{});
 }
-void discard(DSL auto &&x, size_t count) noexcept {
+void discard(DSLValue &x, size_t count) noexcept {
   return x.unaryOperation(Discard{count});
 }
-void deal(DSL auto &&from, DSL auto &&to, size_t count) noexcept {
+void deal(DSLValue &from, DSLValue &&to, size_t count) noexcept {
+  return from.binaryOperation(to, Deal{count});
+}
+void deal(DSLValue &from, DSLValue &to, size_t count) noexcept {
   return from.binaryOperation(to, Deal{count});
 }
 ostream &operator<<(ostream &os, const DSLValue &x) noexcept {
@@ -468,8 +474,6 @@ std::optional<bool> greater(const DSLValue &x, const DSLValue &y) noexcept {
 std::optional<bool> smaller(const DSLValue &x, const DSLValue &y) noexcept {
   return x.binaryOperation(y, Smaller{});
 }
- void notOperation(DSL auto &&x) noexcept {
-  return x.unaryOperation(Not{});
-}
+void notOperation(DSLValue &x) noexcept { return x.unaryOperation(Not{}); }
 
 } // namespace AST

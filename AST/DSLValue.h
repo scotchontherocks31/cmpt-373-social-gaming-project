@@ -35,23 +35,23 @@ template <typename T>
 concept DSL = std::is_same_v<DSLValue, std::remove_cvref_t<T>>;
 
 template <typename F, typename... Types>
-concept BoundedUnaryOperation = requires(F &&f, Types &&...types) {
+concept BoundedUnaryOperation = requires(F &&f, Types &&... types) {
   (std::invoke(std::forward<F>(f), std::forward<Types>(types)), ...);
 };
 
 template <typename F, typename Type1, typename... Types2>
-requires requires(F &&f, Type1 &&type, Types2 &&...types) {
+requires requires(F &&f, Type1 &&type, Types2 &&... types) {
   (std::invoke(std::forward<F>(f), std::forward<Type1>(type),
                std::forward<Types2>(types)),
    ...);
 }
-constexpr inline void NestedApply(F &&f, Type1 &&type, Types2 &&...types) {
+constexpr inline void NestedApply(F &&f, Type1 &&type, Types2 &&... types) {
   return;
 }
 
 template <typename F, typename... Types1>
-concept BoundedSymmetricBinaryOperation = requires(F &&f, Types1 &&...types1,
-                                                   Types1 &&...types2) {
+concept BoundedSymmetricBinaryOperation = requires(F &&f, Types1 &&... types1,
+                                                   Types1 &&... types2) {
   (NestedApply(f, std::forward<Types1>(types1),
                std::forward<Types1>(types2)...),
    ...);
@@ -156,14 +156,16 @@ public:
 bool typeCheck(const DSLValue &x, DSLValue::Type type) noexcept;
 bool isSortableType(const DSLValue &x) noexcept;
 bool isSameType(const DSLValue &x, const DSLValue &y) noexcept;
-void extend(DSL auto &&to, DSL auto &&from) noexcept;
-void reverse(DSL auto &&x) noexcept;
-void shuffle(DSL auto &&x) noexcept;
-void sort(DSL auto &&x) noexcept;
-void sort(DSL auto &&x, const std::string &key) noexcept;
-void discard(DSL auto &&x, size_t count) noexcept;
-void deal(DSL auto &&from, DSL auto &&to, size_t count) noexcept;
-void notOperation(DSL auto &&x) noexcept;
+void extend(DSLValue &to, DSLValue &&from) noexcept;
+void extend(DSLValue &to, DSLValue &from) noexcept;
+void reverse(DSLValue &x) noexcept;
+void shuffle(DSLValue &x) noexcept;
+void sort(DSLValue &x) noexcept;
+void sort(DSLValue &x, const std::string &key) noexcept;
+void discard(DSLValue &x, size_t count) noexcept;
+void deal(DSLValue &from, DSLValue &&to, size_t count) noexcept;
+void deal(DSLValue &from, DSLValue &to, size_t count) noexcept;
+void notOperation(DSLValue &x) noexcept;
 std::optional<bool> equal(const DSLValue &x, const DSLValue &y) noexcept;
 std::optional<bool> greater(const DSLValue &x, const DSLValue &y) noexcept;
 std::optional<bool> smaller(const DSLValue &x, const DSLValue &y) noexcept;
