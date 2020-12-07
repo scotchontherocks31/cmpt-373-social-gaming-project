@@ -224,9 +224,8 @@ private:
 
 class WhenCase : public ASTNode {
 public:
-  WhenCase(std::unique_ptr<ASTNode> &&cond, //"!players.elements.weapon.contains(weapon.name)"
-                                            //-> Expression
-           std::unique_ptr<Rules> &&rules) {
+  // "!players.elements.weapon.contains(weapon.name)" -> Expression for cond
+  WhenCase(std::unique_ptr<ASTNode> &&cond, std::unique_ptr<Rules> &&rules) {
     appendChild(std::move(cond));
     appendChild(std::move(rules));
   }
@@ -439,7 +438,7 @@ public:
              &&value, //<< value to switch upon >> -> Expression
          std::unique_ptr<Variable>
              &&list, //<< name of a constant list of allowable values >> no
-                     //Expression needed
+                     // Expression needed
          std::unique_ptr<AllSwitchCases> &&cases) {
     appendChild(std::move(value));
     appendChild(std::move(list));
@@ -490,7 +489,7 @@ public:
   Extend(std::unique_ptr<Variable> &&
              target, //<< variable name of a list to extend with another list >>
          std::unique_ptr<ASTNode> &&list) //"players.elements.collect(player,
-                                          //player.weapon == weapon.beats)"
+                                          // player.weapon == weapon.beats)"
                                           // Therefore, Expression for "list"
   {
     appendChild(std::move(target));
@@ -624,10 +623,11 @@ private:
 
 class Timer : public ASTNode { // needs to be modified for modes
 public:
-  Timer(const int &duration,              //<< seconds >> -> has to be int
-        std::unique_ptr<Variable> &&mode, // Store "exact" OR "at most" OR
-                                          // "track", possibly use enum to track?
-        std::unique_ptr<Rules> &&rules) {
+  Timer(
+      const int &duration,              //<< seconds >> -> has to be int
+      std::unique_ptr<Variable> &&mode, // Store "exact" OR "at most" OR
+                                        // "track", possibly use enum to track?
+      std::unique_ptr<Rules> &&rules) {
     this->duration = duration;
     appendChild(std::move(mode));
     appendChild(std::move(rules));
