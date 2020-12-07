@@ -66,7 +66,7 @@ public:
   coro::Task<> visit(InputChoice &node);
   coro::Task<> visit(InputText &node);
   coro::Task<> visit(InputVote &node);
-  
+
   coro::Task<> visit(BinaryNode &node);
   coro::Task<> visit(UnaryNode &node);
   coro::Task<> visit(VariableExpression &node);
@@ -107,7 +107,7 @@ private:
   virtual coro::Task<> visitHelper(InputChoice &) = 0;
   virtual coro::Task<> visitHelper(InputText &) = 0;
   virtual coro::Task<> visitHelper(InputVote &) = 0;
-  
+
   virtual coro::Task<> visitHelper(BinaryNode &) = 0;
   virtual coro::Task<> visitHelper(UnaryNode &) = 0;
   virtual coro::Task<> visitHelper(VariableExpression &) = 0;
@@ -308,27 +308,23 @@ private:
   }
   coro::Task<> visitHelper(Discard &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren()){
+    for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
     visitLeave(node);
     co_return;
   }
-  coro::Task<> visitHelper(Add &node) override
-  {
+  coro::Task<> visitHelper(Add &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren())
-    {
+    for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
     visitLeave(node);
     co_return;
   }
-  coro::Task<> visitHelper(Timer &node) override
-  {
+  coro::Task<> visitHelper(Timer &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren())
-    {
+    for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
     visitLeave(node);
@@ -362,18 +358,15 @@ private:
   }
   coro::Task<> visitHelper(InputText &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren())
-    {
+    for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
     visitLeave(node);
     co_return;
   }
-  coro::Task<> visitHelper(InputVote &node) override
-  {
+  coro::Task<> visitHelper(InputVote &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren())
-    {
+    for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
     visitLeave(node);
@@ -588,7 +581,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  
+
   coro::Task<> visitHelper(ParallelFor &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
@@ -680,28 +673,23 @@ private:
   }
   coro::Task<> visitHelper(Discard &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren())
-    {
+    for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
     visitLeave(node);
     co_return;
   }
-  coro::Task<> visitHelper(Add &node) override
-  {
+  coro::Task<> visitHelper(Add &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren())
-    {
+    for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
     visitLeave(node);
     co_return;
   }
-  coro::Task<> visitHelper(Timer &node) override
-  {
+  coro::Task<> visitHelper(Timer &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren())
-    {
+    for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
     visitLeave(node);
@@ -735,18 +723,15 @@ private:
   }
   coro::Task<> visitHelper(InputText &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren())
-    {
+    for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
     visitLeave(node);
     co_return;
   }
-  coro::Task<> visitHelper(InputVote &node) override
-  {
+  coro::Task<> visitHelper(InputVote &node) override {
     visitEnter(node);
-    for (auto &&child : node.getChildren())
-    {
+    for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
     }
     visitLeave(node);
@@ -796,7 +781,7 @@ private:
   void visitLeave(SwitchCase &node) { out << ")"; };
   void visitEnter(WhenCase &node) { out << "(WhenCase"; };
   void visitLeave(WhenCase &node) { out << ")"; };
-  
+
   void visitEnter(ParallelFor &node) { out << "(ParallelFor"; };
   void visitLeave(ParallelFor &node) { out << ")"; };
   void visitEnter(ForEach &node) { out << "(ForEach"; };

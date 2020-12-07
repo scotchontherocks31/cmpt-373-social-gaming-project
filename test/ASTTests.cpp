@@ -103,8 +103,7 @@ TEST(ASTprinter, ParallelForandInput) {
 
   std::unique_ptr<AST::ParallelFor> par = std::make_unique<AST::ParallelFor>(
       std::make_unique<AST::Variable>(std::string{"players"}),
-      std::make_unique<AST::Variable>(std::string{"player"}),
-      std::move(rule));
+      std::make_unique<AST::Variable>(std::string{"player"}), std::move(rule));
 
   auto root = AST::AST(std::move(par));
 

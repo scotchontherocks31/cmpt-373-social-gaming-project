@@ -72,7 +72,7 @@ coro::Task<> WhenCase::acceptHelper(ASTVisitor &visitor) {
     co_await coroutine;
   }
 }
-//RULES
+// RULES
 coro::Task<> ParallelFor::acceptHelper(ASTVisitor &visitor) {
   auto coroutine = visitor.visit(*this);
   while (not coroutine.isDone()) {
@@ -114,7 +114,7 @@ coro::Task<> When::acceptHelper(ASTVisitor &visitor) {
     co_await coroutine;
   }
 }
-//LIST
+// LIST
 coro::Task<> Reverse::acceptHelper(ASTVisitor &visitor) {
   auto coroutine = visitor.visit(*this);
   while (not coroutine.isDone()) {
@@ -170,7 +170,7 @@ coro::Task<> Timer::acceptHelper(ASTVisitor &visitor) {
     co_await coroutine;
   }
 }
-//INPUT NODES
+// INPUT NODES
 coro::Task<> InputChoice::acceptHelper(ASTVisitor &visitor) {
   auto coroutine = visitor.visit(*this);
   while (not coroutine.isDone()) {
@@ -189,8 +189,7 @@ coro::Task<> InputVote::acceptHelper(ASTVisitor &visitor) {
   auto coroutine = visitor.visit(*this);
   while (not coroutine.isDone())
     co_await coroutine;
-  }
-
+}
 
 coro::Task<> BinaryNode::acceptHelper(ASTVisitor &visitor) {
   auto coroutine = visitor.visit(*this);
