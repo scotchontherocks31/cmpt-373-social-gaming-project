@@ -392,7 +392,7 @@ private:
         errorThrown = true;
         co_return;
       }
-      // notOperation(value);
+      //notOperation(value);
       Symbol symbol = Symbol{value, false};
 
       env.allocateReturn(symbol);

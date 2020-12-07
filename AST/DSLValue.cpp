@@ -468,5 +468,8 @@ std::optional<bool> greater(const DSLValue &x, const DSLValue &y) noexcept {
 std::optional<bool> smaller(const DSLValue &x, const DSLValue &y) noexcept {
   return x.binaryOperation(y, Smaller{});
 }
+ void notOperation(DSL auto &&x) noexcept {
+  return x.unaryOperation(Not{});
+}
 
 } // namespace AST
