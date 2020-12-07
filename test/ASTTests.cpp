@@ -176,13 +176,12 @@ TEST(ExpressionNodes, BinaryNodeVisitorDot) {
   while (task.resume()) {
   }
 
-    auto env = interp.getEnvironment();
+  auto env = interp.getEnvironment();
 
-    DSLValue output = *(env->getReturnValue());
-    DSLValue answer{"Mike Tyson"};
+  DSLValue output = *(env->getReturnValue());
+  DSLValue answer{"Mike Tyson"};
 
-    EXPECT_EQ(output, answer);
-
+  EXPECT_EQ(output, answer);
 }
 
 TEST(ExpressionNodes, BinaryNodeVisitorDotList) {
@@ -309,7 +308,6 @@ TEST(ExpressionNodes, BinaryNodeVisitorEquals) {
 
 TEST(ExpressionNodes, BinaryNodeVisitorNotEquals) {
 
-  
   auto parent = std::make_unique<AST::Environment>();
 
   AST::Symbol symbol = AST::Symbol{AST::DSLValue{100}, false};
@@ -336,7 +334,6 @@ TEST(ExpressionNodes, BinaryNodeVisitorNotEquals) {
 
 TEST(ExpressionNodes, BinaryNodeVisitorGreaterThan) {
 
-  
   auto parent = std::make_unique<AST::Environment>();
 
   AST::Symbol symbol = AST::Symbol{AST::DSLValue{100}, false};
@@ -363,7 +360,6 @@ TEST(ExpressionNodes, BinaryNodeVisitorGreaterThan) {
 
 TEST(ExpressionNodes, BinaryNodeVisitorLessThan) {
 
-  
   auto parent = std::make_unique<AST::Environment>();
 
   AST::Symbol symbol = AST::Symbol{AST::DSLValue{100}, false};
@@ -384,14 +380,12 @@ TEST(ExpressionNodes, BinaryNodeVisitorLessThan) {
   }
 
   auto env = interp.getEnvironment();
-   DSLValue answer{false};
-    EXPECT_EQ(*(env->getReturnValue()), answer);
+  DSLValue answer{false};
+  EXPECT_EQ(*(env->getReturnValue()), answer);
+}
 
- }
+TEST(ExpressionNodes, BinaryNodeVisitorLessThanEquals) {
 
- TEST(ExpressionNodes, BinaryNodeVisitorLessThanEquals) {
-
-  
   auto parent = std::make_unique<AST::Environment>();
 
   AST::Symbol symbol = AST::Symbol{AST::DSLValue{101}, false};
@@ -412,10 +406,9 @@ TEST(ExpressionNodes, BinaryNodeVisitorLessThan) {
   }
 
   auto env = interp.getEnvironment();
-   DSLValue answer{false};
-    EXPECT_EQ(*(env->getReturnValue()), answer);
-
- }
+  DSLValue answer{false};
+  EXPECT_EQ(*(env->getReturnValue()), answer);
+}
 
 // TEST(ExpressionNodes, UnaryNot) {
 
