@@ -57,11 +57,8 @@ void GameInstance::loadGame(AST::AST &ast,
   gameTask = ast.accept(*(this->interpreter));
 }
 
-bool GameInstance::hasError() const {
-  if (interpreter) {
-    return interpreter->hasError();
-  }
-  return false;
+inline bool GameInstance::hasError() const {
+  return interpreter ? interpreter->hasError() : false;
 }
 
 void GameInstance::runGame() {
