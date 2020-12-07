@@ -284,6 +284,26 @@ TEST(ExpressionNodes, BinaryNodeVisitorEquals) {
   DSLValue answer{true};
   EXPECT_EQ(*(env->getReturnValue()), answer);
 
+  auto parent2 = std::make_unique<AST::Environment>();
+
+  parent2->allocate(key, symbol);
+
+  AST::Symbol symbol3 = AST::Symbol{AST::DSLValue{200}, false};
+  AST::Environment::Name key3 = "player3Score";
+  parent2->allocate(key3, symbol3);
+
+  AST::ExpressionASTParser rdp2("player1Score == player3Score");
+  std::unique_ptr<AST::ExpressionNode> ast2 = rdp2.parse_S();
+  AST::PrintCommunicator printComm2{};
+  AST::Interpreter interp2 = AST::Interpreter{std::move(parent2), printComm2};
+  auto root2 = AST::AST(std::move(ast2));
+  auto task2 = root2.accept(interp2);
+  while (task2.resume()) {
+  }
+
+  auto env2 = interp2.getEnvironment();
+  DSLValue answer2{false};
+  EXPECT_EQ(*(env2->getReturnValue()), answer2);
 }
 
 TEST(ExpressionNodes, BinaryNodeVisitorNotEquals) {
