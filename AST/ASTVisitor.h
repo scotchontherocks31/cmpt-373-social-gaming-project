@@ -67,7 +67,7 @@ public:
   Interpreter(std::unique_ptr<Environment> &&env, Communicator &communicator)
       : environment{std::move(env)}, communicator{communicator} {}
 
-  bool hasError() { return errorThrown; }
+  bool hasError() const { return errorThrown; }
 
 private:
   bool errorThrown = false;

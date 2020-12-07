@@ -57,8 +57,15 @@ void GameInstance::loadGame(AST::AST &ast,
   gameTask = ast.accept(*(this->interpreter));
 }
 
+bool GameInstance::hasError() const {
+  if (interpreter) {
+    return interpreter->hasError();
+  }
+  return false;
+}
+
 void GameInstance::runGame() {
-  if (!gameTask.isDone() and !this->interpreter->hasError()) {
+  if (!gameTask.isDone() and !hasError()) {
     gameTask.resume();
   }
 }
