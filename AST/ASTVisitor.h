@@ -60,8 +60,8 @@ private:
   virtual coro::Task<> visitHelper(FunctionCallNode &) = 0;
 };
 
-// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
-// and Rules
+
+
 class Interpreter : public ASTVisitor {
 public:
   Interpreter(std::unique_ptr<Environment> &&env, Communicator &communicator)
@@ -216,7 +216,7 @@ private:
         errorThrown = true;
         co_return;
       }
-      // only visit right child if not dot. We need the name.
+      // only visit right child if not dot. Else we only need the name of right child
       if(node.getBinaryOperator() != Type::DOT){
         rightChildTask = rightChild.accept(*this);
         
@@ -242,94 +242,109 @@ private:
         {
           VariableExpression *rightChildVar =
           static_cast<VariableExpression *>(&rightChild);
-
           auto varName = rightChildVar->getLexeme();
-          // std::cout<<"\nleftValue is "<<valueLeft;
-          // std::cout<<"\nwhat is the var name??"<<varName;
 
-          // check to see if the left child is a list or map
+
+          auto isList = typeCheck(valueLeft,DSLValue::Type::LIST);
+
+          
+          
+
+          
           if (varName == "elements") { // return list as is
+            if(!(typeCheck(valueLeft, DSLValue::Type::LIST))){
+              errorThrown = true;
+              co_return;
+
+            }
             Symbol symbol = Symbol{valueLeft, false};
             env.allocateReturn(symbol);
 
-          } else if (true) { // transform into new list, Need to first do check to
-                            // see if it is a list
-            std::cout<<"\n\n\n\nleft value is "<<valueLeft;
-            // temproray transform
-            std::vector<DSLValue> weapons;
-            for (size_t i = 0; i < valueLeft.size(); ++i) {
-              DSLValue &map = *valueLeft[i];
-              DSLValue &weapon = *map["weapon"];
-              weapons.push_back(weapon);
-            }
-            Symbol symbol = Symbol{weapons, false};
+          } else if (isList) { 
+            auto weapons  = valueLeft.createSlice(varName);
+            if(!(typeCheck(*weapons, DSLValue::Type::LIST))){
+              errorThrown = true;
+              co_return;
 
+            }
+           
+            Symbol symbol = Symbol{*weapons, false};
             env.allocateReturn(symbol);
-          } else { // not a list
+          } else { 
+          if(!(typeCheck(valueLeft, DSLValue::Type::MAP))){
+              errorThrown = true;
+              co_return;
+
+            }
             env.allocateReturn(Symbol{*valueLeft[varName], false});
           }
           
         }
-        // TODO
+        
         break;
       case Type::EQUALS: {
-        // still string, interger,double,bool
-        if (!isSameType(valueRight, valueLeft)) {
+        
+        if (!isSameType(valueRight, valueLeft) || !((typeCheck(valueLeft, DSLValue::Type::STRING)) || (typeCheck(valueLeft, DSLValue::Type::INT))||(typeCheck(valueLeft, DSLValue::Type::DOUBLE))||(typeCheck(valueLeft, DSLValue::Type::BOOLEAN)))) {
           errorThrown = true;
           co_return;
         }
-
-        Symbol symbol = valueRight == valueLeft ? Symbol{DSLValue{true}, false}: Symbol{DSLValue{false}, false};
+  
+        if(equal(valueLeft,valueRight)){
+          Symbol symbol = *(equal(valueLeft,valueRight))? Symbol{DSLValue{true}, false}: Symbol{DSLValue{false}, false};
+          env.allocateReturn(symbol);
+        }
  
-        env.allocateReturn(symbol);
+        
       } break;
       case Type::NOTEQUALS: {
-
-        if (!isSameType(valueRight, valueLeft)) {
+        if (!isSameType(valueRight, valueLeft) || !((typeCheck(valueLeft, DSLValue::Type::STRING)) || (typeCheck(valueLeft, DSLValue::Type::INT))||(typeCheck(valueLeft, DSLValue::Type::DOUBLE))||(typeCheck(valueLeft, DSLValue::Type::BOOLEAN)))) {
           errorThrown = true;
           co_return;
         }
 
-        Symbol symbol = valueRight != valueLeft ? Symbol{DSLValue{true}, false}: Symbol{DSLValue{false}, false};
- 
-        env.allocateReturn(symbol);
+        if(equal(valueLeft,valueRight)){
+          Symbol symbol = *(equal(valueLeft,valueRight))? Symbol{DSLValue{false}, false}: Symbol{DSLValue{true}, false};
+          env.allocateReturn(symbol);
+        }
       }
       
-
       break;
       case Type::GREATER: {
 
-        if (!isSameType(valueRight, valueLeft)) {
+        if (!isSameType(valueRight, valueLeft) || !((typeCheck(valueLeft, DSLValue::Type::STRING)) || (typeCheck(valueLeft, DSLValue::Type::INT))||(typeCheck(valueLeft, DSLValue::Type::DOUBLE)))) {
           errorThrown = true;
           co_return;
         }
 
-        Symbol symbol = valueLeft > valueRight ? Symbol{DSLValue{true}, false}:  Symbol{DSLValue{false}, false};
- 
-        env.allocateReturn(symbol);
+        if(greater(valueLeft,valueRight)){
+          Symbol symbol = *(greater(valueLeft,valueRight))? Symbol{DSLValue{true}, false}: Symbol{DSLValue{false}, false};
+          env.allocateReturn(symbol);
+        }
       } break;
       case Type::LESS:
       {
-        if (!isSameType(valueRight, valueLeft)) {
+        if (!isSameType(valueRight, valueLeft) || !((typeCheck(valueLeft, DSLValue::Type::STRING)) || (typeCheck(valueLeft, DSLValue::Type::INT))||(typeCheck(valueLeft, DSLValue::Type::DOUBLE)))) {
           errorThrown = true;
           co_return;
         }
 
-       Symbol symbol = valueLeft < valueRight ? Symbol{DSLValue{true}, false}:  Symbol{DSLValue{false}, false};
- 
-        env.allocateReturn(symbol);
+        if(smaller(valueLeft,valueRight)){
+          Symbol symbol = *(smaller(valueLeft,valueRight))? Symbol{DSLValue{true}, false}: Symbol{DSLValue{false}, false};
+          env.allocateReturn(symbol);
+        }
       }
         break;
       case Type::LESSEQUALS:
          {
-        if (!isSameType(valueRight, valueLeft)) {
+        if (!isSameType(valueRight, valueLeft) || !((typeCheck(valueLeft, DSLValue::Type::STRING)) || (typeCheck(valueLeft, DSLValue::Type::INT))||(typeCheck(valueLeft, DSLValue::Type::DOUBLE)))) {
           errorThrown = true;
           co_return;
         }
 
-       Symbol symbol = valueLeft <= valueRight ? Symbol{DSLValue{true}, false}:  Symbol{DSLValue{false}, false};
- 
-        env.allocateReturn(symbol);
+        if(smaller(valueLeft,valueRight) && equal(valueLeft,valueRight) ){
+          Symbol symbol = (*(smaller(valueLeft,valueRight)) || (*(equal(valueLeft,valueRight)))) ? Symbol{DSLValue{true}, false}: Symbol{DSLValue{false}, false};
+          env.allocateReturn(symbol);
+        }
       }
 
         break;
@@ -349,15 +364,12 @@ private:
 
     switch (node.getUnaryOperator()) {
     case Type::NOT: {
-
       auto childTask = child.accept(*this);
       DSLValue value;
       while (not childTask.isDone()) {
         co_await childTask;
       }
-
       auto handle = environment->getReturnValue();
-      // check to make sure this is bool
 
       if (handle) {
         value = *handle;
@@ -365,12 +377,14 @@ private:
         errorThrown = true;
         co_return;
       }
+      if(!typeCheck(value,DSLValue::Type::BOOLEAN)){
+          errorThrown = true;
+          co_return;
+      }
+      //notOperation(value);
+      Symbol symbol = Symbol{value, false};
 
-      std::cout << "\n in unary, allocating ! of " << value;
-      // DSLValue notValue = value.unaryOperation(Not{});
-      // Symbol symbol = Symbol{notValue, false};
-
-      // env.allocateReturn(symbol);
+      env.allocateReturn(symbol);
 
     } break;
 
@@ -385,7 +399,7 @@ private:
 
     auto env = environment->createChildEnvironment();
 
-    // use find to find the variable
+    
 
     Environment::Name key = node.getLexeme();
     auto handle = env.find(key);
@@ -396,7 +410,7 @@ private:
 
     Symbol symbol = Symbol{*handle, false};
 
-    // set name of variable in allocate return
+    
     env.allocateReturn(symbol);
   };
   void visitLeave(VariableExpression &node){};
@@ -409,8 +423,8 @@ private:
   Communicator &communicator;
 };
 
-// TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
-// and Rules
+
+
 class Printer : public ASTVisitor {
 public:
   virtual ~Printer() { std::cout << "\n"; }

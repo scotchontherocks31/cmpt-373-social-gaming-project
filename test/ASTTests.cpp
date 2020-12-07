@@ -153,37 +153,37 @@ TEST(ExpressionNodes, FormatNodeExpressionParsing) {
   EXPECT_EQ(output, answer);
 }
 
-// TEST(ExpressionNodes, BinaryNodeVisitorDot) {
-//   auto parent = std::make_unique<AST::Environment>();
-//   AST::Json playerJson;
-//   playerJson["id"] = 1;
-//   playerJson["name"] = "Mike Tyson";
-//   playerJson["food"] = "Jones";
+TEST(ExpressionNodes, BinaryNodeVisitorDot) {
+  auto parent = std::make_unique<AST::Environment>();
+  AST::Json playerJson;
+  playerJson["id"] = 1;
+  playerJson["name"] = "Mike Tyson";
+  playerJson["food"] = "Jones";
 
-//   AST::Symbol symbol = AST::Symbol{AST::DSLValue{playerJson}, false};
+  AST::Symbol symbol = AST::Symbol{AST::DSLValue{playerJson}, false};
 
-//   AST::Environment::Name key = "player";
-//   parent->allocate(key, symbol);
-//   EXPECT_EQ(symbol.dsl, parent->find(key));
+  AST::Environment::Name key = "player";
+  parent->allocate(key, symbol);
+  EXPECT_EQ(symbol.dsl, parent->find(key));
 
-//   AST::ExpressionASTParser rdp("player.name");
-//   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
+  AST::ExpressionASTParser rdp("player.name");
+  std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
 
-//   AST::PrintCommunicator printComm{};
-//   AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
-//   auto root = AST::AST(std::move(ast));
-//   auto task = root.accept(interp);
-//   while (task.resume()) {
-//   }
+  AST::PrintCommunicator printComm{};
+  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+  auto root = AST::AST(std::move(ast));
+  auto task = root.accept(interp);
+  while (task.resume()) {
+  }
 
-//     auto env = interp.getEnvironment();
+    auto env = interp.getEnvironment();
 
-//     DSLValue output = *(env->getReturnValue());
-//     DSLValue answer{"Mike Tyson"};
+    DSLValue output = *(env->getReturnValue());
+    DSLValue answer{"Mike Tyson"};
 
-//     EXPECT_EQ(output, answer);
+    EXPECT_EQ(output, answer);
 
-// }
+}
 
 TEST(ExpressionNodes, BinaryNodeVisitorDotList) {
 
@@ -218,7 +218,6 @@ TEST(ExpressionNodes, BinaryNodeVisitorDotList) {
   answer.push_back(DSLValue{"Paper"});
 
   for (size_t i = 0; i < 3; ++i) {
-    // std::cout<<*output[i];
     EXPECT_EQ(*output[i], answer[i]);
   }
 }
@@ -287,8 +286,7 @@ TEST(ExpressionNodes, BinaryNodeVisitorEquals) {
   EXPECT_EQ(*(env->getReturnValue()), answer);
 
   auto parent2 = std::make_unique<AST::Environment>();
-  // AST::Symbol symbol = AST::Symbol{AST::DSLValue{100}, false};
-  // AST::Environment::Name key = "player1Score";
+
   parent2->allocate(key, symbol);
 
   AST::Symbol symbol3 = AST::Symbol{AST::DSLValue{200}, false};
@@ -311,7 +309,7 @@ TEST(ExpressionNodes, BinaryNodeVisitorEquals) {
 
 TEST(ExpressionNodes, BinaryNodeVisitorNotEquals) {
 
-  // Test Binary Node Equals
+  
   auto parent = std::make_unique<AST::Environment>();
 
   AST::Symbol symbol = AST::Symbol{AST::DSLValue{100}, false};
@@ -338,7 +336,7 @@ TEST(ExpressionNodes, BinaryNodeVisitorNotEquals) {
 
 TEST(ExpressionNodes, BinaryNodeVisitorGreaterThan) {
 
-  // Test Binary Node Equals
+  
   auto parent = std::make_unique<AST::Environment>();
 
   AST::Symbol symbol = AST::Symbol{AST::DSLValue{100}, false};
@@ -365,7 +363,7 @@ TEST(ExpressionNodes, BinaryNodeVisitorGreaterThan) {
 
 TEST(ExpressionNodes, BinaryNodeVisitorLessThan) {
 
-  // Test Binary Node Equals
+  
   auto parent = std::make_unique<AST::Environment>();
 
   AST::Symbol symbol = AST::Symbol{AST::DSLValue{100}, false};
@@ -393,10 +391,10 @@ TEST(ExpressionNodes, BinaryNodeVisitorLessThan) {
 
  TEST(ExpressionNodes, BinaryNodeVisitorLessThanEquals) {
 
-  // Test Binary Node Equals
+  
   auto parent = std::make_unique<AST::Environment>();
 
-  AST::Symbol symbol = AST::Symbol{AST::DSLValue{100}, false};
+  AST::Symbol symbol = AST::Symbol{AST::DSLValue{101}, false};
   AST::Environment::Name key = "player1Score";
   parent->allocate(key, symbol);
 
@@ -414,7 +412,7 @@ TEST(ExpressionNodes, BinaryNodeVisitorLessThan) {
   }
 
   auto env = interp.getEnvironment();
-   DSLValue answer{true};
+   DSLValue answer{false};
     EXPECT_EQ(*(env->getReturnValue()), answer);
 
  }
@@ -444,5 +442,5 @@ TEST(ExpressionNodes, BinaryNodeVisitorLessThan) {
 
 //     auto env = interp.getEnvironment();
 //     DSLValue answer{true};
-//     //EXPECT_EQ(*(env->getReturnValue()), answer);
+//     EXPECT_EQ(*(env->getReturnValue()), answer);
 // }
