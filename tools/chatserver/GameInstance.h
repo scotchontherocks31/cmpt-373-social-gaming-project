@@ -60,4 +60,5 @@ private:
   std::list<PlayerMessage> inboundMessageQueue;
   coro::Task<> gameTask;
   std::unique_ptr<AST::Interpreter> interpreter;
+  bool hasError() const;
 };
