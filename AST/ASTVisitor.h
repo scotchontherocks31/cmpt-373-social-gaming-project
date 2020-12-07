@@ -39,7 +39,6 @@ public:
 
   coro::Task<> visit(FormatNode &node);
   coro::Task<> visit(Variable &node);
-  coro::Task<> visit(Condition &node);
 
   coro::Task<> visit(Rules &node);
   coro::Task<> visit(AllSwitchCases &node);
@@ -81,7 +80,6 @@ private:
 
   virtual coro::Task<> visitHelper(FormatNode &) = 0;
   virtual coro::Task<> visitHelper(Variable &) = 0;
-  virtual coro::Task<> visitHelper(Condition &) = 0;
 
   virtual coro::Task<> visitHelper(Rules &) = 0;
   virtual coro::Task<> visitHelper(AllSwitchCases &) = 0;
@@ -161,14 +159,6 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(Variable &node) final {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
-    }
-    visitLeave(node);
-    co_return;
-  }
-  coro::Task<> visitHelper(Condition &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -422,8 +412,6 @@ private:
   void visitLeave(FormatNode &node){};
   void visitEnter(Variable &node){};
   void visitLeave(Variable &node){};
-  void visitEnter(Condition &node){};
-  void visitLeave(Condition &node){};
 
   coro::Task<> visitEnter(Rules &node) {
 
@@ -540,14 +528,6 @@ private:
     co_return;
   }
   coro::Task<> visitHelper(Variable &node) override {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
-    }
-    visitLeave(node);
-    co_return;
-  }
-  coro::Task<> visitHelper(Condition &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
       co_await child->accept(*this);
@@ -798,17 +778,13 @@ private:
   void visitLeave(Scores &node) { out << ")"; };
 
   void visitEnter(FormatNode &node) {
-    out << "(FormatNode \"" << node.getFormat() << "\"";
+    out << "(FormatNode\"" << node.getFormat() << "\"";
   };
   void visitLeave(FormatNode &node) { out << ")"; };
   void visitEnter(Variable &node) {
     out << "(Variable\"" << node.getLexeme() << "\"";
   };
   void visitLeave(Variable &node) { out << ")"; };
-  void visitEnter(Condition &node) {
-    out << "(Condition \"" << node.getCond() << "\" ";
-  };
-  void visitLeave(Condition &node) { out << ")"; };
 
   void visitEnter(Rules &node) { out << "(Rules"; };
   void visitLeave(Rules &node) { out << ")"; };

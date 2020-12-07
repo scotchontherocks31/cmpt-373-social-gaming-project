@@ -32,12 +32,6 @@ coro::Task<> ASTVisitor::visit(Variable &node) {
     co_await coroutine;
   }
 }
-coro::Task<> ASTVisitor::visit(Condition &node) {
-  auto coroutine = visitHelper(node);
-  while (not coroutine.isDone()) {
-    co_await coroutine;
-  }
-}
 
 coro::Task<> ASTVisitor::visit(Rules &node) {
   auto coroutine = visitHelper(node);

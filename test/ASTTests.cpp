@@ -119,7 +119,7 @@ TEST(ASTprinter, ParallelForandInput) {
   std::string output = printer.returnOutput();
   std::string answer =
       "(ParallelFor(Variable\"players\")(Variable\"player\")(Rules("
-      "GlobalMessage(FormatNode \"Message One\"))(InputText(FormatNode \"How "
+      "GlobalMessage(FormatNode\"Message One\"))(InputText(FormatNode\"How "
       "are you\")(Variable\"player\")(Variable\"response\"))))";
   EXPECT_EQ(output, answer);
 }

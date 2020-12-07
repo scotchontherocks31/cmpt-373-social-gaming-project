@@ -38,13 +38,6 @@ coro::Task<> Variable::acceptHelper(ASTVisitor &visitor) {
   }
 }
 
-coro::Task<> Condition::acceptHelper(ASTVisitor &visitor) {
-  auto coroutine = visitor.visit(*this);
-  while (not coroutine.isDone()) {
-    co_await coroutine;
-  }
-}
-
 coro::Task<> Rules::acceptHelper(ASTVisitor &visitor) {
   auto coroutine = visitor.visit(*this);
   while (not coroutine.isDone()) {

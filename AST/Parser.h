@@ -94,7 +94,6 @@ private:
   std::unique_ptr<ASTNode> parseExpression(const std::string &);
   std::unique_ptr<FormatNode> parseFormatNode(const std::string &);
   std::unique_ptr<Variable> parseVariable(const std::string &);
-  std::unique_ptr<Condition> parseCondition(const std::string &);
   std::unique_ptr<AllSwitchCases> parseSwitchCases(const Json &);
   std::unique_ptr<AllWhenCases> parseWhenCases(const Json &);
 
