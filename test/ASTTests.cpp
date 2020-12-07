@@ -1,8 +1,15 @@
 #include "ASTNode.h"
 #include "ASTVisitor.h"
+#include "CFGParser.h"
+#include "DSLValue.h"
 #include "Environment.h"
+#include "ExpressionASTParser.h"
+#include "Parser.h"
+
 #include "gtest/gtest.h"
 
+#include "json.hpp"
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
@@ -10,6 +17,44 @@
 #include <variant>
 
 using namespace testing;
+using namespace AST;
+
+TEST(ExpressionNodes, RecursiveNesting) {
+
+  std::unique_ptr<AST::BinaryNode> bin = std::make_unique<AST::BinaryNode>(
+      std::make_unique<AST::VariableExpression>(std::string{"player"}),
+      std::make_unique<AST::VariableExpression>(std::string{"size"}),
+      Type::DOT);
+
+  std::unique_ptr<AST::UnaryNode> un = std::make_unique<AST::UnaryNode>(
+      std::make_unique<AST::VariableExpression>(std::string{"random"}),
+      Type::DOT);
+
+  std::unique_ptr<AST::BinaryNode> bin3 = std::make_unique<AST::BinaryNode>(
+      std::move(bin), std::move(un), Type::DOT);
+}
+
+TEST(ExpressionNodes, ExpressionFunctions) {
+
+  std::vector<std::unique_ptr<AST::ExpressionNode>> args;
+
+  std::unique_ptr<AST::ExpressionNode> arg1 =
+      std::make_unique<AST::VariableExpression>(std::string{"player"});
+  std::unique_ptr<AST::BinaryNode> arg2 = std::make_unique<AST::BinaryNode>(
+      std::make_unique<AST::VariableExpression>(std::string{"weapon"}),
+      std::make_unique<AST::VariableExpression>(std::string{"beats"}),
+      Type::EQUALS);
+
+  args.push_back(std::move(arg1));
+  args.push_back(std::move(arg2));
+
+  std::unique_ptr<AST::FunctionCallNode> func =
+      std::make_unique<AST::FunctionCallNode>(
+          std::make_unique<AST::VariableExpression>(std::string{"collect"}),
+          std::move(args));
+
+  EXPECT_EQ(func->getFunctionName().getLexeme(), "collect");
+}
 
 TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
@@ -24,13 +69,14 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
   auto root = AST::AST(std::move(mess));
 
   std::stringstream stream;
+
   AST::Printer printer = AST::Printer{stream};
 
   auto task = root.accept(printer);
   while (task.resume()) {
   }
 
-  std::string answer = "(GlobalMessage(FormatNode \"Message One\"))";
+  std::string answer = "(GlobalMessage(FormatNode\"Message One\"))";
   std::string output = printer.returnOutput();
 
   EXPECT_EQ(output, answer);
@@ -73,7 +119,36 @@ TEST(ASTprinter, ParallelForandInput) {
   std::string output = printer.returnOutput();
   std::string answer =
       "(ParallelFor(Variable\"players\")(VarDeclaration\"player\")(Rules("
-      "GlobalMessage(FormatNode \"Message One\"))(InputText(FormatNode \"How "
+      "GlobalMessage(FormatNode\"Message One\"))(InputText(FormatNode\"How "
       "are you\")(Variable\"player\")(VarDeclaration\"response\"))))";
+  EXPECT_EQ(output, answer);
+}
+
+TEST(ExpressionNodes, FormatNodeExpressionParsing) {
+  auto parent = AST::PopulatedEnvironment{std::make_unique<AST::Environment>()};
+
+  AST::PrintCommunicator printComm{};
+  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+
+  auto parser = AST::JSONToASTParser(std::string{
+      "{\"configuration\":{\"name\":\"Rock,Paper,Scissors\",\"playercount\":{"
+      "\"min\":2,\"max\":4},\"audience\":false,\"setup\":{\"Rounds\":10}},"
+      "\"constants\":{},\"variables\":{},\"per-player\":{},\"per-audience\":{},"
+      "\"rules\":[{\"rule\":\"global-message\",\"value\":\"{player.name}is "
+      "your favorite person,fav food is {player.food},and # of players "
+      "is{players.size}\"}]}"});
+
+  AST::AST ast = parser.parse(); // AST With GlobalMessage
+  auto root = AST::AST(std::move(ast));
+  std::stringstream stream;
+  AST::Printer printer = AST::Printer{stream};
+  auto task = root.accept(printer);
+  while (task.resume()) {
+  }
+  std::string answer =
+      "(Rules(GlobalMessage(FormatNode\"{player.name}is your favorite "
+      "person,fav food is {player.food},and # of players is{players.size}\")))";
+  std::string output = printer.returnOutput();
+
   EXPECT_EQ(output, answer);
 }

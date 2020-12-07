@@ -1,6 +1,13 @@
 #include "Parser.h"
 #include "ASTVisitor.h"
+#include "CFGParser.h"
+#include "ExpressionASTParser.h"
+#include <algorithm>
 #include <assert.h>
+#include <exception>
+#include <iostream>
+#include <map>
+#include <regex>
 using Json = nlohmann::json;
 
 namespace AST {
@@ -29,7 +36,6 @@ std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
 }
 
 std::unique_ptr<FormatNode> JSONToASTParser::parseFormatNode(const Json &json) {
-
   return std::make_unique<FormatNode>(json["value"]);
 }
 
@@ -150,6 +156,13 @@ std::optional<CombinedParsers> generateParsers(std::string json) {
   auto astParser = JSONToASTParser{std::move(jsonObj.at("rules"))};
   auto configParser = ConfigParser{std::move(jsonObj)};
   return CombinedParsers{std::move(configParser), std::move(astParser)};
+}
+
+std::unique_ptr<ASTNode>
+JSONToASTParser::parseExpression(const std::string &str) {
+
+  ExpressionASTParser expressionParse(str);
+  return expressionParse.parse_S();
 }
 
 } // namespace AST
