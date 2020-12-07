@@ -94,6 +94,8 @@ std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
   case RuleID::INPUT_VOTE:
     return parseInputVote(json);
     break;
+  default:
+    return std::unique_ptr<ASTNode>{};
   }
 }
 
