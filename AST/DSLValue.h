@@ -35,23 +35,23 @@ template <typename T>
 concept DSL = std::is_same_v<DSLValue, std::remove_cvref_t<T>>;
 
 template <typename F, typename... Types>
-concept BoundedUnaryOperation = requires(F &&f, Types &&... types) {
+concept BoundedUnaryOperation = requires(F &&f, Types &&...types) {
   (std::invoke(std::forward<F>(f), std::forward<Types>(types)), ...);
 };
 
 template <typename F, typename Type1, typename... Types2>
-requires requires(F &&f, Type1 &&type, Types2 &&... types) {
+requires requires(F &&f, Type1 &&type, Types2 &&...types) {
   (std::invoke(std::forward<F>(f), std::forward<Type1>(type),
                std::forward<Types2>(types)),
    ...);
 }
-constexpr inline void NestedApply(F &&f, Type1 &&type, Types2 &&... types) {
+constexpr inline void NestedApply(F &&f, Type1 &&type, Types2 &&...types) {
   return;
 }
 
 template <typename F, typename... Types1>
-concept BoundedSymmetricBinaryOperation = requires(F &&f, Types1 &&... types1,
-                                                   Types1 &&... types2) {
+concept BoundedSymmetricBinaryOperation = requires(F &&f, Types1 &&...types1,
+                                                   Types1 &&...types2) {
   (NestedApply(f, std::forward<Types1>(types1),
                std::forward<Types1>(types2)...),
    ...);
