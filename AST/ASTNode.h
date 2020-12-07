@@ -154,6 +154,12 @@ public:
     appendChild(std::move(to));
     appendChild(std::move(value));
   }
+  Variable &getTo() const{
+    return *static_cast<Variable *>(children[0].get());
+  }
+  FormatNode &getValue() const{
+    return *static_cast<FormatNode *>(children[1].get());
+  }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -179,6 +185,13 @@ public:
   {
     appendChild(std::move(score));
     this->ascending = ascending;
+  }
+
+  Variable &getScore() const{
+    return *static_cast<Variable *>(children[0].get());
+  }
+  bool getAscending() const{
+    return this->ascending;
   }
 
 private:
@@ -227,6 +240,12 @@ public:
     appendChild(std::move(cond));
     appendChild(std::move(rules));
   }
+  ASTNode &getCond() const{
+    return *static_cast<ASTNode *>(children[0].get());
+  }
+  Rules &getRules() const{
+    return *static_cast<Rules *>(children[1].get());
+  }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -238,6 +257,12 @@ public:
              std::unique_ptr<Rules> &&rules){
     appendChild(std::move(value));
     appendChild(std::move(rules));
+  }
+  FormatNode &getValue() const{
+    return *static_cast<FormatNode *>(children[0].get());
+  }
+  Rules &getRules() const{
+    return *static_cast<Rules *>(children[1].get());
   }
 
 private:
@@ -388,6 +413,14 @@ public:
     appendChild(std::move(varDeclaration));
     appendChild(std::move(rules));
   }
+  ASTNode &getList() const{
+    return *static_cast<ASTNode *>(children[0].get());
+  }
+  Variable &getElement() const
+  {
+    return *static_cast<Variable *>(children[1].get());
+  }
+  Rules &getRules() const { return *static_cast<Rules *>(children[2].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -401,6 +434,10 @@ public:
     appendChild(std::move(condition));
     appendChild(std::move(rules));
   }
+  ASTNode &getCond() const{
+    return *static_cast<ASTNode *>(children[0].get());
+  }
+  Rules &getRules() const { return *static_cast<Rules *>(children[1].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -411,6 +448,7 @@ public:
   InParallel(std::unique_ptr<Rules> &&rules){
     appendChild(std::move(rules));
   }
+  Rules &getRules() const { return *static_cast<Rules *>(children[0].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -418,7 +456,7 @@ private:
 
 class Switch : public ASTNode {
 public:
-  Switch(std::unique_ptr<ASTNode> &&value, //<< value to switch upon >> -> Expression
+  Switch(std::unique_ptr<FormatNode> &&value, //<< value to switch upon >> -> Expression
          std::unique_ptr<Variable> &&list, //<< name of a constant list of allowable values >> no Expression needed
          std::unique_ptr<AllSwitchCases> &&cases)
   {
@@ -426,6 +464,13 @@ public:
     appendChild(std::move(list));
     appendChild(std::move(cases));
   }
+  FormatNode &getValue() const{
+    return *static_cast<FormatNode *>(children[0].get());
+  }
+  Variable &getList() const{
+    return *static_cast<Variable *>(children[1].get());
+  }
+  AllSwitchCases &getAllSwitchCases() const { return *static_cast<AllSwitchCases *>(children[2].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -436,6 +481,7 @@ public:
   When(std::unique_ptr<AllWhenCases> &&cases){
     appendChild(std::move(cases));
   }
+  AllWhenCases &getAllWhenCases() const { return *static_cast<AllWhenCases *>(children[0].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -448,6 +494,7 @@ public:
   {
     appendChild(std::move(variable));
   }
+  Variable &getList() const { return *static_cast<Variable *>(children[0].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -462,6 +509,8 @@ public:
     appendChild(std::move(target));
     appendChild(std::move(list));
   }
+  Variable &getTarget() const { return *static_cast<Variable *>(children[0].get()); }
+  ASTNode &getList() const { return *static_cast<ASTNode *>(children[1].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -473,6 +522,7 @@ public:
   {
     appendChild(std::move(variable));
   }
+  Variable &getList() const { return *static_cast<Variable *>(children[0].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -485,15 +535,20 @@ public:
     appendChild(std::move(listToSort));
   }
 
+  Variable &getList() const { return *static_cast<Variable *>(children[0].get()); }
   void addAttribute(std::unique_ptr<ASTNode> &&attr) //<< Attribute of list elements to use for comparison.
                                                      //   Only valid when the list contains maps.>>
                                                      // Attribute has to be deciphered, therefore
                                                      // EXPRESSION
-  {  
+  {
     appendChild(std::move(attr));
+    this->hasAttribute = true;
   }
+  bool checkAttribute() const {return this->hasAttribute;}  //Run this before getAttribute, else Seg fault
+  ASTNode &getAttribute() const { return *static_cast<ASTNode *>(children[1].get()); }
 
 private:
+  bool hasAttribute = false;
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 
@@ -507,6 +562,9 @@ public:
     appendChild(std::move(toList));
     appendChild(std::move(count));
   }
+  Variable &getFromList() const { return *static_cast<Variable *>(children[0].get()); }
+  Variable &getToList() const { return *static_cast<Variable *>(children[1].get()); }
+  ASTNode &getCount() const { return *static_cast<ASTNode *>(children[2].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -520,6 +578,8 @@ public:
     appendChild(std::move(fromList));
     appendChild(std::move(count));
   }
+  Variable &getToList() const { return *static_cast<Variable *>(children[0].get()); }
+  ASTNode &getCount() const { return *static_cast<ASTNode *>(children[1].get()); }
 
 private:
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
@@ -535,6 +595,8 @@ public:
     appendChild(std::move(intVar));
     this->value = value;
   }
+  ASTNode &getIntVar() const { return *static_cast<ASTNode *>(children[0].get()); }
+  int getValue() { return this->value; }
 
 private:
   int value;
@@ -547,6 +609,7 @@ public:
         std::unique_ptr<Variable> &&mode, //Store "exact" OR "at most" OR "track", possibly use enum to track?
         std::unique_ptr<Rules> &&rules)
   {
+    this->duration = duration;
     appendChild(std::move(mode));
     appendChild(std::move(rules));
   }
@@ -556,10 +619,17 @@ public:
                                                 // Guessing it's Expression
   {
     appendChild(std::move(cond));
+    this->hasFlag = true;
   }
+  int getDuration() { return this->duration; }
+  Variable &getMode() const { return *static_cast<Variable *>(children[0].get()); }
+  Rules &getCount() const { return *static_cast<Rules *>(children[1].get()); }
+  bool checkFlag() const { return this->hasFlag; }
+  ASTNode &getFlag() const { return *static_cast<ASTNode *>(children[2].get()); }
 
 private:
   int duration;
+  bool hasFlag = false;
   virtual coro::Task<> acceptHelper(ASTVisitor &visitor) override;
 };
 

@@ -203,7 +203,7 @@ std::unique_ptr<InParallel> JSONToASTParser::parseInParallel(const Json &json){
 
 std::unique_ptr<Switch> JSONToASTParser::parseSwitch(const Json &json){
 
-  auto &&value = parseExpression(json["value"]);
+  auto &&value = parseFormatNode(json["value"]);
   auto &&list = parseVariable(json["list"]);
   auto &&cases = parseSwitchCases(json["cases"]);
 
