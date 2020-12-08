@@ -86,9 +86,12 @@ GameInstance::populateEnvironment(AST::Configurator &config) {
   co_return env;
 }
 
+inline bool GameInstance::hasError() const {
+  return interpreter ? interpreter->hasError() : false;
+}
+
 void GameInstance::resumeGame() {
-  while (gameTask.resume() and not waitingForUserInput() and
-         not interpreter->hasError()) {
+  while (gameTask.resume() and not waitingForUserInput() and not hasError()) {
   }
 }
 

@@ -86,7 +86,7 @@ public:
       : environment{std::move(env.envPtr)}, players{std::move(env.players)},
         communicator{communicator} {}
 
-  bool hasError() { return errorThrown; }
+  bool hasError() const { return errorThrown; }
 
 private:
   bool errorThrown = false;
