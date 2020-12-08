@@ -152,14 +152,7 @@ private:
     visitLeave(node);
     co_return;
   }
-  coro::Task<> visitHelper(GlobalMessage &node) override {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
-    }
-    visitLeave(node);
-    co_return;
-  }
+  coro::Task<> visitHelper(GlobalMessage &node) override;
   coro::Task<> visitHelper(Scores &node) override {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
@@ -404,12 +397,7 @@ private:
 
   void visitEnter(Message &node){};
   void visitLeave(Message &node){};
-  void visitEnter(GlobalMessage &node){};
-  void visitLeave(GlobalMessage &node) {
-    const auto &formatMessageNode = node.getFormatNode();
-    auto &&formatMessage = formatMessageNode.getFormat();
-    communicator.sendGlobalMessage(formatMessage);
-  };
+
   void visitEnter(Scores &node){};
   void visitLeave(Scores &node){};
 

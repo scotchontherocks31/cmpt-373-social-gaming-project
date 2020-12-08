@@ -230,4 +230,19 @@ coro::Task<> Interpreter::visitHelper(FormatNode &node) {
   env.allocateReturn(Symbol{DSLValue{formattedStr}});
 }
 
+coro::Task<> Interpreter::visitHelper(GlobalMessage &node) {
+  for (auto &&child : node.getChildren()) {
+    co_await child->accept(*this);
+  }
+  auto result = environment->getConstReturnValue();
+  if (!result) {
+    errorThrown = true;
+    co_await coro::coroutine::suspend_always();
+  }
+  const DSLValue &dsl = *result;
+  std::ostringstream sstream;
+  sstream << dsl;
+  communicator.sendGlobalMessage(sstream.str());
+}
+
 } // namespace AST
