@@ -102,7 +102,7 @@ std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
 
 std::unique_ptr<FormatNode>
 JSONToASTParser::parseFormatNode(const std::string &str) {
-  std::regex argRegex{R"(\{.*\})"};
+  std::regex argRegex{R"(\{[^\{\}\n]*\})"};
   std::vector<std::string> arguments;
   std::sregex_iterator reBegin{str.begin(), str.end(), argRegex};
   std::sregex_iterator reEnd{};
