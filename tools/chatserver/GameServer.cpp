@@ -128,9 +128,9 @@ void GameServer::processMessages() {
       // If not a command then just output a message
       std::ostringstream output;
       output << user.name + "> " + message.text + "\n";
-      gameManager.dispatch(user, std::move(message.text));
       auto &room = roomManager.getRoomFromUser(user);
       sendMessageToRoom(room, output.str());
+      gameManager.dispatch(user, std::move(message.text));
     }
     inboundMessages.pop_front();
   }
@@ -254,9 +254,9 @@ GameServer::initializeGameFunctionMap() {
           std::ostringstream output;
           auto &instance = gameManager.getGameInstance(user);
           output << "Starting game \"" << tokens[2] << "\"\n";
+          sendMessageToUser(user, output.str());
           auto &[ast, config] = gameManager.getGame(tokens[2]);
           instance.startGame(ast, config, user);
-          sendMessageToUser(user, output.str());
         }
       };
   std::function<functionType> cleanFunc =
