@@ -21,7 +21,7 @@ TEST(ExpressionASTStructure, UnaryWithSize) {
   AST::ExpressionASTParser rdp("winners.size");
 
   std::unique_ptr<AST::ExpressionNode> result = rdp.parse_S();
-  auto enviro = std::make_unique<AST::Environment>();
+  auto enviro = AST::PopulatedEnvironment{std::make_unique<AST::Environment>()};
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
   auto root = AST::AST(std::move(result));
@@ -44,7 +44,7 @@ TEST(ExpressionASTStructure, BinaryWithEquals) {
   AST::ExpressionASTParser rdp("winners.size == players.size");
   std::unique_ptr<AST::ExpressionNode> result = rdp.parse_S();
 
-  auto enviro = std::make_unique<AST::Environment>();
+  auto enviro = AST::PopulatedEnvironment{std::make_unique<AST::Environment>()};
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
   auto root = AST::AST(std::move(result));
@@ -70,7 +70,7 @@ TEST(ExpressionASTStructure, UnaryandFunction) {
   AST::ExpressionASTParser rdp(
       "!players.elements.weapon.contains(weapon.name)");
   std::unique_ptr<AST::ExpressionNode> result = rdp.parse_S();
-  auto enviro = std::make_unique<AST::Environment>();
+  auto enviro = AST::PopulatedEnvironment{std::make_unique<AST::Environment>()};
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
 

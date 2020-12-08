@@ -58,7 +58,7 @@ TEST(ExpressionNodes, ExpressionFunctions) {
 
 TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
-  auto enviro = std::make_unique<AST::Environment>();
+  auto enviro = AST::PopulatedEnvironment{std::make_unique<AST::Environment>()};
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
 
@@ -84,7 +84,7 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
 TEST(ASTprinter, ParallelForandInput) {
 
-  auto enviro = std::make_unique<AST::Environment>();
+  auto enviro = AST::PopulatedEnvironment{std::make_unique<AST::Environment>()};
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
 
@@ -124,18 +124,14 @@ TEST(ASTprinter, ParallelForandInput) {
 }
 
 TEST(ExpressionNodes, FormatNodeExpressionParsing) {
-  auto parent = std::make_unique<AST::Environment>();
 
-  AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
-
-  auto parser = AST::JSONToASTParser(std::string{
-      "{\"configuration\":{\"name\":\"Rock,Paper,Scissors\",\"playercount\":{"
-      "\"min\":2,\"max\":4},\"audience\":false,\"setup\":{\"Rounds\":10}},"
-      "\"constants\":{},\"variables\":{},\"per-player\":{},\"per-audience\":{},"
-      "\"rules\":[{\"rule\":\"global-message\",\"value\":\"{player.name}is "
-      "your favorite person,fav food is {player.food},and # of players "
-      "is{players.size}\"}]}"});
+  auto parser = AST::JSONToASTParser(
+      R"([
+          {
+            "rule": "global-message",
+            "value": "{player.name}is your favorite person,fav food is {player.food},and # of players is{players.size}"
+          }
+        ])"_json);
 
   AST::AST ast = parser.parse(); // AST With GlobalMessage
   auto root = AST::AST(std::move(ast));
