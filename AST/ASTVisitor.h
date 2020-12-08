@@ -5,7 +5,9 @@
 #include "CFGParser.h"
 #include "DSLValue.h"
 #include "Environment.h"
+#include "Player.h"
 #include <algorithm>
+#include <deque>
 #include <iostream>
 #include <json.hpp>
 #include <map>
@@ -18,9 +20,16 @@ namespace AST {
 
 using Json = nlohmann::json;
 
+struct PlayerMessage {
+  int playerId;
+  std::string message;
+};
+
 class Communicator {
 public:
   virtual void sendGlobalMessage(std::string message) = 0;
+  virtual void sendToOwner(std::string message) = 0;
+  virtual std::deque<PlayerMessage> receiveFromOwner() = 0;
 };
 
 class PrintCommunicator : public Communicator {
@@ -28,6 +37,10 @@ public:
   void sendGlobalMessage(std::string message) override {
     std::cout << message << std::endl;
   }
+  void sendToOwner(std::string message) override {
+    std::cout << message << std::endl;
+  }
+  std::deque<PlayerMessage> receiveFromOwner() override { return {}; };
 };
 
 class ASTVisitor {
@@ -60,12 +73,18 @@ private:
   virtual coro::Task<> visitHelper(FunctionCallNode &) = 0;
 };
 
+struct PopulatedEnvironment {
+  std::unique_ptr<Environment> envPtr;
+  PlayerList players;
+};
+
 // TODO: Add new visitors for new nodes : ParallelFor, Variable, VarDeclaration
 // and Rules
 class Interpreter : public ASTVisitor {
 public:
-  Interpreter(std::unique_ptr<Environment> &&env, Communicator &communicator)
-      : environment{std::move(env)}, communicator{communicator} {}
+  Interpreter(PopulatedEnvironment &&env, Communicator &communicator)
+      : environment{std::move(env.envPtr)}, players{std::move(env.players)},
+        communicator{communicator} {}
 
   bool hasError() const { return errorThrown; }
 
@@ -207,6 +226,7 @@ private:
 
 private:
   std::unique_ptr<Environment> environment;
+  PlayerList players;
   Communicator &communicator;
 };
 

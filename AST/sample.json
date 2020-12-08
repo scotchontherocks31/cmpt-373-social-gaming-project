@@ -1,12 +1,23 @@
 {
     "configuration": {
         "name": "Fav Food",
-        "player count": {"min": 1, "max": 10},
+        "player count": {
+            "min": 1,
+            "max": 10
+        },
         "audience": false,
         "setup": {
-          "Rounds": 1
+            "Rounds": 1,
+            "Int": {
+                "kind": "integer",
+                "prompt": "Enter an integer"
+            }
         }
     },
+    "constants": {},
+    "variables": {},
+    "per-player": {},
+    "per-audience": {},
 
     "rules": [
         {
