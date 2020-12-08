@@ -114,9 +114,9 @@ JSONToASTParser::parseFormatNode(const std::string &str) {
   auto formatStr = std::regex_replace(str, argRegex, "{}");
   std::vector<std::unique_ptr<ExpressionNode>> expressionNodes;
   expressionNodes.reserve(arguments.size());
-  std::transform(arguments.begin(), arguments.end(),
-                 std::back_inserter(expressionNodes),
-                 [this](auto &argStr) { return parseExpression(argStr); });
+  std::transform(
+      arguments.begin(), arguments.end(), std::back_inserter(expressionNodes),
+      [](auto &argStr) { return JSONToASTParser::parseExpression(argStr); });
   return std::make_unique<FormatNode>(std::move(formatStr),
                                       std::move(expressionNodes));
 }
