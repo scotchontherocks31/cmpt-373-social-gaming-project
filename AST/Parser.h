@@ -88,7 +88,7 @@ private:
   std::unique_ptr<ASTNode> parseRule(const Json &);
   std::unique_ptr<Rules> parseRules(const Json &);
 
-  std::unique_ptr<ASTNode> parseExpression(const std::string &);
+  std::unique_ptr<ExpressionNode> parseExpression(const std::string &);
   std::unique_ptr<FormatNode> parseFormatNode(const std::string &);
   std::unique_ptr<Variable> parseVariable(const std::string &);
   std::unique_ptr<AllSwitchCases> parseSwitchCases(const Json &);

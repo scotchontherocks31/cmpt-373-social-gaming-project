@@ -102,8 +102,23 @@ std::unique_ptr<ASTNode> JSONToASTParser::parseRule(const Json &json) {
 
 std::unique_ptr<FormatNode>
 JSONToASTParser::parseFormatNode(const std::string &str) {
-
-  return std::make_unique<FormatNode>(std::move(str));
+  std::regex argRegex{R"(\{.*\})"};
+  std::vector<std::string> arguments;
+  std::sregex_iterator reBegin{str.begin(), str.end(), argRegex};
+  std::sregex_iterator reEnd{};
+  for (auto it = reBegin; it != reEnd; ++it) {
+    auto matchStr = it->str();
+    assert(matchStr.size() > 2);
+    arguments.push_back(matchStr.substr(1, matchStr.size() - 2));
+  }
+  auto formatStr = std::regex_replace(str, argRegex, "{}");
+  std::vector<std::unique_ptr<ExpressionNode>> expressionNodes;
+  expressionNodes.reserve(arguments.size());
+  std::transform(arguments.begin(), arguments.end(),
+                 std::back_inserter(expressionNodes),
+                 [this](auto &argStr) { return parseExpression(argStr); });
+  return std::make_unique<FormatNode>(std::move(formatStr),
+                                      std::move(expressionNodes));
 }
 
 std::unique_ptr<Message> JSONToASTParser::parseMessage(const Json &json) {
@@ -430,7 +445,7 @@ std::optional<CombinedParsers> generateParsers(std::string json) {
   return CombinedParsers{std::move(configParser), std::move(astParser)};
 }
 
-std::unique_ptr<ASTNode>
+std::unique_ptr<ExpressionNode>
 JSONToASTParser::parseExpression(const std::string &str) {
 
   ExpressionASTParser expressionParse(str);
