@@ -166,6 +166,7 @@ void discard(DSLValue &x, size_t count) noexcept;
 void deal(DSLValue &from, DSLValue &&to, size_t count) noexcept;
 void deal(DSLValue &from, DSLValue &to, size_t count) noexcept;
 void notOperation(DSLValue &x) noexcept;
+std::string toString(const DSLValue &value) noexcept;
 std::optional<bool> equal(const DSLValue &x, const DSLValue &y) noexcept;
 std::optional<bool> greater(const DSLValue &x, const DSLValue &y) noexcept;
 std::optional<bool> smaller(const DSLValue &x, const DSLValue &y) noexcept;
