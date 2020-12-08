@@ -93,6 +93,9 @@ inline bool GameInstance::hasError() const {
 void GameInstance::resumeGame() {
   while (gameTask.resume() and not waitingForUserInput() and not hasError()) {
   }
+  if (hasError()) {
+    sendGlobalMessage("Game encountered an error and cannot continue.");
+  }
 }
 
 void GameInstance::startGame(AST::AST &ast, AST::Configurator &config,

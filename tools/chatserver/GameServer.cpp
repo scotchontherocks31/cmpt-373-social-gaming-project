@@ -10,7 +10,6 @@
 using networking::Connection;
 using networking::Message;
 using networking::Server;
-using functionType = std::string(User &user, std::vector<std::string> &tokens);
 
 /// Tokenize raw command string.
 ///
@@ -120,25 +119,18 @@ void GameServer::startRunningLoop() {
 void GameServer::processMessages() {
   while (!inboundMessages.empty()) {
     auto &message = inboundMessages.front();
-    bool isBroadcast = true;
-    std::string output;
     auto &user = getUser(message.connection);
 
     // Check if message is a command (e.g. /create)
     if (message.text[0] == '/') {
-      isBroadcast = false;
-      output = processCommand(user, message.text.substr(1));
+      processCommand(user, message.text.substr(1));
     } else {
       // If not a command then just output a message
-      output = user.name + "> " + message.text + "\n";
-      gameManager.dispatch(user, std::move(message.text));
-    }
-
-    if (isBroadcast) {
+      std::ostringstream output;
+      output << user.name + "> " + message.text + "\n";
       auto &room = roomManager.getRoomFromUser(user);
-      sendMessageToRoom(room, std::move(output));
-    } else {
-      sendMessageToUser(user, std::move(output));
+      sendMessageToRoom(room, output.str());
+      gameManager.dispatch(user, std::move(message.text));
     }
     inboundMessages.pop_front();
   }
@@ -150,17 +142,14 @@ GameServer::initializeFunctionMap() {
   // of them take it for convinience of the user
   std::function<functionType> quitFunc =
       [this](User &user, std::vector<std::string> &tokens) {
-        std::ostringstream output;
         this->server.disconnect(user.connection);
-        output << "Server disconnected\n";
-        return output.str();
+        sendMessageToUser(user, "Server disconnected\n");
       };
   std::function<functionType> shutdownFunc =
       [this](User &user, std::vector<std::string> &tokens) {
         std::ostringstream output;
         running = false;
-        output << "Shutting down\n";
-        return output.str();
+        sendMessageToUser(user, "Shutting down\n");
       };
   std::function<functionType> createFunc =
       [this](User &user, std::vector<std::string> &tokens) {
@@ -172,7 +161,7 @@ GameServer::initializeFunctionMap() {
         } else {
           output << "Room already existed.\n";
         }
-        return output.str();
+        sendMessageToUser(user, output.str());
       };
   std::function<functionType> joinFunc =
       [this](User &user, std::vector<std::string> &tokens) {
@@ -186,7 +175,7 @@ GameServer::initializeFunctionMap() {
           }
         } else
           output << "Token size is less than 2!";
-        return output.str();
+        sendMessageToUser(user, output.str());
       };
   std::function<functionType> leaveFunc =
       [this](User &user, std::vector<std::string> &tokens) {
@@ -194,13 +183,13 @@ GameServer::initializeFunctionMap() {
         roomManager.putUserToRoom(user, RoomManager::GLOBAL_ROOM_NAME);
         output << "Leaving room \""
                << roomManager.getRoomFromUser(user).getName() << "\"...\n";
-        return output.str();
+        sendMessageToUser(user, output.str());
       };
   std::function<functionType> listFunc =
       [this](User &user, std::vector<std::string> &tokens) {
         std::ostringstream output;
         output << roomManager.listRoomsInfo();
-        return output.str();
+        sendMessageToUser(user, output.str());
       };
   std::function<functionType> infoFunc =
       [this](User &user, std::vector<std::string> &tokens) {
@@ -209,37 +198,38 @@ GameServer::initializeFunctionMap() {
         output << "Your name is: " << user.name << "\n"
                << "You are in room: " << room.getName() << " ("
                << room.getCurrentSize() << "/" << room.getCapacity() << ")\n";
-        return output.str();
+        sendMessageToUser(user, output.str());
       };
   std::function<functionType> gameFunc =
       [this](User &user, std::vector<std::string> &tokens) {
-        std::ostringstream output;
-        output << processGameCommand(user, tokens);
-        return output.str();
+        processGameCommand(user, tokens);
+      };
+  std::function<functionType> unknownFunc =
+      [this](User &user, std::vector<std::string> &tokens) {
+        sendMessageToUser(user, "Unknown command.\n");
       };
 
   std::map<GameServer::ServerCommand, std::function<functionType>> theMap = {
-      {GameServer::ServerCommand::QUIT, quitFunc},
-      {GameServer::ServerCommand::SHUTDOWN, shutdownFunc},
-      {GameServer::ServerCommand::CREATE, createFunc},
-      {GameServer::ServerCommand::JOIN, joinFunc},
-      {GameServer::ServerCommand::LEAVE, leaveFunc},
-      {GameServer::ServerCommand::LIST, listFunc},
-      {GameServer::ServerCommand::INFO, infoFunc},
-      {GameServer::ServerCommand::GAME, gameFunc},
-      {GameServer::ServerCommand::LEAVE, leaveFunc}};
+      {GameServer::ServerCommand::QUIT, std::move(quitFunc)},
+      {GameServer::ServerCommand::SHUTDOWN, std::move(shutdownFunc)},
+      {GameServer::ServerCommand::CREATE, std::move(createFunc)},
+      {GameServer::ServerCommand::JOIN, std::move(joinFunc)},
+      {GameServer::ServerCommand::LEAVE, std::move(leaveFunc)},
+      {GameServer::ServerCommand::LIST, std::move(listFunc)},
+      {GameServer::ServerCommand::INFO, std::move(infoFunc)},
+      {GameServer::ServerCommand::GAME, std::move(gameFunc)},
+      {GameServer::ServerCommand::LEAVE, std::move(leaveFunc)},
+      {GameServer::ServerCommand::UNKNOWN, std::move(unknownFunc)}};
   return theMap;
 }
 
-std::string GameServer::processCommand(User &user, std::string rawCommand) {
+void GameServer::processCommand(User &user, std::string rawCommand) {
   // tokenize command
   auto tokens = tokenizeCommand(std::move(rawCommand));
   auto command = matchCommand(tokens[0]);
 
-  std::function<functionType> func = commandToFunctionMap[command];
-  std::string output = func(user, tokens);
-
-  return output;
+  auto &func = commandToFunctionMap[command];
+  func(user, tokens);
 }
 
 std::map<GameServer::GameCommand, std::function<functionType>>
@@ -253,33 +243,37 @@ GameServer::initializeGameFunctionMap() {
           output << "Creating game \"" << tokens[2] << "\"\n";
           gameManager.createGame(std::move(tokens[2]), std::move(tokens[3]));
         }
-        return output.str();
+        sendMessageToUser(user, output.str());
       };
   std::function<functionType> startFunc =
       [this](User &user, std::vector<std::string> &tokens) {
-        std::ostringstream output;
         if (tokens.size() < 3) {
-          output << "Error. Start command requires 1 argument.\n";
+          sendMessageToUser(user,
+                            "Error. Start command requires 1 argument.\n");
         } else {
+          std::ostringstream output;
           auto &instance = gameManager.getGameInstance(user);
           output << "Starting game \"" << tokens[2] << "\"\n";
+          sendMessageToUser(user, output.str());
           auto &[ast, config] = gameManager.getGame(tokens[2]);
           instance.startGame(ast, config, user);
         }
-        return output.str();
       };
   std::function<functionType> cleanFunc =
       [this](User &user, std::vector<std::string> &tokens) {
-        std::ostringstream output;
-        output << "Cleaning empty game instances.\n";
+        sendMessageToUser(user, "Cleaning empty game instances.\n");
         gameManager.cleanEmptyGameInstances();
-        return output.str();
+      };
+  std::function<functionType> unknownFunc =
+      [this](User &user, std::vector<std::string> &tokens) {
+        sendMessageToUser(user, "Unkown game command.");
       };
 
   std::map<GameServer::GameCommand, std::function<functionType>> theMap = {
-      {GameServer::GameCommand::CREATE, createFunc},
-      {GameServer::GameCommand::START, startFunc},
-      {GameServer::GameCommand::CLEAN, cleanFunc}};
+      {GameServer::GameCommand::CREATE, std::move(createFunc)},
+      {GameServer::GameCommand::START, std::move(startFunc)},
+      {GameServer::GameCommand::CLEAN, std::move(cleanFunc)},
+      {GameServer::GameCommand::UNKNOWN, std::move(unknownFunc)}};
   return theMap;
 }
 
@@ -291,22 +285,16 @@ GameServer::matchGameCommand(const std::string &command) {
   return strToGameCommandMap[command];
 }
 
-std::string GameServer::processGameCommand(User &user,
-                                           std::vector<std::string> &tokens) {
+void GameServer::processGameCommand(User &user,
+                                    std::vector<std::string> &tokens) {
   // TODO: rework this to use visitor pattern
   if (tokens.size() < 2) {
-    return "Invalid command.\n";
+    sendMessageToUser(user, "Invalid command.\n");
   }
   auto command = matchGameCommand(tokens[1]);
 
-  if (command == GameServer::GameCommand::UNKNOWN) {
-    return "Bad input\n";
-  }
-
-  std::function<functionType> func = commandToGameFunctionMap[command];
-  std::string output = func(user, tokens);
-
-  return output;
+  auto &func = commandToGameFunctionMap[command];
+  func(user, tokens);
 }
 
 void GameServer::flush() {
