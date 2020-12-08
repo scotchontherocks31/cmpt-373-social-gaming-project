@@ -14,27 +14,34 @@ GameInstance::GameInstance(Room &room, GameServer &server)
   }
 }
 
-void GameInstance::sendToPlayer(const Player &player, std::string message) {
-  auto userId = playerIdMapping.at(player.id);
+void GameInstance::sendToPlayer(int playerId, std::string message) {
+  auto userId = playerIdMapping.at(playerId);
   auto &user = room->getMember(userId);
   server->sendMessageToUser(user, std::move(message));
+}
+
+void GameInstance::sendToOwner(std::string message) {
+  sendToPlayer(ownerId, std::move(message));
 }
 
 void GameInstance::sendGlobalMessage(std::string message) {
   server->sendMessageToRoom(*room, std::move(message));
 }
 
-std::deque<PlayerMessage>
-GameInstance::receiveFromPlayer(const Player &player) {
-  std::deque<PlayerMessage> messages;
-  auto &&[x, y] =
-      std::ranges::partition(inboundMessageQueue, [&player](auto &message) {
-        return player.id != message.player->id;
-      });
-  std::ranges::move(x, inboundMessageQueue.end(), std::back_inserter(messages));
-  inboundMessageQueue.erase(x, inboundMessageQueue.end());
-  playerMessageRequest.at(player.id) = messages.empty();
+std::deque<AST::PlayerMessage> GameInstance::receiveFromPlayer(int playerId) {
+  std::deque<AST::PlayerMessage> messages;
+  auto it = std::partition(
+      inboundMessageQueue.begin(), inboundMessageQueue.end(),
+      [playerId](auto &message) { return playerId != message.playerId; });
+  std::ranges::move(it, inboundMessageQueue.end(),
+                    std::back_inserter(messages));
+  inboundMessageQueue.erase(it, inboundMessageQueue.end());
+  playerMessageRequest.at(playerId) = messages.empty();
   return messages;
+}
+
+std::deque<AST::PlayerMessage> GameInstance::receiveFromOwner() {
+  return receiveFromPlayer(ownerId);
 }
 
 bool GameInstance::queueMessage(const User &user, std::string message) {
@@ -46,19 +53,56 @@ bool GameInstance::queueMessage(const User &user, std::string message) {
   if (!playerMessageRequest.at(playerId)) {
     return false;
   }
-  inboundMessageQueue.push_back({&player, std::move(message)});
+  inboundMessageQueue.push_back({playerId, std::move(message)});
   return true;
 }
 
-void GameInstance::loadGame(AST::AST &ast,
-                            std::unique_ptr<AST::Environment> &&env) {
-  (this->interpreter).reset();
+coro::Task<> GameInstance::loadGame(AST::AST &ast, AST::Configurator &config) {
+  auto populateTask = populateEnvironment(config);
+  AST::PopulatedEnvironment env;
+  while (not populateTask.isDone()) {
+    env = co_await populateTask;
+  }
   this->interpreter = std::make_unique<AST::Interpreter>(std::move(env), *this);
-  gameTask = ast.accept(*(this->interpreter));
+  auto interpretTask = ast.accept(*(this->interpreter));
+  while (not interpretTask.isDone()) {
+    co_await interpretTask;
+  }
 }
 
-void GameInstance::runGame() {
-  if (!gameTask.isDone() and !this->interpreter->hasError()) {
-    gameTask.resume();
+coro::Task<AST::PopulatedEnvironment>
+GameInstance::populateEnvironment(AST::Configurator &config) {
+  auto &players = this->getPlayers();
+  auto toAstPlayer = [](auto &player) {
+    return AST::Player{player.id, player.name};
+  };
+  auto playersTran = players | std::views::transform(toAstPlayer);
+  auto populateTask = config.populateEnvironment(
+      {playersTran.begin(), playersTran.end()}, *this);
+  AST::PopulatedEnvironment env;
+  while (not populateTask.isDone()) {
+    env = co_await populateTask;
   }
+  co_return env;
+}
+
+inline bool GameInstance::hasError() const {
+  return interpreter ? interpreter->hasError() : false;
+}
+
+void GameInstance::resumeGame() {
+  while (gameTask.resume() and not waitingForUserInput() and not hasError()) {
+  }
+}
+
+void GameInstance::startGame(AST::AST &ast, AST::Configurator &config,
+                             const User &owner) {
+  ownerId = reversePlayerIdMapping.at(owner.getId());
+  gameTask = loadGame(ast, config);
+  resumeGame();
+}
+
+bool GameInstance::waitingForUserInput() const {
+  return std::any_of(playerMessageRequest.cbegin(), playerMessageRequest.cend(),
+                     [](auto &elem) { return elem.second; });
 }

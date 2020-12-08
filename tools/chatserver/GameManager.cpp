@@ -17,14 +17,17 @@ GameInstance &GameManager::getGameInstance(const User &user) {
   return it->second;
 }
 
-std::pair<AST::AST *, bool> GameManager::createGame(std::string name,
-                                                    std::string json) {
-  if (games.count(name)) {
-    return {&games.at(name), false};
+bool GameManager::createGame(std::string name, std::string json) {
+  auto parsers = AST::generateParsers(std::move(json));
+  if (!parsers) {
+    return false;
   }
-  auto parser = AST::JSONToASTParser(std::move(json));
-  auto [it, inserted] = games.insert({std::move(name), parser.parse()});
-  return {&it->second, inserted};
+  auto config = AST::Configurator{std::move(parsers->configParser)};
+  std::pair<AST::AST, AST::Configurator> gamePair{parsers->astParser.parse(),
+                                                  std::move(config)};
+  auto [it, inserted] = games.insert({std::move(name), std::move(gamePair)});
+
+  return inserted;
 }
 
 void GameManager::dispatch(const User &user, std::string message) {
@@ -35,7 +38,7 @@ void GameManager::dispatch(const User &user, std::string message) {
   }
   auto &game = instances.at(roomId);
   if (game.queueMessage(user, std::move(message))) {
-    game.runGame();
+    game.resumeGame();
   }
 }
 

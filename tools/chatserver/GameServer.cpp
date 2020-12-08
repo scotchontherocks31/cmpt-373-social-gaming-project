@@ -263,9 +263,8 @@ GameServer::initializeGameFunctionMap() {
         } else {
           auto &instance = gameManager.getGameInstance(user);
           output << "Starting game \"" << tokens[2] << "\"\n";
-          instance.loadGame(gameManager.getGame(tokens[2]),
-                            std::make_unique<AST::Environment>());
-          instance.runGame();
+          auto &[ast, config] = gameManager.getGame(tokens[2]);
+          instance.startGame(ast, config, user);
         }
         return output.str();
       };

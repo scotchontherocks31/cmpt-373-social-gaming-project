@@ -58,7 +58,7 @@ TEST(ExpressionNodes, ExpressionFunctions) {
 
 TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
-  auto enviro = std::make_unique<AST::Environment>();
+  auto enviro = AST::PopulatedEnvironment{std::make_unique<AST::Environment>()};
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
 
@@ -84,14 +84,14 @@ TEST(ASTprinter, GlobalMessageWithoutExpression) {
 
 TEST(ASTprinter, ParallelForandInput) {
 
-  auto enviro = std::make_unique<AST::Environment>();
+  auto enviro = AST::PopulatedEnvironment{std::make_unique<AST::Environment>()};
   AST::PrintCommunicator printComm{};
   AST::Interpreter interp = AST::Interpreter{std::move(enviro), printComm};
 
   std::unique_ptr<AST::InputText> in = std::make_unique<AST::InputText>(
       std::make_unique<AST::FormatNode>(std::string{"How are you"}),
       std::make_unique<AST::Variable>(std::string{"player"}),
-      std::make_unique<AST::VarDeclaration>(std::string{"response"}));
+      std::make_unique<AST::Variable>(std::string{"response"}));
 
   std::unique_ptr<AST::GlobalMessage> mess =
       std::make_unique<AST::GlobalMessage>(
@@ -103,8 +103,7 @@ TEST(ASTprinter, ParallelForandInput) {
 
   std::unique_ptr<AST::ParallelFor> par = std::make_unique<AST::ParallelFor>(
       std::make_unique<AST::Variable>(std::string{"players"}),
-      std::make_unique<AST::VarDeclaration>(std::string{"player"}),
-      std::move(rule));
+      std::make_unique<AST::Variable>(std::string{"player"}), std::move(rule));
 
   auto root = AST::AST(std::move(par));
 
@@ -118,25 +117,21 @@ TEST(ASTprinter, ParallelForandInput) {
   // retrieve print
   std::string output = printer.returnOutput();
   std::string answer =
-      "(ParallelFor(Variable\"players\")(VarDeclaration\"player\")(Rules("
+      "(ParallelFor(Variable\"players\")(Variable\"player\")(Rules("
       "GlobalMessage(FormatNode\"Message One\"))(InputText(FormatNode\"How "
-      "are you\")(Variable\"player\")(VarDeclaration\"response\"))))";
+      "are you\")(Variable\"player\")(Variable\"response\"))))";
   EXPECT_EQ(output, answer);
 }
 
 TEST(ExpressionNodes, FormatNodeExpressionParsing) {
-  auto parent = std::make_unique<AST::Environment>();
 
-  AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
-
-  auto parser = AST::JSONToASTParser(std::string{
-      "{\"configuration\":{\"name\":\"Rock,Paper,Scissors\",\"playercount\":{"
-      "\"min\":2,\"max\":4},\"audience\":false,\"setup\":{\"Rounds\":10}},"
-      "\"constants\":{},\"variables\":{},\"per-player\":{},\"per-audience\":{},"
-      "\"rules\":[{\"rule\":\"global-message\",\"value\":\"{player.name}is "
-      "your favorite person,fav food is {player.food},and # of players "
-      "is{players.size}\"}]}"});
+  auto parser = AST::JSONToASTParser(
+      R"([
+          {
+            "rule": "global-message",
+            "value": "{player.name}is your favorite person,fav food is {player.food},and # of players is{players.size}"
+          }
+        ])"_json);
 
   AST::AST ast = parser.parse(); // AST With GlobalMessage
   auto root = AST::AST(std::move(ast));
@@ -170,7 +165,8 @@ TEST(ExpressionNodes, BinaryNodeVisitorDot) {
   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
 
   AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+  auto parentEnv = AST::PopulatedEnvironment{std::move(parent)};
+  AST::Interpreter interp = AST::Interpreter{std::move(parentEnv), printComm};
   auto root = AST::AST(std::move(ast));
   auto task = root.accept(interp);
   while (task.resume()) {
@@ -201,7 +197,8 @@ TEST(ExpressionNodes, BinaryNodeVisitorDotList) {
   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
 
   AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+  auto parentEnv = AST::PopulatedEnvironment{std::move(parent)};
+  AST::Interpreter interp = AST::Interpreter{std::move(parentEnv), printComm};
   auto root = AST::AST(std::move(ast));
   auto task = root.accept(interp);
   while (task.resume()) {
@@ -238,7 +235,8 @@ TEST(ExpressionNodes, BinaryNodeVisitorDotListElements) {
   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
 
   AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+  auto parentEnv = AST::PopulatedEnvironment{std::move(parent)};
+  AST::Interpreter interp = AST::Interpreter{std::move(parentEnv), printComm};
   auto root = AST::AST(std::move(ast));
   auto task = root.accept(interp);
   while (task.resume()) {
@@ -274,7 +272,8 @@ TEST(ExpressionNodes, BinaryNodeVisitorEquals) {
   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
 
   AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+  auto parentEnv = AST::PopulatedEnvironment{std::move(parent)};
+  AST::Interpreter interp = AST::Interpreter{std::move(parentEnv), printComm};
   auto root = AST::AST(std::move(ast));
   auto task = root.accept(interp);
   while (task.resume()) {
@@ -295,7 +294,9 @@ TEST(ExpressionNodes, BinaryNodeVisitorEquals) {
   AST::ExpressionASTParser rdp2("player1Score == player3Score");
   std::unique_ptr<AST::ExpressionNode> ast2 = rdp2.parse_S();
   AST::PrintCommunicator printComm2{};
-  AST::Interpreter interp2 = AST::Interpreter{std::move(parent2), printComm2};
+  auto parentEnv2 = AST::PopulatedEnvironment{std::move(parent2)};
+  AST::Interpreter interp2 =
+      AST::Interpreter{std::move(parentEnv2), printComm2};
   auto root2 = AST::AST(std::move(ast2));
   auto task2 = root2.accept(interp2);
   while (task2.resume()) {
@@ -321,7 +322,8 @@ TEST(ExpressionNodes, BinaryNodeVisitorNotEquals) {
   AST::ExpressionASTParser rdp("player1Score != player2Score");
   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
   AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+  auto parentEnv = AST::PopulatedEnvironment{std::move(parent)};
+  AST::Interpreter interp = AST::Interpreter{std::move(parentEnv), printComm};
   auto root = AST::AST(std::move(ast));
   auto task = root.accept(interp);
   while (task.resume()) {
@@ -347,7 +349,8 @@ TEST(ExpressionNodes, BinaryNodeVisitorGreaterThan) {
   AST::ExpressionASTParser rdp("player1Score > player2Score");
   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
   AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+  auto parentEnv = AST::PopulatedEnvironment{std::move(parent)};
+  AST::Interpreter interp = AST::Interpreter{std::move(parentEnv), printComm};
   auto root = AST::AST(std::move(ast));
   auto task = root.accept(interp);
   while (task.resume()) {
@@ -373,7 +376,8 @@ TEST(ExpressionNodes, BinaryNodeVisitorLessThan) {
   AST::ExpressionASTParser rdp("player1Score < player2Score");
   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
   AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+  auto parentEnv = AST::PopulatedEnvironment{std::move(parent)};
+  AST::Interpreter interp = AST::Interpreter{std::move(parentEnv), printComm};
   auto root = AST::AST(std::move(ast));
   auto task = root.accept(interp);
   while (task.resume()) {
@@ -399,7 +403,8 @@ TEST(ExpressionNodes, BinaryNodeVisitorLessThanEquals) {
   AST::ExpressionASTParser rdp("player1Score <= player2Score");
   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
   AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+  auto parentEnv = AST::PopulatedEnvironment{std::move(parent)};
+  AST::Interpreter interp = AST::Interpreter{std::move(parentEnv), printComm};
   auto root = AST::AST(std::move(ast));
   auto task = root.accept(interp);
   while (task.resume()) {
@@ -426,7 +431,9 @@ TEST(ExpressionNodes, UnaryNot) {
   std::unique_ptr<AST::ExpressionNode> ast = rdp.parse_S();
 
   AST::PrintCommunicator printComm{};
-  AST::Interpreter interp = AST::Interpreter{std::move(parent), printComm};
+
+  auto parentEnv = AST::PopulatedEnvironment{std::move(parent)};
+  AST::Interpreter interp = AST::Interpreter{std::move(parentEnv), printComm};
   auto root = AST::AST(std::move(ast));
   auto task = root.accept(interp);
   while (task.resume()) {
