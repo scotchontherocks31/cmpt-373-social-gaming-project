@@ -222,7 +222,9 @@ coro::Task<> Interpreter::visitHelper(FormatNode &node) {
       co_await coro::coroutine::suspend_always();
     }
     const DSLValue &dsl = *result;
-    args.push_back(toString(dsl));
+    std::ostringstream sstream;
+    sstream << dsl;
+    args.push_back(sstream.str());
   }
   auto formattedStr = formatString(node.getFormat(), args);
   env.allocateReturn(Symbol{DSLValue{formattedStr}});
