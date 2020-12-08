@@ -374,38 +374,6 @@ struct Greater {
   }
 };
 
-struct ToString {
-  auto operator()(const List &list) noexcept -> std::string {
-    std::ostringstream sstream;
-    sstream << '[';
-    for (auto &&elem : list) {
-      sstream << elem.unaryOperation(ToString{}) << ',';
-    }
-    sstream << ']';
-    return sstream.str();
-  }
-  auto operator()(const Map &map) noexcept -> std::string {
-    std::ostringstream sstream;
-    sstream << '{';
-    for (auto &&[key, value] : map) {
-      sstream << '"' << key << "\":" << value.unaryOperation(ToString{}) << ',';
-    }
-    sstream << '}';
-    return sstream.str();
-  }
-  auto operator()(bool b) noexcept -> std::string {
-    return b ? "true" : "false";
-  }
-  auto operator()(double x) -> std::string { return std::to_string(x); }
-  auto operator()(int x) -> std::string { return std::to_string(x); }
-  auto operator()(const std::string &str) -> std::string {
-    std::ostringstream sstream;
-    sstream << '"' << str << '"';
-    return sstream.str();
-  }
-  auto operator()(const auto &) noexcept -> std::string { return ""; }
-};
-
 } // namespace
 
 namespace AST {
@@ -507,8 +475,5 @@ std::optional<bool> smaller(const DSLValue &x, const DSLValue &y) noexcept {
   return x.binaryOperation(y, Smaller{});
 }
 void notOperation(DSLValue &x) noexcept { return x.unaryOperation(Not{}); }
-std::string toString(const DSLValue &value) noexcept {
-  return value.unaryOperation(ToString{});
-}
 
 } // namespace AST
