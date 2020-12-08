@@ -430,7 +430,7 @@ std::optional<CombinedParsers> generateParsers(std::string json) {
   return CombinedParsers{std::move(configParser), std::move(astParser)};
 }
 
-std::unique_ptr<ASTNode>
+std::unique_ptr<ExpressionNode>
 JSONToASTParser::parseExpression(const std::string &str) {
 
   ExpressionASTParser expressionParse(str);

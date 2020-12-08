@@ -81,43 +81,44 @@ public:
       : json{nlohmann::json::parse(std::move(json))} {}
   JSONToASTParser(Json json) : json{std::move(json)} {}
 
+  static std::unique_ptr<ASTNode> parseRule(const Json &);
+  static std::unique_ptr<Rules> parseRules(const Json &);
+
+  static std::unique_ptr<ExpressionNode> parseExpression(const std::string &);
+  static std::unique_ptr<FormatNode> parseFormatNode(const std::string &);
+  static std::unique_ptr<Variable> parseVariable(const std::string &);
+  static std::unique_ptr<AllSwitchCases> parseSwitchCases(const Json &);
+  static std::unique_ptr<AllWhenCases> parseWhenCases(const Json &);
+
+  static std::unique_ptr<Message> parseMessage(const Json &);
+  static std::unique_ptr<GlobalMessage> parseGlobalMessage(const Json &);
+  static std::unique_ptr<Scores> parseScores(const Json &);
+
+  static std::unique_ptr<ParallelFor> parseParallelFor(const Json &);
+  static std::unique_ptr<ForEach> parseForEach(const Json &);
+  static std::unique_ptr<Loop> parseLoop(const Json &);
+  static std::unique_ptr<InParallel> parseInParallel(const Json &);
+  static std::unique_ptr<Switch> parseSwitch(const Json &);
+  static std::unique_ptr<When> parseWhen(const Json &);
+
+  static std::unique_ptr<Reverse> parseReverse(const Json &);
+  static std::unique_ptr<Extend> parseExtend(const Json &);
+  static std::unique_ptr<Shuffle> parseShuffle(const Json &);
+  static std::unique_ptr<Sort> parseSort(const Json &);
+  static std::unique_ptr<Deal> parseDeal(const Json &);
+  static std::unique_ptr<Discard> parseDiscard(const Json &);
+
+  static std::unique_ptr<Add> parseAdd(const Json &);
+  static std::unique_ptr<Timer> parseTimer(const Json &);
+
+  static std::unique_ptr<InputChoice> parseInputChoice(const Json &);
+  static std::unique_ptr<InputText> parseInputText(const Json &);
+  static std::unique_ptr<InputVote> parseInputVote(const Json &);
+
 private:
   const Json json;
   // Implement these in a Top Down fashion
   AST parseHelper() override;
-  std::unique_ptr<ASTNode> parseRule(const Json &);
-  std::unique_ptr<Rules> parseRules(const Json &);
-
-  std::unique_ptr<ASTNode> parseExpression(const std::string &);
-  std::unique_ptr<FormatNode> parseFormatNode(const std::string &);
-  std::unique_ptr<Variable> parseVariable(const std::string &);
-  std::unique_ptr<AllSwitchCases> parseSwitchCases(const Json &);
-  std::unique_ptr<AllWhenCases> parseWhenCases(const Json &);
-
-  std::unique_ptr<Message> parseMessage(const Json &);
-  std::unique_ptr<GlobalMessage> parseGlobalMessage(const Json &);
-  std::unique_ptr<Scores> parseScores(const Json &);
-
-  std::unique_ptr<ParallelFor> parseParallelFor(const Json &);
-  std::unique_ptr<ForEach> parseForEach(const Json &);
-  std::unique_ptr<Loop> parseLoop(const Json &);
-  std::unique_ptr<InParallel> parseInParallel(const Json &);
-  std::unique_ptr<Switch> parseSwitch(const Json &);
-  std::unique_ptr<When> parseWhen(const Json &);
-
-  std::unique_ptr<Reverse> parseReverse(const Json &);
-  std::unique_ptr<Extend> parseExtend(const Json &);
-  std::unique_ptr<Shuffle> parseShuffle(const Json &);
-  std::unique_ptr<Sort> parseSort(const Json &);
-  std::unique_ptr<Deal> parseDeal(const Json &);
-  std::unique_ptr<Discard> parseDiscard(const Json &);
-
-  std::unique_ptr<Add> parseAdd(const Json &);
-  std::unique_ptr<Timer> parseTimer(const Json &);
-
-  std::unique_ptr<InputChoice> parseInputChoice(const Json &);
-  std::unique_ptr<InputText> parseInputText(const Json &);
-  std::unique_ptr<InputVote> parseInputVote(const Json &);
 };
 
 class ConfigParser {
