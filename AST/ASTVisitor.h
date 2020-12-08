@@ -169,14 +169,7 @@ private:
     co_return;
   }
 
-  coro::Task<> visitHelper(FormatNode &node) override {
-    visitEnter(node);
-    for (auto &&child : node.getChildren()) {
-      co_await child->accept(*this);
-    }
-    visitLeave(node);
-    co_return;
-  }
+  coro::Task<> visitHelper(FormatNode &node) override;
   coro::Task<> visitHelper(Variable &node) final {
     visitEnter(node);
     for (auto &&child : node.getChildren()) {
@@ -420,8 +413,6 @@ private:
   void visitEnter(Scores &node){};
   void visitLeave(Scores &node){};
 
-  void visitEnter(FormatNode &node){};
-  void visitLeave(FormatNode &node){};
   void visitEnter(Variable &node){};
   void visitLeave(Variable &node){};
 
