@@ -115,7 +115,13 @@ private:
 
 class FormatNode : public ASTNode {
 public:
-  explicit FormatNode(std::string format) : format{std::move(format)} {}
+  explicit FormatNode(std::string format,
+                      std::vector<std::unique_ptr<ExpressionNode>> args = {})
+      : format{std::move(format)} {
+    for (auto &arg : args) {
+      appendChild(std::move(arg));
+    }
+  }
   const std::string &getFormat() const { return format; }
 
 private:

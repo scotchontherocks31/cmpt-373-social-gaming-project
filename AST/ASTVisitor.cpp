@@ -1,5 +1,16 @@
 #include "ASTVisitor.h"
 
+std::string formatString(std::string format,
+                         const std::vector<std::string> &args) {
+  auto pos = format.find("{}");
+  size_t argIndex = 0;
+  while (pos != std::string::npos and argIndex < args.size()) {
+    format = format.replace(pos, 2, args.at(argIndex++));
+    pos = format.find("{}");
+  }
+  return format;
+}
+
 namespace AST {
 coro::Task<> ASTVisitor::visit(Message &node) {
   auto coroutine = visitHelper(node);
@@ -196,6 +207,42 @@ coro::Task<> ASTVisitor::visit(FunctionCallNode &node) {
   while (not coroutine.isDone()) {
     co_await coroutine;
   }
+}
+
+coro::Task<> Interpreter::visitHelper(FormatNode &node) {
+  auto env = environment->createChildEnvironment();
+
+  std::vector<std::string> args;
+  for (auto &child : node.getChildren()) {
+    co_await child->accept(*this);
+    auto result = environment->getConstReturnValue();
+    // Expressions have to resolve
+    if (!result) {
+      errorThrown = true;
+      co_await coro::coroutine::suspend_always();
+    }
+    const DSLValue &dsl = *result;
+    std::ostringstream sstream;
+    sstream << dsl;
+    args.push_back(sstream.str());
+  }
+  auto formattedStr = formatString(node.getFormat(), args);
+  env.allocateReturn(Symbol{DSLValue{formattedStr}});
+}
+
+coro::Task<> Interpreter::visitHelper(GlobalMessage &node) {
+  for (auto &&child : node.getChildren()) {
+    co_await child->accept(*this);
+  }
+  auto result = environment->getConstReturnValue();
+  if (!result) {
+    errorThrown = true;
+    co_await coro::coroutine::suspend_always();
+  }
+  const DSLValue &dsl = *result;
+  std::ostringstream sstream;
+  sstream << dsl;
+  communicator.sendGlobalMessage(sstream.str());
 }
 
 } // namespace AST

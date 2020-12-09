@@ -141,8 +141,12 @@ TEST(ExpressionNodes, FormatNodeExpressionParsing) {
   while (task.resume()) {
   }
   std::string answer =
-      "(Rules(GlobalMessage(FormatNode\"{player.name}is your favorite "
-      "person,fav food is {player.food},and # of players is{players.size}\")))";
+      "(Rules(GlobalMessage(FormatNode\"{}is your favorite person,fav food is "
+      "{},and # of players "
+      "is{}\"(BinaryNode:\".\"(VariableExpression\"player\")("
+      "VariableExpression\"name\"))(BinaryNode:\".\"("
+      "VariableExpression\"player\")(VariableExpression\"food\"))(BinaryNode:"
+      "\".\"(VariableExpression\"players\")(VariableExpression\"size\")))))";
   std::string output = printer.returnOutput();
 
   EXPECT_EQ(output, answer);
